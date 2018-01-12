@@ -1,0 +1,15 @@
+
+public class SimpleGUI {
+
+	private long window; // window handle 
+	
+	public void run()
+	{
+		
+	}
+	
+	public void init()
+	{
+		
+	}
+}
