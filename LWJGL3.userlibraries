@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<eclipse-userlibraries version="2">
+    <library name="LWJGL3" systemlibrary="false">
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl/lwjgl-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl/lwjgl.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl/lwjgl-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl/lwjgl-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-assimp/lwjgl-assimp-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-assimp/lwjgl-assimp.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-assimp/lwjgl-assimp-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-assimp/lwjgl-assimp-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-bgfx/lwjgl-bgfx-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-bgfx/lwjgl-bgfx.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-bgfx/lwjgl-bgfx-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-bgfx/lwjgl-bgfx-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-egl/lwjgl-egl-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-egl/lwjgl-egl.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-egl/lwjgl-egl-sources.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-glfw/lwjgl-glfw-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-glfw/lwjgl-glfw.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-glfw/lwjgl-glfw-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-glfw/lwjgl-glfw-natives-linux.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-glfw/lwjgl-glfw-sources.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jawt/lwjgl-jawt-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jawt/lwjgl-jawt.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jawt/lwjgl-jawt-sources.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jemalloc/lwjgl-jemalloc-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jemalloc/lwjgl-jemalloc.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jemalloc/lwjgl-jemalloc-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jemalloc/lwjgl-jemalloc-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lmdb/lwjgl-lmdb-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lmdb/lwjgl-lmdb.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lmdb/lwjgl-lmdb-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lmdb/lwjgl-lmdb-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lz4/lwjgl-lz4-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lz4/lwjgl-lz4.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lz4/lwjgl-lz4-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lz4/lwjgl-lz4-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nanovg/lwjgl-nanovg-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nanovg/lwjgl-nanovg.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nanovg/lwjgl-nanovg-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nanovg/lwjgl-nanovg-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nfd/lwjgl-nfd-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nfd/lwjgl-nfd.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nfd/lwjgl-nfd-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nfd/lwjgl-nfd-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nuklear/lwjgl-nuklear-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nuklear/lwjgl-nuklear.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nuklear/lwjgl-nuklear-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nuklear/lwjgl-nuklear-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-odbc/lwjgl-odbc-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-odbc/lwjgl-odbc.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-odbc/lwjgl-odbc-sources.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openal/lwjgl-openal-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openal/lwjgl-openal.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openal/lwjgl-openal-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openal/lwjgl-openal-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opencl/lwjgl-opencl-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opencl/lwjgl-opencl.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opencl/lwjgl-opencl-sources.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengl/lwjgl-opengl-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengl/lwjgl-opengl.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengl/lwjgl-opengl-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengl/lwjgl-opengl-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengles/lwjgl-opengles-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengles/lwjgl-opengles.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengles/lwjgl-opengles-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengles/lwjgl-opengles-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openvr/lwjgl-openvr-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openvr/lwjgl-openvr.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openvr/lwjgl-openvr-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openvr/lwjgl-openvr-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-ovr/lwjgl-ovr-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-ovr/lwjgl-ovr.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-ovr/lwjgl-ovr-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-ovr/lwjgl-ovr-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-par/lwjgl-par-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-par/lwjgl-par.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-par/lwjgl-par-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-par/lwjgl-par-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-remotery/lwjgl-remotery-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-remotery/lwjgl-remotery.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-remotery/lwjgl-remotery-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-remotery/lwjgl-remotery-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-rpmalloc/lwjgl-rpmalloc-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-rpmalloc/lwjgl-rpmalloc.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-rpmalloc/lwjgl-rpmalloc-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-rpmalloc/lwjgl-rpmalloc-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-sse/lwjgl-sse-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-sse/lwjgl-sse.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-sse/lwjgl-sse-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-sse/lwjgl-sse-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-stb/lwjgl-stb-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-stb/lwjgl-stb.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-stb/lwjgl-stb-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-stb/lwjgl-stb-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyexr/lwjgl-tinyexr-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyexr/lwjgl-tinyexr.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyexr/lwjgl-tinyexr-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyexr/lwjgl-tinyexr-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyfd/lwjgl-tinyfd-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyfd/lwjgl-tinyfd.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyfd/lwjgl-tinyfd-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyfd/lwjgl-tinyfd-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-vulkan/lwjgl-vulkan-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-vulkan/lwjgl-vulkan.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-vulkan/lwjgl-vulkan-sources.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-xxhash/lwjgl-xxhash-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-xxhash/lwjgl-xxhash.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-xxhash/lwjgl-xxhash-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-xxhash/lwjgl-xxhash-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-yoga/lwjgl-yoga-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-yoga/lwjgl-yoga.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-yoga/lwjgl-yoga-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-yoga/lwjgl-yoga-natives-linux.jar"/>
+        <archive javadoc="jar:file:/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-zstd/lwjgl-zstd-javadoc.jar!/" path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-zstd/lwjgl-zstd.jar" source="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-zstd/lwjgl-zstd-sources.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-zstd/lwjgl-zstd-natives-linux.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl/lwjgl-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl/lwjgl-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-assimp/lwjgl-assimp-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-assimp/lwjgl-assimp-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-bgfx/lwjgl-bgfx-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-bgfx/lwjgl-bgfx-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-glfw/lwjgl-glfw-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-glfw/lwjgl-glfw-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jemalloc/lwjgl-jemalloc-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-jemalloc/lwjgl-jemalloc-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lmdb/lwjgl-lmdb-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lmdb/lwjgl-lmdb-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lz4/lwjgl-lz4-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-lz4/lwjgl-lz4-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nanovg/lwjgl-nanovg-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nanovg/lwjgl-nanovg-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nfd/lwjgl-nfd-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nfd/lwjgl-nfd-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nuklear/lwjgl-nuklear-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-nuklear/lwjgl-nuklear-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openal/lwjgl-openal-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openal/lwjgl-openal-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengl/lwjgl-opengl-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengl/lwjgl-opengl-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengles/lwjgl-opengles-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-opengles/lwjgl-opengles-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openvr/lwjgl-openvr-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-openvr/lwjgl-openvr-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-ovr/lwjgl-ovr-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-ovr/lwjgl-ovr-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-par/lwjgl-par-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-par/lwjgl-par-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-remotery/lwjgl-remotery-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-remotery/lwjgl-remotery-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-rpmalloc/lwjgl-rpmalloc-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-rpmalloc/lwjgl-rpmalloc-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-sse/lwjgl-sse-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-sse/lwjgl-sse-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-stb/lwjgl-stb-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-stb/lwjgl-stb-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyexr/lwjgl-tinyexr-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyexr/lwjgl-tinyexr-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyfd/lwjgl-tinyfd-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-tinyfd/lwjgl-tinyfd-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-xxhash/lwjgl-xxhash-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-xxhash/lwjgl-xxhash-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-yoga/lwjgl-yoga-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-yoga/lwjgl-yoga-natives-windows.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-zstd/lwjgl-zstd-natives-macos.jar"/>
+        <archive path="/home/2016/msingh37/School/Comp361-Code/lwjgl-3.1.4/lwjgl-zstd/lwjgl-zstd-natives-windows.jar"/>
+    </library>
+</eclipse-userlibraries>
