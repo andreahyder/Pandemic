@@ -8,6 +8,7 @@ public class City {
 	Disease disease;
 	ArrayList<DiseaseCube> cubes;
 	ResearchStation research;
+	Boolean outbroken;
 	
 	City(String n,String c,Disease d,Game g){
 		game = g;
@@ -17,6 +18,7 @@ public class City {
 		research = null;
 		connected = new ArrayList<City>();
 		pawns = new ArrayList<Pawn>();
+		outbroken = false;
 	}
 	
 	void addDiseaseCube(Color color) {
@@ -35,6 +37,16 @@ public class City {
 				t1.location = null;
 			}
 		}
+	}
+	
+	int countDiseaseCube(Color color) {
+		int count = 0;
+		for(DiseaseCube c:cubes) {
+			if(c.disease.color.equals(color)) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 	void addResearchStation(){

@@ -16,6 +16,7 @@ public class Game {
 	int infectionCount;
 	int outbreakCount;
 	
+	//initializes game, initializes alot of things.
 	Game(){
 		turn = 0;
 		stage = Stage.PreGame;
@@ -69,6 +70,8 @@ public class Game {
 		}
 		Collections.shuffle(infectionDeck);
 	}
+	
+	//return a player with the specified name in the game
 	Player getPlayer(String s) {
 		int i = 0;
 		Boolean found = false;
@@ -87,6 +90,8 @@ public class Game {
 			return null;
 		}
 	}
+	
+	//return a city with the specified name in the game
 	City getCity(String s){
 		int i = 0;
 		Boolean found = false;
@@ -105,34 +110,77 @@ public class Game {
 			return null;
 		}
 	}
+	
+	//return the disease with the specified color
 	Disease getDisease(Color color) {
 		for(Disease d:diseases) {
-			if(d.color.compareTo(color) == 0) {
+			if(d.color.equals(color)) {
 				return d;
 			}
 		}
 		return null;
 	}
 	
-	
+	//helper function that is used to draw count number of cards for player p. Epidemic included
 	void drawCard(Player p, int count) {
 		for(int i = 0; i < count; i++) {
-			PlayerCard temp = playerDeck.remove(0);
-			p.hand.add(temp);
+			PlayerCard t1 = playerDeck.remove(0);
+			if(t1.type.equals(Type.Epidemic)) {
+				infectionCount++;
+				InfectionCard t2 = infectionDeck.remove(infectionDeck.size()-1);
+				int c = t2.city.countDiseaseCube(t2.city.disease.color);
+				if(c == 0) {
+					infectCity(t2, 3);
+				}
+				else {
+					infectCity(t2, 4-c);
+				}
+				Collections.shuffle(infectionDiscardPile);
+				for(int j = 0; j < infectionDiscardPile.size(); j++) {
+					InfectionCard d = infectionDiscardPile.remove(0);
+					infectionDeck.add(0,d);
+				}
+			}
+			else {
+				p.hand.add(t1);
+			}
 		}
 	}
 	
-	void infectCity(int count) {
-		InfectionCard temp = infectionDeck.remove(0);
+	//helper function that is used to infect city of c with count number of disease cubes. Outbreak included
+	void infectCity(InfectionCard c, int count) {
+		Color color = c.city.disease.color;
 		for(int i = 0; i < count; i++) {
-			temp.city.addDiseaseCube(temp.city.disease.color);
+			if(c.city.countDiseaseCube(color) != 3) {
+				c.city.addDiseaseCube(color);
+			}
+			else {
+				ArrayList<City> outbreakList = new ArrayList<City>();
+				outbreakList.add(c.city);
+				c.city.outbroken = true;
+				while(!outbreakList.isEmpty()) {
+					outbreakCount++;
+					for(City link: outbreakList.get(0).connected) {
+						if(!link.outbroken) {
+							if(link.countDiseaseCube(color) != 3) {
+								link.addDiseaseCube(color);
+							}
+							else {
+								outbreakList.add(link);
+								link.outbroken = true;
+							}
+						}
+					}
+					outbreakList.remove(0);
+				}
+			}
 		}
-		infectionDiscardPile.add(temp);
+		infectionDiscardPile.add(c);
 	}
 }
 
 enum Stage{
-	PreGame,Action,Draw,Infection,BTAction,BTDraw,PostGame
+	PreGame,Action,Infection,BTAction,BTDraw,PostGame
 }
 
 class Vars{

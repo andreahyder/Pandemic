@@ -16,8 +16,18 @@ public class Player {
 		hand = new ArrayList<PlayerCard>();
 	}
 	
+	void share(Player p, int c, Boolean give) {
+		p.hand.add(hand.remove(c));
+		if(give) {
+			pawn.actions--;
+		}
+		else {
+			p.pawn.actions--;
+		}
+	}
+	
 	void givePawn(City c){
-		pawn = new Pawn(c);
+		pawn = new Pawn(this, c);
 	}
 	
 	int getCard(String s){

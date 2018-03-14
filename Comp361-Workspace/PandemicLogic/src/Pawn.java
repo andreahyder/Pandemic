@@ -1,10 +1,12 @@
 
 public class Pawn {
 	int actions;
+	Player player;
 	City city;
 	
-	Pawn(City c){
+	Pawn(Player p, City c){
 		actions = 4;
+		player = p;
 		city = c;
 		c.pawns.add(this);
 	}
