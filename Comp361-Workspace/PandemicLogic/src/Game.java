@@ -1,0 +1,190 @@
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Game {
+	ArrayList<Player> players;
+	ArrayList<City> cities;
+	ArrayList<Disease> diseases;
+	ArrayList<ResearchStation> research;
+	ArrayList<PlayerCard> playerDeck;
+	ArrayList<PlayerCard> playerDiscardPile;
+	ArrayList<InfectionCard> infectionDeck;
+	ArrayList<InfectionCard> infectionDiscardPile;
+	int turn;
+	Stage stage;
+	static int[] infectionRate = new int[] {2,2,2,3,3,4,4};
+	int infectionCount;
+	int outbreakCount;
+	
+	Game(){
+		turn = 0;
+		stage = Stage.PreGame;
+		infectionCount = 0;
+		outbreakCount = 0;
+		players = new ArrayList<Player>();
+		cities = new ArrayList<City>();
+		diseases = new ArrayList<Disease>();
+		diseases.add(new Disease("Black"));
+		diseases.add(new Disease("Blue"));
+		diseases.add(new Disease("Red"));
+		diseases.add(new Disease("Yellow"));
+		for(String[] s:Vars.names) {
+			if(s[1].matches("black")) {
+				cities.add(new City(s[0],s[1],diseases.get(0),this));
+			}
+			else if(s[1].matches("blue")) {
+				cities.add(new City(s[0],s[1],diseases.get(1),this));
+			}
+			else if(s[1].matches("red")) {
+				cities.add(new City(s[0],s[1],diseases.get(2),this));
+			}
+			else if(s[1].matches("yellow")) {
+				cities.add(new City(s[0],s[1],diseases.get(3),this));
+			}
+		}
+		for(int i = 0; i < cities.size(); i++) {
+			for(int j = 2; j < Vars.names[i].length; j++) {
+				cities.get(i).connected.add(getCity(Vars.names[i][j]));
+			}
+		}
+		
+		research = new ArrayList<ResearchStation>();
+		for(int i = 0; i < 6; i++) {
+			research.add(new ResearchStation());
+		}
+		getCity("Atlanta").addResearchStation();
+		
+		playerDeck = new ArrayList<PlayerCard>();
+		playerDiscardPile = new ArrayList<PlayerCard>();
+		infectionDeck = new ArrayList<InfectionCard>();
+		infectionDiscardPile = new ArrayList<InfectionCard>();
+		for(int i = 0; i < 48; i++) {
+			playerDeck.add(new PlayerCard(cities.get(i)));
+			infectionDeck.add(new InfectionCard(cities.get(i)));
+		}
+		Collections.shuffle(playerDeck);
+		int epi = 4;
+		for(int i = 0; i < epi; i++) {
+			playerDeck.add(new PlayerCard(null));
+		}
+		Collections.shuffle(infectionDeck);
+	}
+	Player getPlayer(String s) {
+		int i = 0;
+		Boolean found = false;
+		while(i < players.size() && !found) {
+			if(players.get(i).username.matches(s)) {
+				found = true;
+			}
+			else{
+				i++;
+			}
+		}
+		if(found) {
+			return players.get(i);
+		}
+		else {
+			return null;
+		}
+	}
+	City getCity(String s){
+		int i = 0;
+		Boolean found = false;
+		while(i < cities.size() && !found) {
+			if(cities.get(i).name.matches(s)) {
+				found = true;
+			}
+			else{
+				i++;
+			}
+		}
+		if(found) {
+			return cities.get(i);
+		}
+		else {
+			return null;
+		}
+	}
+	Disease getDisease(Color color) {
+		for(Disease d:diseases) {
+			if(d.color.compareTo(color) == 0) {
+				return d;
+			}
+		}
+		return null;
+	}
+	
+	
+	void drawCard(Player p, int count) {
+		for(int i = 0; i < count; i++) {
+			PlayerCard temp = playerDeck.remove(0);
+			p.hand.add(temp);
+		}
+	}
+	
+	void infectCity(int count) {
+		InfectionCard temp = infectionDeck.remove(0);
+		for(int i = 0; i < count; i++) {
+			temp.city.addDiseaseCube(temp.city.disease.color);
+		}
+		infectionDiscardPile.add(temp);
+	}
+}
+
+enum Stage{
+	PreGame,Action,Draw,Infection,BTAction,BTDraw,PostGame
+}
+
+class Vars{
+	static String[][] names = new String[][]{
+		new String[] {"Atlanta","blue","Chicago","Washington","Miami"},	
+		new String[] {"Chicago","blue","San Francisco","Los Angeles","Atlanta","Toronto"},
+		new String[] {"Essen","blue","London","St. Petersburg","Milan","Paris"},
+		new String[] {"London","blue","New York","Essen","Madrid","Paris"},
+		new String[] {"Madrid","blue","New York","Sao Paulo","Algiers","London","Paris"},
+		new String[] {"Milan","blue","Essen","St. Petersburg","Istanbul","Paris"},
+		new String[] {"New York","blue","Toronto","Washington","Madrid","London"},
+		new String[] {"Paris","blue","London","Essen","Milan","Algiers","Madrid"},
+		new String[] {"San Francisco","blue","Chicago","Los Angeles"},
+		new String[] {"St. Petersburg","blue","Essen","Moscow","Istanbul","Milan"},
+		new String[] {"Toronto","blue","Chicago","New York","Washington"},
+		new String[] {"Washington","blue","New York","Toronto","Atlanta","Miami"},
+		new String[] {"Bogota","yellow","Miami","Mexico City","Lima","Buenos Aires","Sao Paulo"},
+		new String[] {"Buenos Aires","yellow","Sao Paulo","Bogota"},
+		new String[] {"Johannesburg","yellow","Kinshasa","Khartoum"},
+		new String[] {"Khartoum","yellow","Johannesburg","Kinshasa","Lagos","Cairo"},
+		new String[] {"Kinshasa","yellow","Lagos","Khartoum","Johannesburg"},
+		new String[] {"Lagos","yellow","Sao Paulo","Kinshasa","Khartoum"},
+		new String[] {"Lima","yellow","Mexico City","Bogota","Santiago"},
+		new String[] {"Los Angeles","yellow","San Francisco","Chicago","Mexico City"},
+		new String[] {"Mexico City","yellow","Los Angeles","Chicago","Miami","Bogota","Lima"},
+		new String[] {"Miami","yellow","Bogota","Mexico City","Atlanta","Washington"},
+		new String[] {"Santiago","yellow","Lima"},
+		new String[] {"Sao Paulo","yellow","Buenos Aires","Bogota","Madrid","Lagos"},
+		new String[] {"Algiers","black","Madrid","Paris","Istanbul","Cairo"},
+		new String[] {"Istanbul","black","Milan","Moscow","Baghdad","Cairo","Algiers","St. Petersburg"},
+		new String[] {"Cairo","black","Algiers","Istanbul","Baghdad","Riyadh","Khartoum"},
+		new String[] {"Moscow","black","St. Petersburg","Tehran","Istanbul"},
+		new String[] {"Tehran","black","Moscow","Delhi","Baghdad","Karachi"},
+		new String[] {"Baghdad","black","Istanbul","Tehran","Karachi","Riyadh","Cairo"},
+		new String[] {"Riyadh","black","Karachi","Baghdad","Cairo"},
+		new String[] {"Karachi","black","Mumbai","Riyadh","Baghdad","Tehran","Delhi"},
+		new String[] {"Mumbai","black","Karachi","Delhi","Chennai"},
+		new String[] {"Delhi","black","Tehran","Karachi","Mumbai","Kolkata","Chennai"},
+		new String[] {"Kolkata","black","Delhi","Chennai","Bangkok","Hong Kong"},
+		new String[] {"Chennai","black","Mumbai","Delhi","Kolkata","Bangkok","Jakarta"},
+		new String[] {"Beijing","red","Shanghai","Seoul"},
+		new String[] {"Seoul","red","Beijing","Shanghai","Tokyo"},
+		new String[] {"Shanghai","red","Beijing","Seoul","Tokyo","Taipei","Hong Kong"},
+		new String[] {"Tokyo","red","Seoul","Shanghai","Osaka"},
+		new String[] {"Osaka","red","Tokyo","Taipei"},
+		new String[] {"Taipei","red","Osaka","Shanghai","Hong Kong","Manila"},
+		new String[] {"Hong Kong","red","Kolkata","Bangkok","Shanghai","Taipei","Ho Chi Minh City"},
+		new String[] {"Bangkok","red","Kolkata","Hong Kong","Chennai","Ho Chi Minh City","Jakarta"},
+		new String[] {"Ho Chi Minh City","red","Jakarta","Bangkok","Hong Kong","Manila"},
+		new String[] {"Jakarta","red","Chennai","Bangkok","Ho Chi Minh City","Sydney"},
+		new String[] {"Manila","red","Sydney","Ho Chi Minh City","Hong Kong","Taipei"},
+		new String[] {"Sydney","red","Jakarta","Manila"}};
+}
+
+
