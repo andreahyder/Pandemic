@@ -55,8 +55,6 @@ public class GameManager {
 		Player t1 = game.getPlayer(name);
 		City t2 = game.getCity(city);
 		t1.pawn.move(t2);
-		
-		//TODO action class stuff
 	}
 	
 	//directFlight
@@ -66,16 +64,12 @@ public class GameManager {
 		t1.pawn.move(t2);
 		PlayerCard t3 = t1.hand.remove(t1.getCard(city));
 		game.playerDiscardPile.add(t3);
-		
-		//TODO action class stuff
 	}
 	
 	//treatDisease
 	void treatDisease(String name, Color color) {
 		Player t1 = game.getPlayer(name);
 		t1.pawn.treat(color);
-		
-		//TODO action class stuff
 	}
 	
 	//shareKnowledge (this happens after consent is given.) (when shareknowledge request is received by server, server doesnt go through gamemanager class, instead a
