@@ -35,6 +35,7 @@ public class ClientThread extends Thread{
 	public void callback(String inMessage){
 		String[] tokens = inMessage.split(" ");
 		String actionToExecute = tokens[1];
+		System.out.println(inMessage);
 		
 	}
 	int getClientNumber(){

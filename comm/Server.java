@@ -51,7 +51,6 @@ public class Server {
 	
 	public static String waitForClient(ServerSocket ss) throws IOException{
 		
-		
 		Socket s = ss.accept();
 	
 		BufferedReader br = new BufferedReader( new InputStreamReader( s.getInputStream() ) );

@@ -11,7 +11,6 @@ public class ServerComm {
 		try {
 			listener = new ServerSocket(port);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		int i = 0;
