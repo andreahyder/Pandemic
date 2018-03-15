@@ -13,13 +13,12 @@ public class LoadScreen implements Screen {
 
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
-
+		parent.addPlayer( new PlayerInfo( "TestPlayer", true ) );
+		parent.changeScreen( PandemicGame.Screens.MENU );
 	}
 
 	@Override
 	public void render(float delta) { 	
-		parent.changeScreen( PandemicGame.Screens.MENU );
 
 	}
 

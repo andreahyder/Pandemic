@@ -33,7 +33,8 @@ public class MenuScreen implements Screen
 		table.setDebug(true);
 		stage.addActor(table);
 		
-		skin = new Skin(Gdx.files.internal("plain-james-ui/plain-james-ui.json"));
+		skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+		//skin = new Skin();
 		
 		TextButton newGame = new TextButton("New Game", skin);
 		newGame.addListener(new ChangeListener() {

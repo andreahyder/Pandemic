@@ -3,26 +3,48 @@ package com.mygdx.game;
 import java.util.ArrayList;
 
 public class CityNode {
-	ArrayList<String> connectedCities;
+	ArrayList<CityNode> connectedCities;
+	ArrayList<String> connectedCityNames;
+	ArrayList<DiseaseCubeInfo> cubes;
 	String colour;
 	String name;
 	float x, y;
 	
 	CityNode( String[] nameData, float[] position )
 	{
-		connectedCities = new ArrayList<String>();
+		connectedCities = new ArrayList<CityNode>();
+		cubes 			= new ArrayList<DiseaseCubeInfo>();
 		name 	= nameData[0];
 		colour 	= nameData[1];
 		x		= position[0];
 		y		= position[1];
 		
+		connectedCityNames = new ArrayList<String>();
 		for( int i = 2; i < nameData.length; i++ )
 		{
-			connectedCities.add( nameData[i] );
+			connectedCityNames.add( nameData[i] );
 		}
 	}
 	
-	public ArrayList<String> getConnectedCities()
+	public void addConnectedCities( CityNode[] cities )
+	{
+		for( String cityName : connectedCityNames )
+		{
+			connectedCities.add( GameScreen.lookupCity( cityName ) );
+		}
+	}
+	
+	public void addCube( DiseaseCubeInfo cube )
+	{
+		cubes.add( cube );
+	}
+	
+	public ArrayList<DiseaseCubeInfo> getCubes()
+	{
+		return cubes;
+	}
+	
+	public ArrayList<CityNode> getConnectedCities()
 	{
 		return connectedCities;
 	}

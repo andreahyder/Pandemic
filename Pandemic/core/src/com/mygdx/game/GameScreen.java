@@ -1,65 +1,96 @@
 package com.mygdx.game;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.particles.influencers.DynamicsModifier.Angular;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.mygdx.game.MenuScreen.JoinGameTextInput;
 
 public class GameScreen implements Screen {
-	final static float nodeSize = 25.0f;
+	final static float nodeSize = 17.50f;
+	final static float pawnXSize = 15.0f;
+	final static float pawnYSize = pawnXSize * 2f;
+	final static float cubeSize = 25.f;
+	final static float cubeOrbitOffset = 2.5f;
+	final static float cubeOrbitRate = 0.5f;
+	int currNodeInd = 47;
 	
 	static float[][] positions = new float[][]
 			{
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f },
-				new float[]{ 0.0f, 0.0f }
+				new float[]{ -0.5f, 0.275f }, //Atlanta
+				new float[]{ -0.55f, 0.45f }, //Chicago
+				new float[]{ 0.035f, 0.575f }, //Essen
+				new float[]{ -0.09f, 0.55f }, //London
+				new float[]{ -0.11f, 0.35f }, //Madrid
+				new float[]{ 0.0825f, 0.475f }, //Milan
+				new float[]{ -0.35f, 0.445f }, //NYC
+				new float[]{ 0.0f, 0.45f }, //Paris
+				new float[]{ -0.7f, 0.375f }, //San Francisco
+				new float[]{ 0.16f, 0.615f }, //St Petersburg
+				new float[]{ -0.425f, 0.455f }, //Toronto
+				new float[]{ -0.4f, 0.3f }, //Washington
+				new float[]{ -0.425f, -0.1f }, //Bogota
+				new float[]{ -.335f, -0.575f }, //Buenos Aires
+				new float[]{ 0.13f, -0.515f }, //Johannesburg
+				new float[]{ 0.18f, -0.05f }, //Khartoum
+				new float[]{ 0.06f, -0.26125f }, //Kinshasa
+				new float[]{ -0.02f, -0.0725f }, //Lagos
+				new float[]{ -0.485f, -0.35f }, //Lima
+				new float[]{ -0.675f, 0.175f }, //Los Angeles
+				new float[]{ -0.56f, 0.09f }, //Mexico City
+				new float[]{ -0.42f, 0.12f }, //Miami
+				new float[]{ -0.455f, -0.55f }, //Santiago
+				new float[]{ -0.255f, -0.41f }, //Sao Paolo
+				new float[]{ 0.0175f, 0.275f }, //Algiers
+				new float[]{ 0.1275f, 0.375f }, //Istanbul
+				new float[]{ 0.11f, 0.215f }, //Cairo
+				new float[]{ 0.24f, 0.478f }, //Moscow
+				new float[]{ 0.3f, 0.415f }, //Tehran
+				new float[]{ 0.22f, 0.255f }, //Baghdad
+				new float[]{ 0.24f, 0.08f }, //Riyahd
+				new float[]{ 0.34f, 0.2f }, //Karachi
+				new float[]{ 0.35f, 0.06f }, //Mumbai
+				new float[]{ 0.43f, 0.22f }, //Dehli
+				new float[]{ 0.5f, 0.17f }, //Kolkata
+				new float[]{ 0.45f, -0.06f }, //Chennai
+				new float[]{ 0.59f, 0.45f }, //Beijing
+				new float[]{ 0.69f, 0.46f }, //Seoul
+				new float[]{ 0.58f, 0.32f }, //Shanghai
+				new float[]{ 0.78f, 0.37f }, //Tokyo
+				new float[]{ 0.79f, 0.25f }, //Osaka
+				new float[]{ 0.72f, 0.18f }, //Taipei
+				new float[]{ 0.60f, 0.12f }, //Hong Kong
+				new float[]{ 0.535f, 0.04f }, //Bangkok
+				new float[]{ 0.60f, -0.12f }, //Ho Chi Min City
+				new float[]{ 0.5f, -0.20f }, //Jakarta
+				new float[]{ 0.73f, -0.13f }, //Manilla
+				new float[]{ 0.8f, -0.55f } //Sydney
 			};
 	static String[][] names = new String[][]
 	{
@@ -113,24 +144,84 @@ public class GameScreen implements Screen {
 		new String[] {"Sydney","red","Jakarta","Manila"}
 	};
 	
-	CityNode[] cityNodes;
-	PandemicGame parent;
+	static CityNode[] cityNodes;
+	static PlayerInfo[] players;
+	static PlayerInfo clientPlayer;
 	
+	PandemicGame parent;
+
+	Texture[] playerTextures;
+	Texture[] diseaseCubeTextures;
 	float windWidth, windHeight;
 	Texture background;
 	SpriteBatch batch;
-	Stage stage;
+	Stage buttonStage, pawnStage, diseaseStage;
 	Skin skin;
+    Button button;
+    
+    boolean isMyTurn = true;
+    float cubeOrbitRotation = 0;
 	
-	GameScreen( PandemicGame _parent )
+	
+	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
 	{
 		parent 	= _parent;
+		players = _players;
 		batch 	= new SpriteBatch();
-		stage 	= new Stage();
 		skin 	= new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
-		
+
 		windWidth 	= Gdx.graphics.getWidth();
 		windHeight 	= Gdx.graphics.getHeight();
+
+		initGeneralTextures();
+		initGameState();
+
+		//TESTER DISEASES
+		CityNode diseasedTest = lookupCity( "Tokyo" );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
+		/////////////////
+		
+		updateDiseaseStage();
+		
+		initButtonStage();
+		
+		updatePawnStage();
+	}
+	
+	void initGeneralTextures()
+	{
+		background 	= new Texture(Gdx.files.internal( "board.png" ) );
+		
+		playerTextures = new Texture[ PawnColour.values().length ];
+		playerTextures[ 0 ] = new Texture( Gdx.files.internal("GreenPlayer.png") );
+		playerTextures[ 1 ] = new Texture( Gdx.files.internal("CyanPlayer.png") );
+		playerTextures[ 2 ] = new Texture( Gdx.files.internal("PurplePlayer.png") );
+		playerTextures[ 3 ] = new Texture( Gdx.files.internal("PinkPlayer.png") );
+		playerTextures[ 4 ] = new Texture( Gdx.files.internal("MaroonPlayer.png") );
+		playerTextures[ 5 ] = new Texture( Gdx.files.internal("BrownPlayer.png") );
+		
+		diseaseCubeTextures = new Texture[ DiseaseColour.values().length ];
+		diseaseCubeTextures[ 0 ] = new Texture( Gdx.files.internal( "BlueDiseaseCube.png" ) );
+		diseaseCubeTextures[ 1 ] = new Texture( Gdx.files.internal( "YellowDiseaseCube.png" ) );
+		diseaseCubeTextures[ 2 ] = new Texture( Gdx.files.internal( "BlackDiseaseCube.png" ) );
+		diseaseCubeTextures[ 3 ] = new Texture( Gdx.files.internal( "RedDiseaseCube.png" ) );
+	}
+	
+	void initGameState()
+	{
+
+		for( int i = 0; i < players.length; i++ )
+		{
+			if( players[i] != null )
+			{
+				if ( players[i].isClientPlayer() )
+					clientPlayer = players[i];
+				
+				players[i].setCity("Johannesburg");
+			}
+		}
 		
 		cityNodes = new CityNode[ names.length ];
 		for ( int i = 0; i < names.length; i++ )
@@ -138,7 +229,140 @@ public class GameScreen implements Screen {
 			cityNodes[ i ] = new CityNode( names[i], positions[i] ); 
 		}
 		
-		background 	= new Texture(Gdx.files.internal( "board.png" ) );
+		for ( int i = 0; i < names.length; i++ )
+		{
+			cityNodes[ i ].addConnectedCities( cityNodes ); 
+		}
+	}
+	
+	void updatePawnStage()
+	{
+		pawnStage = new Stage( new ScreenViewport() );
+		
+		HashMap<CityNode, ArrayList<PlayerInfo>> countMap = new HashMap<CityNode, ArrayList<PlayerInfo>>();
+		for( PlayerInfo player : players )
+		{
+			if (player != null)
+			{
+				CityNode occupyingCity = lookupCity( player.getCity() );
+				if( countMap.containsKey( occupyingCity ) ) countMap.get( occupyingCity ).add( player );
+				else 
+				{
+					 ArrayList<PlayerInfo> newList = new ArrayList<PlayerInfo>();
+					 newList.add(player);
+					 countMap.put( occupyingCity, newList );
+				}
+			}
+		}
+		
+		for ( CityNode curr : countMap.keySet() )
+		{
+			ArrayList<PlayerInfo> playersAtCurr = countMap.get( curr );
+			int numPlayers = playersAtCurr.size();
+			float xLeftShift = (numPlayers-1) * (pawnXSize/2) / 2;
+			for ( int i = 0; i < playersAtCurr.size(); i++ )
+			{
+				int x = (int)(curr.getXInWindowCoords(windWidth) + nodeSize/2 - pawnXSize/2 + (i * pawnXSize/2));
+				int y = (int)(curr.getYInWindowCoords(windHeight) + nodeSize/2);
+				
+				
+				
+				Image pawn = new Image( playerTextures[ playersAtCurr.get( i ).getColour().ordinal() ] );
+				pawn.setBounds( x - xLeftShift ,y, pawnXSize, pawnYSize);
+				pawnStage.addActor( pawn );
+				/*
+				final Sprite pawn = new Sprite( playerTextures[ playersAtCurr.get( i ).getColour().ordinal() ] );
+				//pawn.setBounds( x + (pawnXSize/2) - xLeftShift, y, pawnXSize, pawnYSize);
+				pawn.setBounds( 0, 0, pawnXSize, pawnYSize);
+				pawnStage.addActor( new Actor(){
+					@Override
+					public void draw(Batch batch, float parentAlpha) {
+						pawn.draw( batch );
+						super.draw(batch, parentAlpha);
+					}
+				});
+				*/
+			}
+			
+		}
+	}
+	
+	void updateDiseaseStage()
+	{
+		diseaseStage = new Stage( new ScreenViewport() );
+		for ( CityNode curr : cityNodes )
+		{
+			ArrayList<DiseaseCubeInfo> localCubes = curr.getCubes();
+			float arc = (float)(2*Math.PI / localCubes.size());
+			for( int i = 0; i < localCubes.size(); i++ )
+			{
+				int x = (int)(curr.getXInWindowCoords(windWidth) + nodeSize/2 - cubeSize/2 + ( ( nodeSize/2 + cubeOrbitOffset )*Math.cos( arc*i + cubeOrbitRotation ) ) );
+				int y = (int)(curr.getYInWindowCoords(windHeight) + nodeSize/2 - cubeSize/2 + ( ( nodeSize/2 + cubeOrbitOffset )*Math.sin( arc*i + cubeOrbitRotation ) ) );
+
+				Image cube = new Image( diseaseCubeTextures[ localCubes.get( i ).getColourIndex() ] );
+				cube.setBounds( x ,y, cubeSize, cubeSize);
+				diseaseStage.addActor( cube );
+			}
+		}
+	}
+	
+	void initButtonStage()
+	{
+		buttonStage = new Stage(new ScreenViewport()); //Set up a stage for the ui
+        
+        for( final CityNode curr : cityNodes )
+		{
+			Texture UpDown	 						= new Texture( Gdx.files.internal( curr.getColour() + "City.png") );
+			TextureRegion TR_UD 					= new TextureRegion( UpDown );
+			final TextureRegionDrawable Draw_UD 	= new TextureRegionDrawable( TR_UD );
+			
+			Texture Over	 						= new Texture( Gdx.files.internal( curr.getColour() + "CityOver.png") );
+			TextureRegion TR_O 						= new TextureRegion( Over );
+			final TextureRegionDrawable Draw_O	 	= new TextureRegionDrawable( TR_O );
+			
+			ButtonStyle cityButtonStyle = new ButtonStyle();
+			cityButtonStyle.up			= Draw_UD;
+			cityButtonStyle.down		= Draw_UD;
+			cityButtonStyle.over 		= Draw_O;
+			cityButtonStyle.checkedOver = Draw_O;
+			
+	        button = new Button( cityButtonStyle );
+	        button.addCaptureListener( new InputListener() {
+	            @Override
+	            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+	                button.setBackground(Draw_O);
+	            }
+
+	            @Override
+	            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+	                button.setBackground(Draw_UD);
+	            }
+	        });
+	        
+
+	        button.addListener( new ChangeListener() {
+	            @Override
+				public void changed(ChangeEvent event, Actor actor) {
+	            	String CityName = curr.getName();
+	            	// RealTODO: Call Drive( CityName ) on Server
+				}
+	        });
+	        
+			float x = curr.getXInWindowCoords( windWidth );
+			float y = curr.getYInWindowCoords( windHeight );
+	        button.setBounds(x, y, nodeSize, nodeSize);
+	        buttonStage.addActor(button); //Add the button to the stage to perform rendering and take input.
+		}
+        
+        TextButton treatDiseaseButton = new TextButton("Treat Disease", skin);
+        treatDiseaseButton.addListener( new ChangeListener() {
+        	public void changed(ChangeEvent event, Actor actor) 
+        	{
+        		
+        	}
+        } );
+        
+        Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 	}
 	
 	@Override
@@ -149,24 +373,65 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        
 		batch.begin();
 			batch.draw(background, 0, 0, windWidth, windHeight);
 		batch.end();
 		
-		batch.begin();
-			for( CityNode curr : cityNodes )
+		Pixmap connections = new Pixmap( (int)windWidth, (int)windHeight, Pixmap.Format.RGBA8888 );
+		connections.setColor( Color.WHITE );
+		
+		/*
+		CityNode curr0 = cityNodes[0];
+		CityNode other = cityNodes[1];
+		int x0 = (int)curr0.getXInWindowCoords( windWidth );
+		int y0 = (int)curr0.getYInWindowCoords( windHeight );
+		int x1 = (int)other.getXInWindowCoords( windWidth );
+		int y1 = (int)other.getYInWindowCoords( windHeight );
+		connections.drawLine( (int)(x0 + nodeSize/2),  (int)(windHeight-y0 - nodeSize/2),  (int)(x1 + nodeSize/2),  (int)(windHeight-y1 - nodeSize/2));
+		*/
+		
+		
+		for( CityNode curr : cityNodes )
+		{
+			int x0 = (int)curr.getXInWindowCoords( windWidth );
+			int y0 = (int)curr.getYInWindowCoords( windHeight );
+			
+			for ( CityNode other : curr.getConnectedCities() )
 			{
-				float x = curr.getXInWindowCoords( windWidth );
-				float y = curr.getXInWindowCoords( windHeight );
-				
-				Texture cityCircle = new Texture( Gdx.files.internal( curr.getColour() + "City.png" ) );
-				batch.draw( cityCircle, x, y, nodeSize, nodeSize );
+				int x1 = (int)other.getXInWindowCoords( windWidth );
+				int y1 = (int)other.getYInWindowCoords( windHeight );
+
+				connections.drawLine( (int)(x0 + nodeSize/2),  (int)(windHeight-y0 - nodeSize/2),  (int)(x1 + nodeSize/2),  (int)(windHeight-y1 - nodeSize/2));
+				//connections.drawLine( (int)curr.getX(), (int)curr.getY(), (int)other.getX(), (int)other.getY());
 			}
+		}
+
+		Texture connectionsTexture = new Texture( connections );
+		connections.dispose();
+		
+		batch.begin();
+			batch.draw(connectionsTexture, 0, 0, windWidth, windHeight);
 		batch.end();
+		connectionsTexture.dispose();
+		
+		cubeOrbitRotation = (float) (( cubeOrbitRotation - delta*cubeOrbitRate ) % (Math.PI * 2));
+		updateDiseaseStage();
+		diseaseStage.draw();
+		
+		if ( isMyTurn )
+			buttonStage.act();
+		buttonStage.draw();
+		
+		pawnStage.draw();
 	}
 
 	@Override
 	public void resize(int width, int height) {
+		windWidth = width;// Gdx.graphics.getWidth();
+		windHeight= height;//Gdx.graphics.getHeight();
 		// TODO Auto-generated method stub
 
 	}
@@ -193,7 +458,7 @@ public class GameScreen implements Screen {
 
 	}
 
-	public CityNode lookupCity( String name )
+	public static CityNode lookupCity( String name )
 	{
 		for( CityNode curr : cityNodes )
 		{

@@ -20,6 +20,9 @@ public class PandemicGame extends Game {
 	private GameScreen gameScreen;
 	private LoadScreen loadScreen;
 	
+	private PlayerInfo[] players;
+	private int numPlayers;
+	
 	
 	public void changeScreen( Screens screen )
 	{
@@ -31,7 +34,10 @@ public class PandemicGame extends Game {
 				break;
 				
 			case GAME:
-				if ( gameScreen == null ) gameScreen = new GameScreen( this );
+				if ( gameScreen == null ) 
+				{
+					gameScreen = new GameScreen( this, players );
+				}
 				setScreen( gameScreen );
 				break;
 				
@@ -54,11 +60,30 @@ public class PandemicGame extends Game {
 		
 	}
 
-
+	public boolean addPlayer( PlayerInfo newPlayer )
+	{
+		if ( numPlayers > 4 ) return false;
+		players[ numPlayers ] = newPlayer;
+		numPlayers++;
+		return true;
+	}
+	
 	@Override
 	public void create() {
+		numPlayers = 0;
+		players = new PlayerInfo[5];
+
+		
+		
 		loadScreen = new LoadScreen( this );
 		setScreen( loadScreen );
+
+		this.addPlayer( new PlayerInfo( "Joined Player 1", false ) );
+		this.addPlayer( new PlayerInfo( "Joined Player 2", false ) );
+		
+		this.players[0].setColour( PawnColour.CYAN );
+		this.players[1].setColour( PawnColour.GREEN );
+		this.players[2].setColour( PawnColour.PINK );
 		
 	}
 }
