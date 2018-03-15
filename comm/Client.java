@@ -1,3 +1,4 @@
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,16 +12,17 @@ public class Client {
 	private String ip;
 	private String playerName;
 	private int port;
+	private Socket clientSoc;
 	
 	public Client(int port, String ip, String playerName) throws UnknownHostException, IOException{
 		this.port = port;
 		this.ip = ip;
 		this.playerName = playerName;
-		Socket clientSoc = new Socket(ip, port);
+		this.clientSoc = new Socket(ip, port);
 	}
 	
 	
-	public static void sendToServer(String methodName, String[] args, Socket clientSoc) throws IOException{
+	public void sendToServer(String methodName, String[] args, Socket clientSoc) throws IOException{
 		
 		PrintWriter out;
 		
@@ -42,7 +44,7 @@ public class Client {
 		
 	}
 	
-	public static String waitForServer(Socket clientSoc) throws IOException{
+	public String waitForServer(Socket clientSoc) throws IOException{
 		
 		BufferedReader br;
 		
@@ -81,8 +83,13 @@ public class Client {
 		this.playerName = playerName;
 	}
 	
-	/*public static void main(String[] args) {
+	public Socket getClientSoc() {
+		return this.clientSoc;
+	}
 
-	}*/
+
+	public void setClientSoc(Socket clientSoc, int port, String ip) throws UnknownHostException, IOException {
+		this.clientSoc = new Socket(ip, port);
+	}
 
 }

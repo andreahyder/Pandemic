@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.net.ServerSocket;
 
 public class ServerComm {
-	ServerSocket listener;
-	ArrayList<ClientThread> clientList = new ArrayList<ClientThread>();
-	void setupConnection(int port) throws IOException{
+	static ServerSocket listener;
+	static ArrayList<ClientThread> clientList = new ArrayList<ClientThread>();
+	static void setupConnection(int port) throws IOException{
 		try {
 			listener = new ServerSocket(port);
 		} catch (IOException e) {
