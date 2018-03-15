@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import java.util.ArrayList;
+
 public class PlayerInfo {
 	boolean readyStatus = false;
 	boolean isClientPlayer = false;
@@ -7,6 +9,8 @@ public class PlayerInfo {
 	int slotNum = -1;
 	String name;
 	String currCity;
+	
+	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
 	
 	PlayerInfo( String _name, boolean _isClintPlayer )
 	{
@@ -72,6 +76,30 @@ public class PlayerInfo {
 	public boolean isClientPlayer() 
 	{
 		return isClientPlayer;
+	}
+	
+	public void addCardToHand( PlayerCardInfo card )
+	{
+		hand.add( card );
+	}
+	
+	public void removeCardFromHand( String cardName )
+	{
+		for ( int i = 0; i < hand.size(); i++ )
+		{
+			if ( hand.get(i).getName().equals( cardName ) )
+				hand.remove( i );
+		}
+	}
+	
+	public int getHandSize()
+	{
+		return hand.size();
+	}
+	
+	public ArrayList<PlayerCardInfo> getHand()
+	{
+		return hand;
 	}
 	
 }

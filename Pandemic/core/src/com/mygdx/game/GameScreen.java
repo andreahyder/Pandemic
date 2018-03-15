@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.DynamicsModifier.Angular;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -29,6 +30,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
 
@@ -42,7 +44,15 @@ public class GameScreen implements Screen {
 	final static float actionButtonXSize = 200f;
 	final static float actionButtonYSize = 50f;
 	final static float actionButtonFontScaleFactor = 0.75f;
-	int currNodeInd = 47;
+	final static float playerCardXSize = 100.0f;
+	final static float playerCardYSize = playerCardXSize*1.5f;
+	final static float playerCardGap = 5.0f;
+	final static float handPanelXOffset = 25.f;
+	final static float handPanelYOffset = 45.f;
+	final static float handPanelXSize = 800.f;
+	final static float handPanelYSize = 150.f;
+	
+	
 	
 	static float[][] positions = new float[][]
 			{
@@ -101,7 +111,7 @@ public class GameScreen implements Screen {
 		new String[] {"Chicago","blue","San Francisco","Los Angeles","Atlanta","Toronto"},
 		new String[] {"Essen","blue","London","St. Petersburg","Milan","Paris"},
 		new String[] {"London","blue","New York","Essen","Madrid","Paris"},
-		new String[] {"Madrid","blue","New York","Sao Paulo","Algiers","London","Paris"},
+		new String[] {"Madrid","blue","New York","Sao Paolo","Algiers","London","Paris"},
 		new String[] {"Milan","blue","Essen","St. Petersburg","Istanbul","Paris"},
 		new String[] {"New York","blue","Toronto","Washington","Madrid","London"},
 		new String[] {"Paris","blue","London","Essen","Milan","Algiers","Madrid"},
@@ -109,18 +119,18 @@ public class GameScreen implements Screen {
 		new String[] {"St. Petersburg","blue","Essen","Moscow","Istanbul","Milan"},
 		new String[] {"Toronto","blue","Chicago","New York","Washington"},
 		new String[] {"Washington","blue","New York","Toronto","Atlanta","Miami"},
-		new String[] {"Bogota","yellow","Miami","Mexico City","Lima","Buenos Aires","Sao Paulo"},
-		new String[] {"Buenos Aires","yellow","Sao Paulo","Bogota"},
+		new String[] {"Bogota","yellow","Miami","Mexico City","Lima","Buenos Aires","Sao Paolo"},
+		new String[] {"Buenos Aires","yellow","Sao Paolo","Bogota"},
 		new String[] {"Johannesburg","yellow","Kinshasa","Khartoum"},
 		new String[] {"Khartoum","yellow","Johannesburg","Kinshasa","Lagos","Cairo"},
 		new String[] {"Kinshasa","yellow","Lagos","Khartoum","Johannesburg"},
-		new String[] {"Lagos","yellow","Sao Paulo","Kinshasa","Khartoum"},
+		new String[] {"Lagos","yellow","Sao Paolo","Kinshasa","Khartoum"},
 		new String[] {"Lima","yellow","Mexico City","Bogota","Santiago"},
 		new String[] {"Los Angeles","yellow","San Francisco","Chicago","Mexico City"},
 		new String[] {"Mexico City","yellow","Los Angeles","Chicago","Miami","Bogota","Lima"},
 		new String[] {"Miami","yellow","Bogota","Mexico City","Atlanta","Washington"},
 		new String[] {"Santiago","yellow","Lima"},
-		new String[] {"Sao Paulo","yellow","Buenos Aires","Bogota","Madrid","Lagos"},
+		new String[] {"Sao Paolo","yellow","Buenos Aires","Bogota","Madrid","Lagos"},
 		new String[] {"Algiers","black","Madrid","Paris","Istanbul","Cairo"},
 		new String[] {"Istanbul","black","Milan","Moscow","Baghdad","Cairo","Algiers","St. Petersburg"},
 		new String[] {"Cairo","black","Algiers","Istanbul","Baghdad","Riyadh","Khartoum"},
@@ -155,15 +165,19 @@ public class GameScreen implements Screen {
 
 	Texture[] playerTextures;
 	Texture[] diseaseCubeTextures;
+	Texture[] cityCardTextures;
+	Texture	handPanelTexture;
 	float windWidth, windHeight;
 	Texture background;
 	SpriteBatch batch;
-	Stage buttonStage, pawnStage, diseaseStage, dialogStage;
+	Stage buttonStage, pawnStage, diseaseStage, dialogStage, handPanelStage;
+	Group buttonGroup, handPanelGroup;
 	Skin skin;
     Button button;
     
     boolean isMyTurn = true;
     float cubeOrbitRotation = 0;
+	PlayerInfo handShownPlayer;
 	
 	
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -176,8 +190,8 @@ public class GameScreen implements Screen {
 		windWidth 	= Gdx.graphics.getWidth();
 		windHeight 	= Gdx.graphics.getHeight();
 
-		initGeneralTextures();
 		initGameState();
+		initGeneralTextures();
 
 		//TESTER DISEASES
 		CityNode diseasedTest = lookupCity( "Tokyo" );
@@ -188,6 +202,13 @@ public class GameScreen implements Screen {
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLACK ) );
 		/////////////////
+		
+		//TESTER CARDS
+		clientPlayer.addCardToHand( new PlayerCardInfo( cityNodes[47] ) );
+		clientPlayer.addCardToHand( new PlayerCardInfo( cityNodes[23] ) );
+		clientPlayer.addCardToHand( new PlayerCardInfo( cityNodes[18] ) );
+		clientPlayer.addCardToHand( new PlayerCardInfo( cityNodes[14] ) );
+		//////////////
 		
 		updateDiseaseStage();
 		
@@ -215,6 +236,15 @@ public class GameScreen implements Screen {
 		diseaseCubeTextures[ 1 ] = new Texture( Gdx.files.internal( "YellowDiseaseCube.png" ) );
 		diseaseCubeTextures[ 2 ] = new Texture( Gdx.files.internal( "BlackDiseaseCube.png" ) );
 		diseaseCubeTextures[ 3 ] = new Texture( Gdx.files.internal( "RedDiseaseCube.png" ) );
+		
+		cityCardTextures = new Texture[ cityNodes.length ];
+		for ( int i = 0; i < cityNodes.length; i++)
+		{
+			CityNode city = cityNodes[ i ]; 
+			cityCardTextures[ i ] = new Texture( Gdx.files.internal( "citycards/"+ city.getName() +".png" ) );
+		}
+		
+		handPanelTexture = new Texture( Gdx.files.internal( "handPanel.png") );
 	}
 	
 	void initGameState()
@@ -314,10 +344,65 @@ public class GameScreen implements Screen {
 		}
 	}
 	
+	void updateHandPanelStage()
+	{
+		handPanelStage = new Stage( new ScreenViewport() );
+		ArrayList<PlayerCardInfo> playerHand = clientPlayer.getHand();
+		int handIdx = 0;
+		for( final PlayerCardInfo card : playerHand )
+		{
+			Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
+			TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+			final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+			
+			ButtonStyle cityButtonStyle = new ButtonStyle();
+			cityButtonStyle.up			= Draw_cardTexture;
+			cityButtonStyle.down		= Draw_cardTexture;
+			
+	        button = new Button( cityButtonStyle );
+	        button.addCaptureListener( new InputListener() {
+	            @Override
+	            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+	            }
+
+	            @Override
+	            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+	            }
+	        });
+	        
+
+	        button.addListener( new ChangeListener() {
+	            @Override
+				public void changed(ChangeEvent event, Actor actor) {
+				}
+	        });
+	        
+			float x = handPanelXOffset + playerCardGap + (handIdx*(playerCardXSize+ playerCardGap) );
+			float y = handPanelYOffset/2;
+	        button.setBounds(x, y, playerCardXSize, playerCardYSize);
+	        handPanelStage.addActor(button); //Add the button to the stage to perform rendering and take input.
+	        handIdx++;
+		}
+		buttonStage.addActor( handPanelGroup );
+	}
+	
 	void initButtonStage()
 	{
+
 		buttonStage = new Stage(new ScreenViewport()); //Set up a stage for the ui
-        
+		buttonGroup = new Group(); //Set up a stage for the ui
+		
+		createCityButtons();
+		createActionButtons();
+		createPlayerHandButtons();
+		
+		buttonStage.addActor( buttonGroup );
+		
+        Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	}
+	
+	void createCityButtons()
+	{
         for( final CityNode curr : cityNodes )
 		{
 			Texture UpDown	 						= new Texture( Gdx.files.internal( curr.getColour() + "City.png") );
@@ -359,14 +444,19 @@ public class GameScreen implements Screen {
 			float x = curr.getXInWindowCoords( windWidth );
 			float y = curr.getYInWindowCoords( windHeight );
 	        button.setBounds(x, y, nodeSize, nodeSize);
-	        buttonStage.addActor(button); //Add the button to the stage to perform rendering and take input.
+	        buttonGroup.addActor(button); //Add the button to the stage to perform rendering and take input.
 		}
+	}
+	
+	void createActionButtons()
+	{
 
         skin.getFont( "font").getData().setScale( actionButtonFontScaleFactor, actionButtonFontScaleFactor);
         
         TextButton treatDiseaseButton = new TextButton("Treat Disease", skin);
-        treatDiseaseButton.addListener( new ChangeListener() {
-        	public void changed(ChangeEvent event, Actor actor) 
+        treatDiseaseButton.addListener( new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y)  
         	{
         		CityNode city = lookupCity( clientPlayer.getCity() );
         		boolean[] coloursPresent = city.getDiseaseColours(); 
@@ -400,7 +490,7 @@ public class GameScreen implements Screen {
         } );
         
         treatDiseaseButton.setBounds( 0, windHeight-actionButtonYSize, actionButtonXSize, actionButtonYSize);
-        buttonStage.addActor( treatDiseaseButton );
+        buttonGroup.addActor( treatDiseaseButton );
         
         TextButton shareKnowledgeButton = new TextButton("Share Knowledge", skin);
         shareKnowledgeButton.addListener( new ChangeListener() {
@@ -411,10 +501,18 @@ public class GameScreen implements Screen {
         } );
         
         shareKnowledgeButton.setBounds( 0, windHeight-actionButtonYSize*2.125f, actionButtonXSize, actionButtonYSize);
-        buttonStage.addActor( shareKnowledgeButton );
+        buttonGroup.addActor( shareKnowledgeButton );
         
-        Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 	}
+	
+	void createPlayerHandButtons()
+	{
+		//Create clientPlayer Hand
+		
+		//////////////////////////
+	}
+	
+	
 	
 	@Override
 	public void show() {
@@ -433,18 +531,7 @@ public class GameScreen implements Screen {
 		
 		Pixmap connections = new Pixmap( (int)windWidth, (int)windHeight, Pixmap.Format.RGBA8888 );
 		connections.setColor( Color.WHITE );
-		
-		/*
-		CityNode curr0 = cityNodes[0];
-		CityNode other = cityNodes[1];
-		int x0 = (int)curr0.getXInWindowCoords( windWidth );
-		int y0 = (int)curr0.getYInWindowCoords( windHeight );
-		int x1 = (int)other.getXInWindowCoords( windWidth );
-		int y1 = (int)other.getYInWindowCoords( windHeight );
-		connections.drawLine( (int)(x0 + nodeSize/2),  (int)(windHeight-y0 - nodeSize/2),  (int)(x1 + nodeSize/2),  (int)(windHeight-y1 - nodeSize/2));
-		*/
-		
-		
+				
 		for( CityNode curr : cityNodes )
 		{
 			int x0 = (int)curr.getXInWindowCoords( windWidth );
@@ -467,6 +554,7 @@ public class GameScreen implements Screen {
 			batch.draw(connectionsTexture, 0, 0, windWidth, windHeight);
 		batch.end();
 		connectionsTexture.dispose();
+			
 		
 		cubeOrbitRotation = (float) (( cubeOrbitRotation - delta*cubeOrbitRate ) % (Math.PI * 2));
 		updateDiseaseStage();
@@ -522,6 +610,16 @@ public class GameScreen implements Screen {
 			if ( curr.getName().equals( name ) ) return curr;
 		}
 		return null;
+	}
+	
+	public static int lookupCityIndex( String name )
+	{
+		for( int i = 0; i < cityNodes.length; i++ )
+		{
+			CityNode curr = cityNodes[i];
+			if ( curr.getName().equals( name ) ) return i;
+		}
+		return -1;
 	}
 	
 	public void requestConsent( String message )
