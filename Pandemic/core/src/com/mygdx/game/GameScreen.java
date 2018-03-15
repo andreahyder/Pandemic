@@ -39,6 +39,9 @@ public class GameScreen implements Screen {
 	final static float cubeSize = 25.f;
 	final static float cubeOrbitOffset = 2.5f;
 	final static float cubeOrbitRate = 0.5f;
+	final static float actionButtonXSize = 200f;
+	final static float actionButtonYSize = 50f;
+	final static float actionButtonFontScaleFactor = 0.75f;
 	int currNodeInd = 47;
 	
 	static float[][] positions = new float[][]
@@ -155,7 +158,7 @@ public class GameScreen implements Screen {
 	float windWidth, windHeight;
 	Texture background;
 	SpriteBatch batch;
-	Stage buttonStage, pawnStage, diseaseStage;
+	Stage buttonStage, pawnStage, diseaseStage, dialogStage;
 	Skin skin;
     Button button;
     
@@ -181,6 +184,9 @@ public class GameScreen implements Screen {
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.YELLOW ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLACK ) );
 		/////////////////
 		
 		updateDiseaseStage();
@@ -188,6 +194,8 @@ public class GameScreen implements Screen {
 		initButtonStage();
 		
 		updatePawnStage();
+		
+		requestConsent("Allow share knowledge");
 	}
 	
 	void initGeneralTextures()
@@ -219,7 +227,7 @@ public class GameScreen implements Screen {
 				if ( players[i].isClientPlayer() )
 					clientPlayer = players[i];
 				
-				players[i].setCity("Johannesburg");
+				players[i].setCity("Tokyo");
 			}
 		}
 		
@@ -343,7 +351,7 @@ public class GameScreen implements Screen {
 	        button.addListener( new ChangeListener() {
 	            @Override
 				public void changed(ChangeEvent event, Actor actor) {
-	            	String CityName = curr.getName();
+	            	String cityName = curr.getName();
 	            	// RealTODO: Call Drive( CityName ) on Server
 				}
 	        });
@@ -353,14 +361,57 @@ public class GameScreen implements Screen {
 	        button.setBounds(x, y, nodeSize, nodeSize);
 	        buttonStage.addActor(button); //Add the button to the stage to perform rendering and take input.
 		}
+
+        skin.getFont( "font").getData().setScale( actionButtonFontScaleFactor, actionButtonFontScaleFactor);
         
         TextButton treatDiseaseButton = new TextButton("Treat Disease", skin);
         treatDiseaseButton.addListener( new ChangeListener() {
         	public void changed(ChangeEvent event, Actor actor) 
         	{
+        		CityNode city = lookupCity( clientPlayer.getCity() );
+        		boolean[] coloursPresent = city.getDiseaseColours(); 
+        		
+        		Dialog colourSelect = new Dialog( "Select Disease Colour to Remove",skin ){
+                    protected void result(Object object)
+                    {
+                    	if ( object != null )
+                    	{
+                    		CityNode city = lookupCity( clientPlayer.getCity() );
+                    		city.removeCubeByColour( (DiseaseColour)object );
+                    	}
+                    	Gdx.input.setInputProcessor( buttonStage );
+                    	dialogStage = null;
+                    }
+                };
+                
+        		for( int i = 0; i < 4; i++ )
+        		{
+        			if ( coloursPresent[i] )
+        			{
+        				colourSelect.button( DiseaseColour.getDiseaseName( DiseaseColour.values()[i] ), DiseaseColour.values()[i] );
+        			}
+        		}
+        		colourSelect.button( "Cancel", null );
+        		dialogStage = new Stage( new ScreenViewport() );
+        		Gdx.input.setInputProcessor( dialogStage );
+        		colourSelect.show( dialogStage );
         		
         	}
         } );
+        
+        treatDiseaseButton.setBounds( 0, windHeight-actionButtonYSize, actionButtonXSize, actionButtonYSize);
+        buttonStage.addActor( treatDiseaseButton );
+        
+        TextButton shareKnowledgeButton = new TextButton("Share Knowledge", skin);
+        shareKnowledgeButton.addListener( new ChangeListener() {
+        	public void changed(ChangeEvent event, Actor actor) 
+        	{
+        		
+        	}
+        } );
+        
+        shareKnowledgeButton.setBounds( 0, windHeight-actionButtonYSize*2.125f, actionButtonXSize, actionButtonYSize);
+        buttonStage.addActor( shareKnowledgeButton );
         
         Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 	}
@@ -426,6 +477,12 @@ public class GameScreen implements Screen {
 		buttonStage.draw();
 		
 		pawnStage.draw();
+		
+		if ( dialogStage != null )
+		{
+			dialogStage.draw();
+			dialogStage.act();
+		}
 	}
 
 	@Override
@@ -465,5 +522,33 @@ public class GameScreen implements Screen {
 			if ( curr.getName().equals( name ) ) return curr;
 		}
 		return null;
+	}
+	
+	public void requestConsent( String message )
+	{
+		Dialog consentRequest = new Dialog( message, skin ){
+	        protected void result(Object object)
+	        {
+	        	if ( (boolean) object )
+	        	{
+	        		//send consent: true 
+	        	}
+	        	else
+	        	{
+	        		//send consent: false
+	        	}
+
+	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	            dialogStage = null;
+	        }
+		};
+		
+		dialogStage = new Stage( new ScreenViewport() );
+		consentRequest.button( "Accept", true );
+		consentRequest.button( "Refuse", false );
+		
+        Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+		consentRequest.show( dialogStage );
+		
 	}
 }
