@@ -6,32 +6,32 @@ public class Disease {
 	
 	Disease(String s){
 		cubes = new ArrayList<DiseaseCube>();
-		if(s.matches("Black")) {
-			color = Color.Black;
+		if(s.matches("black")) {
+			color = Color.black;
 			for(int i = 0; i < 24; i++) {
 				cubes.add(new DiseaseCube(this));
 			}
 		}
-		else if(s.matches("Blue")) {
-			color = Color.Blue;
+		else if(s.matches("blue")) {
+			color = Color.blue;
 			for(int i = 0; i < 24; i++) {
 				cubes.add(new DiseaseCube(this));
 			}
 		}
-		else if(s.matches("Purple")) {
-			color = Color.Purple;
+		else if(s.matches("purple")) {
+			color = Color.purple;
 			for(int i = 0; i < 12; i++) {
 				cubes.add(new DiseaseCube(this));
 			}
 		}
-		else if(s.matches("Red")) {
-			color = Color.Red;
+		else if(s.matches("red")) {
+			color = Color.red;
 			for(int i = 0; i < 24; i++) {
 				cubes.add(new DiseaseCube(this));
 			}
 		}
-		else if(s.matches("Yellow")) {
-			color = Color.Yellow;
+		else if(s.matches("yellow")) {
+			color = Color.yellow;
 			for(int i = 0; i < 24; i++) {
 				cubes.add(new DiseaseCube(this));
 			}
@@ -40,5 +40,5 @@ public class Disease {
 }
 
 enum Color{
-	Black,Blue,Purple,Red,Yellow
+	black,blue,purple,red,yellow
 }

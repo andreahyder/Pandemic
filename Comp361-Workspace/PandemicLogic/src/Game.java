@@ -25,10 +25,10 @@ public class Game {
 		players = new ArrayList<Player>();
 		cities = new ArrayList<City>();
 		diseases = new ArrayList<Disease>();
-		diseases.add(new Disease("Black"));
-		diseases.add(new Disease("Blue"));
-		diseases.add(new Disease("Red"));
-		diseases.add(new Disease("Yellow"));
+		diseases.add(new Disease("black"));
+		diseases.add(new Disease("blue"));
+		diseases.add(new Disease("red"));
+		diseases.add(new Disease("yellow"));
 		for(String[] s:Vars.names) {
 			if(s[1].matches("black")) {
 				cities.add(new City(s[0],s[1],diseases.get(0),this));
@@ -189,7 +189,7 @@ class Vars{
 		new String[] {"Chicago","blue","San Francisco","Los Angeles","Atlanta","Toronto"},
 		new String[] {"Essen","blue","London","St. Petersburg","Milan","Paris"},
 		new String[] {"London","blue","New York","Essen","Madrid","Paris"},
-		new String[] {"Madrid","blue","New York","Sao Paulo","Algiers","London","Paris"},
+		new String[] {"Madrid","blue","New York","Sao Paolo","Algiers","London","Paris"},
 		new String[] {"Milan","blue","Essen","St. Petersburg","Istanbul","Paris"},
 		new String[] {"New York","blue","Toronto","Washington","Madrid","London"},
 		new String[] {"Paris","blue","London","Essen","Milan","Algiers","Madrid"},
@@ -197,18 +197,18 @@ class Vars{
 		new String[] {"St. Petersburg","blue","Essen","Moscow","Istanbul","Milan"},
 		new String[] {"Toronto","blue","Chicago","New York","Washington"},
 		new String[] {"Washington","blue","New York","Toronto","Atlanta","Miami"},
-		new String[] {"Bogota","yellow","Miami","Mexico City","Lima","Buenos Aires","Sao Paulo"},
-		new String[] {"Buenos Aires","yellow","Sao Paulo","Bogota"},
+		new String[] {"Bogota","yellow","Miami","Mexico City","Lima","Buenos Aires","Sao Paolo"},
+		new String[] {"Buenos Aires","yellow","Sao Paolo","Bogota"},
 		new String[] {"Johannesburg","yellow","Kinshasa","Khartoum"},
 		new String[] {"Khartoum","yellow","Johannesburg","Kinshasa","Lagos","Cairo"},
 		new String[] {"Kinshasa","yellow","Lagos","Khartoum","Johannesburg"},
-		new String[] {"Lagos","yellow","Sao Paulo","Kinshasa","Khartoum"},
+		new String[] {"Lagos","yellow","Sao Paolo","Kinshasa","Khartoum"},
 		new String[] {"Lima","yellow","Mexico City","Bogota","Santiago"},
 		new String[] {"Los Angeles","yellow","San Francisco","Chicago","Mexico City"},
 		new String[] {"Mexico City","yellow","Los Angeles","Chicago","Miami","Bogota","Lima"},
 		new String[] {"Miami","yellow","Bogota","Mexico City","Atlanta","Washington"},
 		new String[] {"Santiago","yellow","Lima"},
-		new String[] {"Sao Paulo","yellow","Buenos Aires","Bogota","Madrid","Lagos"},
+		new String[] {"Sao Paolo","yellow","Buenos Aires","Bogota","Madrid","Lagos"},
 		new String[] {"Algiers","black","Madrid","Paris","Istanbul","Cairo"},
 		new String[] {"Istanbul","black","Milan","Moscow","Baghdad","Cairo","Algiers","St. Petersburg"},
 		new String[] {"Cairo","black","Algiers","Istanbul","Baghdad","Riyadh","Khartoum"},

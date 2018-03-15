@@ -12,12 +12,14 @@ public class GameManager {
 	}
 	
 	//when a player connects, but haven't joined a game yet
-	void playerJoin(String name) {
+	//retired method
+	/*void playerJoin(String name) {
 		playerList.add(new Player(name));
-	}
+	}*/
 	
-	//when a player joins a game
+	//when a player joins the game
 	void addPlayer(String name) {
+		playerList.add(new Player(name));
 		getPlayer(name).givePawn(game.getCity("Atlanta"));
 		game.players.add(getPlayer(name));
 	}
@@ -55,6 +57,8 @@ public class GameManager {
 		Player t1 = game.getPlayer(name);
 		City t2 = game.getCity(city);
 		t1.pawn.move(t2);
+		
+		
 	}
 	
 	//directFlight
@@ -67,23 +71,32 @@ public class GameManager {
 	}
 	
 	//treatDisease
-	void treatDisease(String name, Color color) {
+	void treatDisease(String name, String color) {
+		Color c = Color.valueOf(color);
 		Player t1 = game.getPlayer(name);
-		t1.pawn.treat(color);
+		t1.pawn.treat(c);
 	}
 	
 	//shareKnowledge (this happens after consent is given.) (when shareknowledge request is received by server, server doesnt go through gamemanager class, instead a
 	//request is directly sent to the targeted client. because consent does not affect internal game logic)
-	void shareKnowledge(String name, String target, String city) {
-		Player t1 = game.getPlayer(name);
-		Player t2 = game.getPlayer(target);
-		int a = t1.getCard(city);
-		int b = t2.getCard(city);
-		if(a != -1) {
-			t1.share(t2, a, true);
+	void shareKnowledge(String name, String target) {
+		Boolean consent = true;
+		
+		if(consent) {
+			Player t1 = game.getPlayer(name);
+			Player t2 = game.getPlayer(target);
+			String t3 = t1.pawn.city.name;
+			int a = t1.getCard(t3);
+			int b = t2.getCard(t3);
+			if(a != -1) {
+				t1.share(t2, a, true);
+			}
+			else if(b != -1) {
+				t2.share(t1, b, false);
+			}
 		}
-		else if(b != -1) {
-			t2.share(t1, b, false);
+		else {
+			
 		}
 	}
 	

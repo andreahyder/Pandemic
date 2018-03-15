@@ -5,11 +5,8 @@ public class Main {
 		//test
 		GameManager test = new GameManager();
 		
-		//3 players open the game, then join the lobby
-		test.playerJoin("Bob");
+		//3 players join the game
 		test.addPlayer("Bob");
-		test.playerJoin("Roflcopter");
-		test.playerJoin("Chris");
 		test.addPlayer("Chris");
 		test.addPlayer("Roflcopter");
 		
@@ -45,8 +42,12 @@ public class Main {
 		}
 		System.out.println("");
 		
+		for(Disease d: test.game.diseases) {
+			System.out.println(d.cubes.size() + " " + d.color + " cubes left.");
+		}
+		
 		//(illegal) share knowledge test. Bob steals a card from Roflcopter
-		test.shareKnowledge("Bob", "Roflcopter", test.game.getPlayer("Roflcopter").hand.get(0).city.name);
+		test.shareKnowledge("Bob", "Roflcopter");
 		
 		System.out.print("Bob: ");
 		for(PlayerCard c: test.game.getPlayer("Bob").hand) {	
