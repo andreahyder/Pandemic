@@ -199,6 +199,7 @@ public class SetupScreen implements Screen {
 									{
 										parent.getCurrentPlayer().setColour( PawnColour.values()[i] );
 									}
+									GameScreen.currentPlayer = parent.getPlayers()[0];
 								}
 								parent.changeScreen( Screens.GAME );
 							} 

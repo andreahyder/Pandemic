@@ -143,7 +143,7 @@ public class MenuScreen implements Screen
 			try 
 			{
 				ClientComm.setupConnection( IP, 6003 );
-				ClientComm.send( parent.getCurrentPlayer().getName() );
+				ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
 				parent.changeScreen( Screens.SETUP );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

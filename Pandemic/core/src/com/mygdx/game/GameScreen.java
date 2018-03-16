@@ -253,46 +253,6 @@ public class GameScreen implements Screen {
 		initGameState();
 		initGeneralTextures();
 
-		//TESTER DISEASES
-		CityNode diseasedTest = lookupCity( "Tokyo" );
-		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
-		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
-		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
-		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.YELLOW ) );
-		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
-		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLACK ) );
-		/////////////////
-		
-		//TESTER INFECTION DISCARD////////
-		infectionDiscardPile.add("Atlanta");
-		infectionDiscardPile.add("Tokyo");
-		infectionDiscardPile.add("Johannesburg");
-		infectionDiscardPile.add("Tehran");
-		//////////////////////////////////
-		
-		//TESTER PLAYER DISCARD////////
-		playerDiscardPile.add("Jakarta");
-		playerDiscardPile.add("Santiago");
-		playerDiscardPile.add("Karachi");
-		playerDiscardPile.add("Beijing");
-		//////////////////////////////////
-		
-		//TESTER CARDS
-		int i = 0;
-		for ( PlayerInfo player : players )
-		{
-			if ( player == null ) continue;
-			
-			player.addCardToHand( new PlayerCardInfo( cityNodes[i] ) );
-			i++;
-			player.addCardToHand( new PlayerCardInfo( cityNodes[i] ) );
-			i++;
-			player.addCardToHand( new PlayerCardInfo( cityNodes[i] ) );
-			i++;
-		}
-		//////////////
-				
-
 		diseaseStage = new Stage( new ScreenViewport() ); //TEST
 		dialogStage = new Stage( new ScreenViewport() );
 		pawnStage = new Stage( new ScreenViewport() );
@@ -345,10 +305,8 @@ public class GameScreen implements Screen {
 				if ( players[i].isClientPlayer() )
 				{
 					clientPlayer = players[i];
-					currentPlayer = clientPlayer; // TEST CURRENT PLAYER
+					//currentPlayer = clientPlayer; // TEST CURRENT PLAYER
 				}
-				
-				players[i].setCity("Tokyo");
 			}
 		}
 		
@@ -656,7 +614,7 @@ public class GameScreen implements Screen {
 	                    	{
 	                    		CityNode city = lookupCity( clientPlayer.getCity() );
 	                    		ClientComm.send( "TreatDisease/" + city.getColour().toLowerCase() );
-	                    		city.removeCubeByColour( (DiseaseColour)object );
+	                    		//city.removeCubeByColour( (DiseaseColour)object );
 	                    	}
 	                    	Gdx.input.setInputProcessor( buttonStage );
 	                    	//dialogStage = null;
@@ -1116,12 +1074,12 @@ public class GameScreen implements Screen {
 				infectRateCircles[position].dispose();
 			}
 
-	void displayOutbreakCounter(int position){
+	void displayOutbreakCounter(int amountOfOutbreaks){
 		
 		BitmapFont font = new BitmapFont();
 		
-		for(int i = 0; i <= position; i++){
-			if(position >= 0 && position <= 7){
+		for(int i = 0; i < amountOfOutbreaks; i++){
+			if(amountOfOutbreaks >= 0 && amountOfOutbreaks <= 8){
 				outbreakRateCircles[i] = new Texture(Gdx.files.internal("outBreakLogo.png"));
 			}
 			else{
@@ -1143,8 +1101,9 @@ public class GameScreen implements Screen {
 		}
 		
 		batch.end();
-		
-		outbreakRateCircles[position].dispose();
+		if( amountOfOutbreaks > 0){
+			outbreakRateCircles[amountOfOutbreaks-1].dispose();
+		}
 	}
 	
 	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo){
