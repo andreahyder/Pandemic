@@ -209,6 +209,11 @@ public class GameScreen implements Screen {
 	static int outbreaks = 0;
 	static int currentInfectionRateIdx = 0;
 	static int actionsRemaining = 4;
+	static int remCardsDeck = 53;		// ADDED
+	static int remYellowCubes = 24;
+	static int remRedCubes = 24;
+	static int remBlueCubes = 24;
+	static int remBlackCubes = 24;		// ADDED
 	static boolean turnEnded = false;
 	
 	static PandemicGame parent;
@@ -1014,7 +1019,8 @@ public class GameScreen implements Screen {
 		displayCurrPlayer();
 		displayInfectionRate( currentInfectionRateIdx );
 		displayOutbreakCounter( outbreaks );
-		displayNumbers( 23, 23, 23, 23, 23 );
+		displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes);	// ADDED
+		//displayNumbers( 23, 23, 23, 23, 23 );
 		displayNumberOfActionsLeft( actionsRemaining );
 		displayPlayerColours();
 	}
@@ -1116,12 +1122,12 @@ public class GameScreen implements Screen {
 				infectRateCircles[position].dispose();
 			}
 
-	void displayOutbreakCounter(int position){
+	void displayOutbreakCounter(int amountOfOutbreaks){
 		
 		BitmapFont font = new BitmapFont();
 		
-		for(int i = 0; i <= position; i++){
-			if(position >= 0 && position <= 7){
+		for(int i = 0; i < amountOfOutbreaks; i++){
+			if(amountOfOutbreaks >= 0 && amountOfOutbreaks <= 8){
 				outbreakRateCircles[i] = new Texture(Gdx.files.internal("outBreakLogo.png"));
 			}
 			else{
@@ -1143,8 +1149,9 @@ public class GameScreen implements Screen {
 		}
 		
 		batch.end();
-		
-		outbreakRateCircles[position].dispose();
+		if( amountOfOutbreaks > 0){
+			outbreakRateCircles[amountOfOutbreaks-1].dispose();
+		}
 	}
 	
 	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo){
@@ -1314,6 +1321,34 @@ public class GameScreen implements Screen {
 		
 		if ( city != null && disease != null )
 			city.removeCubeByColour( disease );
+		
+		if (DiseaseColor.equals("yellow") && Integer.parseInt(Number) >= remYellowCubes){
+			remYellowCubes++;
+		}
+		else if (DiseaseColor.equals("yellow") && Integer.parseInt(Number) < remYellowCubes){
+			remYellowCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("blue") && Integer.parseInt(Number) >= remBlueCubes){
+			remBlueCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("blue") && Integer.parseInt(Number) < remBlueCubes){
+			remBlueCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("red") && Integer.parseInt(Number) >= remRedCubes){
+			remRedCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor == "red" && Integer.parseInt(Number) < remRedCubes){
+			remRedCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("black") && Integer.parseInt(Number) >= remBlackCubes){
+			remBlackCubes += Integer.parseInt(Number);;
+		}
+		else if (DiseaseColor.equals("black") && Integer.parseInt(Number) < remBlackCubes){
+			remBlackCubes += Integer.parseInt(Number);
+		}
+		else{
+			System.out.println("Invalid Color");
+		}
 	}
 	
 	public static void AskForConsent()
@@ -1368,13 +1403,17 @@ public class GameScreen implements Screen {
 		
 	}
 	
-	public static void AddCardToHand( String PlayerName, String CardName)
+	public static void AddCardToHand( String PlayerName, String CardName, String Boolean)
 	{
 		PlayerInfo player = lookupPlayer( PlayerName );
 		
 		if ( player != null )
 		{
 			player.addCardToHand( new PlayerCardInfo( CardName ) );
+		}
+		if(Boolean.equals("true"))
+		{
+			remCardsDeck--;
 		}
 	}
 	
@@ -1385,6 +1424,34 @@ public class GameScreen implements Screen {
 		
 		if ( city != null && disease != null )
 			city.addCube( new DiseaseCubeInfo( disease ) );
+		
+		if (DiseaseColor.equals("yellow") && 1 >= remYellowCubes){
+			remYellowCubes = 0;
+		}
+		else if (DiseaseColor.equals("yellow") && 1 < remYellowCubes){
+			remYellowCubes -= 1;
+		}
+		else if (DiseaseColor.equals("blue") && 1 >= remBlueCubes){
+			remBlueCubes = 0;
+		}
+		else if (DiseaseColor.equals("blue") && 1 < remBlueCubes){
+			remBlueCubes -= 1;
+		}
+		else if (DiseaseColor.equals("red") && 1 >= remRedCubes){
+			remRedCubes = 0;
+		}
+		else if (DiseaseColor == "red" && 1 < remRedCubes){
+			remRedCubes -= 1;
+		}
+		else if (DiseaseColor.equals("black") && 1 >= remBlackCubes){
+			remBlackCubes = 0;
+		}
+		else if (DiseaseColor.equals("black") && 1 < remBlackCubes){
+			remBlackCubes -= 1;
+		}
+		else{
+			System.out.println("Invalid Color");
+		}
 	}
 	
 	public static void AddInfectionCardToDiscard( String InfectionCardName )
