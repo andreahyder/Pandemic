@@ -868,6 +868,7 @@ public class GameScreen implements Screen {
 						{
 							if ( message.length > 0 )
 							{
+								System.out.println( message[0] );
 								String toExecute = message[0];
 								if(a.getName().equals(toExecute))
 								{
