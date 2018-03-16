@@ -10,7 +10,7 @@ public class City {
 	ResearchStation research;
 	Boolean outbroken;
 	
-	City(String n,String c,Disease d,Game g){
+	City(String n,Disease d,Game g){
 		game = g;
 		name = n;
 		disease = d;

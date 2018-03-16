@@ -31,16 +31,16 @@ public class Game {
 		diseases.add(new Disease("yellow"));
 		for(String[] s:Vars.names) {
 			if(s[1].matches("black")) {
-				cities.add(new City(s[0],s[1],diseases.get(0),this));
+				cities.add(new City(s[0],diseases.get(0),this));
 			}
 			else if(s[1].matches("blue")) {
-				cities.add(new City(s[0],s[1],diseases.get(1),this));
+				cities.add(new City(s[0],diseases.get(1),this));
 			}
 			else if(s[1].matches("red")) {
-				cities.add(new City(s[0],s[1],diseases.get(2),this));
+				cities.add(new City(s[0],diseases.get(2),this));
 			}
 			else if(s[1].matches("yellow")) {
-				cities.add(new City(s[0],s[1],diseases.get(3),this));
+				cities.add(new City(s[0],diseases.get(3),this));
 			}
 		}
 		for(int i = 0; i < cities.size(); i++) {
@@ -236,7 +236,8 @@ enum Stage{
 }
 
 class Vars{
-	static String[][] names = new String[][]{
+	static String[][] names = new String[][]
+	{
 		new String[] {"Atlanta","blue","Chicago","Washington","Miami"},	
 		new String[] {"Chicago","blue","San Francisco","Los Angeles","Atlanta","Toronto"},
 		new String[] {"Essen","blue","London","St. Petersburg","Milan","Paris"},
@@ -245,7 +246,7 @@ class Vars{
 		new String[] {"Milan","blue","Essen","St. Petersburg","Istanbul","Paris"},
 		new String[] {"New York","blue","Toronto","Washington","Madrid","London"},
 		new String[] {"Paris","blue","London","Essen","Milan","Algiers","Madrid"},
-		new String[] {"San Francisco","blue","Chicago","Los Angeles"},
+		new String[] {"San Francisco","blue","Chicago","Los Angeles", "Manila", "Tokyo"},
 		new String[] {"St. Petersburg","blue","Essen","Moscow","Istanbul","Milan"},
 		new String[] {"Toronto","blue","Chicago","New York","Washington"},
 		new String[] {"Washington","blue","New York","Toronto","Atlanta","Miami"},
@@ -256,7 +257,7 @@ class Vars{
 		new String[] {"Kinshasa","yellow","Lagos","Khartoum","Johannesburg"},
 		new String[] {"Lagos","yellow","Sao Paolo","Kinshasa","Khartoum"},
 		new String[] {"Lima","yellow","Mexico City","Bogota","Santiago"},
-		new String[] {"Los Angeles","yellow","San Francisco","Chicago","Mexico City"},
+		new String[] {"Los Angeles","yellow","San Francisco","Chicago","Mexico City", "Sydney"},
 		new String[] {"Mexico City","yellow","Los Angeles","Chicago","Miami","Bogota","Lima"},
 		new String[] {"Miami","yellow","Bogota","Mexico City","Atlanta","Washington"},
 		new String[] {"Santiago","yellow","Lima"},
@@ -276,15 +277,16 @@ class Vars{
 		new String[] {"Beijing","red","Shanghai","Seoul"},
 		new String[] {"Seoul","red","Beijing","Shanghai","Tokyo"},
 		new String[] {"Shanghai","red","Beijing","Seoul","Tokyo","Taipei","Hong Kong"},
-		new String[] {"Tokyo","red","Seoul","Shanghai","Osaka"},
+		new String[] {"Tokyo","red","Seoul","Shanghai","Osaka", "San Francisco"},
 		new String[] {"Osaka","red","Tokyo","Taipei"},
 		new String[] {"Taipei","red","Osaka","Shanghai","Hong Kong","Manila"},
 		new String[] {"Hong Kong","red","Kolkata","Bangkok","Shanghai","Taipei","Ho Chi Minh City"},
 		new String[] {"Bangkok","red","Kolkata","Hong Kong","Chennai","Ho Chi Minh City","Jakarta"},
 		new String[] {"Ho Chi Minh City","red","Jakarta","Bangkok","Hong Kong","Manila"},
 		new String[] {"Jakarta","red","Chennai","Bangkok","Ho Chi Minh City","Sydney"},
-		new String[] {"Manila","red","Sydney","Ho Chi Minh City","Hong Kong","Taipei"},
-		new String[] {"Sydney","red","Jakarta","Manila"}};
+		new String[] {"Manila","red","Sydney","Ho Chi Minh City","Hong Kong","Taipei", "San Francisco"},
+		new String[] {"Sydney","red","Jakarta","Manila", "Los Angeles" }
+	};
 }
 
 
