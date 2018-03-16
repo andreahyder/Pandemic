@@ -15,22 +15,31 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.particles.influencers.DynamicsModifier.Angular;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
+import com.mygdx.game.Actions.Action;
+import com.sun.xml.internal.ws.assembler.dev.ServerTubelineAssemblyContext;
+
 
 public class GameScreen implements Screen {
 	final static float nodeSize = 17.50f;
@@ -39,7 +48,22 @@ public class GameScreen implements Screen {
 	final static float cubeSize = 25.f;
 	final static float cubeOrbitOffset = 2.5f;
 	final static float cubeOrbitRate = 0.5f;
-	int currNodeInd = 47;
+	final static float actionButtonXSize = 200f;
+	final static float actionButtonYSize = 50f;
+	final static float actionButtonFontScaleFactor = 0.75f;
+	final static float playerCardXSize = 100.0f;
+	final static float playerCardYSize = playerCardXSize*1.5f;
+	final static float playerCardGap = 5.0f;
+	final static float playerCardXOffset = 25.f;
+	final static float playerCardYOffset = 45.f;
+	final static float handPanelXSize = 800.f;
+	final static float handPanelYSize = 150.f;
+	final static float handButtonXOffset = 15f;
+	final static float handButtonYOffset = 15f;
+	final static float handButtonXSize = 50f;
+	final static float handButtonYSize = 25f;
+	
+	final static int[] infectionRateTrack = { 2, 2, 2, 3, 3, 4 ,4 };
 	
 	static float[][] positions = new float[][]
 			{
@@ -98,26 +122,26 @@ public class GameScreen implements Screen {
 		new String[] {"Chicago","blue","San Francisco","Los Angeles","Atlanta","Toronto"},
 		new String[] {"Essen","blue","London","St. Petersburg","Milan","Paris"},
 		new String[] {"London","blue","New York","Essen","Madrid","Paris"},
-		new String[] {"Madrid","blue","New York","Sao Paulo","Algiers","London","Paris"},
+		new String[] {"Madrid","blue","New York","Sao Paolo","Algiers","London","Paris"},
 		new String[] {"Milan","blue","Essen","St. Petersburg","Istanbul","Paris"},
 		new String[] {"New York","blue","Toronto","Washington","Madrid","London"},
 		new String[] {"Paris","blue","London","Essen","Milan","Algiers","Madrid"},
-		new String[] {"San Francisco","blue","Chicago","Los Angeles"},
+		new String[] {"San Francisco","blue","Chicago","Los Angeles", "Manila", "Tokyo"},
 		new String[] {"St. Petersburg","blue","Essen","Moscow","Istanbul","Milan"},
 		new String[] {"Toronto","blue","Chicago","New York","Washington"},
 		new String[] {"Washington","blue","New York","Toronto","Atlanta","Miami"},
-		new String[] {"Bogota","yellow","Miami","Mexico City","Lima","Buenos Aires","Sao Paulo"},
-		new String[] {"Buenos Aires","yellow","Sao Paulo","Bogota"},
+		new String[] {"Bogota","yellow","Miami","Mexico City","Lima","Buenos Aires","Sao Paolo"},
+		new String[] {"Buenos Aires","yellow","Sao Paolo","Bogota"},
 		new String[] {"Johannesburg","yellow","Kinshasa","Khartoum"},
 		new String[] {"Khartoum","yellow","Johannesburg","Kinshasa","Lagos","Cairo"},
 		new String[] {"Kinshasa","yellow","Lagos","Khartoum","Johannesburg"},
-		new String[] {"Lagos","yellow","Sao Paulo","Kinshasa","Khartoum"},
+		new String[] {"Lagos","yellow","Sao Paolo","Kinshasa","Khartoum"},
 		new String[] {"Lima","yellow","Mexico City","Bogota","Santiago"},
-		new String[] {"Los Angeles","yellow","San Francisco","Chicago","Mexico City"},
+		new String[] {"Los Angeles","yellow","San Francisco","Chicago","Mexico City", "Sydney"},
 		new String[] {"Mexico City","yellow","Los Angeles","Chicago","Miami","Bogota","Lima"},
 		new String[] {"Miami","yellow","Bogota","Mexico City","Atlanta","Washington"},
 		new String[] {"Santiago","yellow","Lima"},
-		new String[] {"Sao Paulo","yellow","Buenos Aires","Bogota","Madrid","Lagos"},
+		new String[] {"Sao Paolo","yellow","Buenos Aires","Bogota","Madrid","Lagos"},
 		new String[] {"Algiers","black","Madrid","Paris","Istanbul","Cairo"},
 		new String[] {"Istanbul","black","Milan","Moscow","Baghdad","Cairo","Algiers","St. Petersburg"},
 		new String[] {"Cairo","black","Algiers","Istanbul","Baghdad","Riyadh","Khartoum"},
@@ -133,34 +157,55 @@ public class GameScreen implements Screen {
 		new String[] {"Beijing","red","Shanghai","Seoul"},
 		new String[] {"Seoul","red","Beijing","Shanghai","Tokyo"},
 		new String[] {"Shanghai","red","Beijing","Seoul","Tokyo","Taipei","Hong Kong"},
-		new String[] {"Tokyo","red","Seoul","Shanghai","Osaka"},
+		new String[] {"Tokyo","red","Seoul","Shanghai","Osaka", "San Francisco"},
 		new String[] {"Osaka","red","Tokyo","Taipei"},
 		new String[] {"Taipei","red","Osaka","Shanghai","Hong Kong","Manila"},
 		new String[] {"Hong Kong","red","Kolkata","Bangkok","Shanghai","Taipei","Ho Chi Minh City"},
 		new String[] {"Bangkok","red","Kolkata","Hong Kong","Chennai","Ho Chi Minh City","Jakarta"},
 		new String[] {"Ho Chi Minh City","red","Jakarta","Bangkok","Hong Kong","Manila"},
 		new String[] {"Jakarta","red","Chennai","Bangkok","Ho Chi Minh City","Sydney"},
-		new String[] {"Manila","red","Sydney","Ho Chi Minh City","Hong Kong","Taipei"},
-		new String[] {"Sydney","red","Jakarta","Manila"}
+		new String[] {"Manila","red","Sydney","Ho Chi Minh City","Hong Kong","Taipei", "San Francisco"},
+		new String[] {"Sydney","red","Jakarta","Manila", "Los Angeles" }
 	};
+	
+	public static ClientComm clientComm;
 	
 	static CityNode[] cityNodes;
 	static PlayerInfo[] players;
 	static PlayerInfo clientPlayer;
+	static PlayerInfo currentPlayer;
+	static int outbreaks = 0;
+	static int currentInfectionRateIdx = 0;
+	static int actionsRemaining = 4;
+	static boolean turnEnded = false;
 	
-	PandemicGame parent;
+	static PandemicGame parent;
 
-	Texture[] playerTextures;
-	Texture[] diseaseCubeTextures;
-	float windWidth, windHeight;
-	Texture background;
-	SpriteBatch batch;
-	Stage buttonStage, pawnStage, diseaseStage;
-	Skin skin;
-    Button button;
+	static Texture[] playerTextures;
+	static Texture[] diseaseCubeTextures;
+	static Texture[] cityCardTextures;
+	
+	static Texture	handPanelTexture;
+	static float windWidth, windHeight;
+	static Texture background;
+	static SpriteBatch batch;
+	static Stage buttonStage, pawnStage, diseaseStage;
+	static Stage dialogStage;
+	static Stage handPanelStage;
+	static Table infectionDiscardTable;
+	static Table playerDiscardTable;
+	static Group buttonGroup, handPanelGroup;
+	static Skin skin;
+	static Skin altSkin = new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
+    static Button button;
+    static boolean isMyTurn = true;
+    static float cubeOrbitRotation = 0;
+	static PlayerInfo handShownPlayer;
     
-    boolean isMyTurn = true;
-    float cubeOrbitRotation = 0;
+    static ArrayList<Button> cityButtons 			= new ArrayList<Button>();
+    static ArrayList<String> infectionDiscardPile	= new ArrayList<String>();
+    static ArrayList<String> playerDiscardPile 		= new ArrayList<String>();
+    
 	
 	
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -173,24 +218,58 @@ public class GameScreen implements Screen {
 		windWidth 	= Gdx.graphics.getWidth();
 		windHeight 	= Gdx.graphics.getHeight();
 
-		initGeneralTextures();
 		initGameState();
+		initGeneralTextures();
 
 		//TESTER DISEASES
 		CityNode diseasedTest = lookupCity( "Tokyo" );
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
 		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.RED ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.YELLOW ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+		diseasedTest.addCube( new DiseaseCubeInfo( DiseaseColour.BLACK ) );
 		/////////////////
 		
+		//TESTER INFECTION DISCARD////////
+		infectionDiscardPile.add("Atlanta");
+		infectionDiscardPile.add("Tokyo");
+		infectionDiscardPile.add("Johannesburg");
+		infectionDiscardPile.add("Tehran");
+		//////////////////////////////////
+		
+		//TESTER PLAYER DISCARD////////
+		playerDiscardPile.add("Jakarta");
+		playerDiscardPile.add("Santiago");
+		playerDiscardPile.add("Karachi");
+		playerDiscardPile.add("Beijing");
+		//////////////////////////////////
+		
+		//TESTER CARDS
+		int i = 0;
+		for ( PlayerInfo player : players )
+		{
+			if ( player == null ) continue;
+			
+			player.addCardToHand( new PlayerCardInfo( cityNodes[i] ) );
+			i++;
+			player.addCardToHand( new PlayerCardInfo( cityNodes[i] ) );
+			i++;
+			player.addCardToHand( new PlayerCardInfo( cityNodes[i] ) );
+			i++;
+		}
+		//////////////
+				
 		updateDiseaseStage();
 		
 		initButtonStage();
+		initHandButtonStage();
 		
 		updatePawnStage();
+		
 	}
 	
-	void initGeneralTextures()
+	static void initGeneralTextures()
 	{
 		background 	= new Texture(Gdx.files.internal( "board.png" ) );
 		
@@ -207,9 +286,18 @@ public class GameScreen implements Screen {
 		diseaseCubeTextures[ 1 ] = new Texture( Gdx.files.internal( "YellowDiseaseCube.png" ) );
 		diseaseCubeTextures[ 2 ] = new Texture( Gdx.files.internal( "BlackDiseaseCube.png" ) );
 		diseaseCubeTextures[ 3 ] = new Texture( Gdx.files.internal( "RedDiseaseCube.png" ) );
+		
+		cityCardTextures = new Texture[ cityNodes.length ];
+		for ( int i = 0; i < cityNodes.length; i++)
+		{
+			CityNode city = cityNodes[ i ]; 
+			cityCardTextures[ i ] = new Texture( Gdx.files.internal( "citycards/"+ city.getName() +".png" ) );
+		}
+		
+		handPanelTexture = new Texture( Gdx.files.internal( "handPanel.png") );
 	}
 	
-	void initGameState()
+	static void initGameState()
 	{
 
 		for( int i = 0; i < players.length; i++ )
@@ -217,9 +305,12 @@ public class GameScreen implements Screen {
 			if( players[i] != null )
 			{
 				if ( players[i].isClientPlayer() )
+				{
 					clientPlayer = players[i];
+					currentPlayer = clientPlayer; // TEST CURRENT PLAYER
+				}
 				
-				players[i].setCity("Johannesburg");
+				players[i].setCity("Tokyo");
 			}
 		}
 		
@@ -235,7 +326,44 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void updatePawnStage()
+	static void initHandButtonStage()
+	{
+		int buttNum = 0;
+		for ( final PlayerInfo player : players )
+		{
+			if ( player == null )
+				continue;
+			
+			String buttText;
+			if ( player == clientPlayer ) 
+			{
+				buttText = "Display your cards";
+			}
+			else
+			{
+				buttText = "Display " +player.getColour().name() + " player's cards";
+			}
+			
+			TextButton showCardsButton = new TextButton( buttText, skin );
+			showCardsButton.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					handShownPlayer = player;
+				}
+			});
+			float x = handButtonXOffset;
+			float y = playerCardYOffset + handButtonYOffset + playerCardYSize + ( handButtonYSize + handButtonYOffset ) * buttNum;
+			
+			
+			showCardsButton.setBounds( x, y, 300, 37.5f );
+			showCardsButton.setChecked(true);
+			buttonGroup.addActor( showCardsButton );
+			buttNum++;
+			
+		}
+	}	
+			
+	static void updatePawnStage()	
 	{
 		pawnStage = new Stage( new ScreenViewport() );
 		
@@ -287,7 +415,7 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void updateDiseaseStage()
+	static void updateDiseaseStage()
 	{
 		diseaseStage = new Stage( new ScreenViewport() );
 		for ( CityNode curr : cityNodes )
@@ -306,12 +434,106 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void initButtonStage()
+	static void updateHandPanelStage()
+	{	
+		handPanelGroup = new Group();
+		
+		if ( handShownPlayer == null )
+			return;
+		
+		ArrayList<PlayerCardInfo> playerHand = handShownPlayer.getHand();
+		int handIdx = 0;
+		for( final PlayerCardInfo card : playerHand )
+		{
+			Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
+			TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+			final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+			
+			ButtonStyle cityButtonStyle = new ButtonStyle();
+			cityButtonStyle.up			= Draw_cardTexture;
+			cityButtonStyle.down		= Draw_cardTexture;
+			
+	        button = new Button( cityButtonStyle );
+	        button.addCaptureListener( new InputListener() {
+	            @Override
+	            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+	            }
+
+	            @Override
+	            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+	            }
+	        });
+	        
+	        if( handShownPlayer == clientPlayer && actionsRemaining > 0 && !turnEnded && clientPlayer == currentPlayer)
+		    {
+		        button.addListener( new ChangeListener() {
+		            @Override
+					public void changed(ChangeEvent event, Actor actor) {
+		            	Dialog confirmFlight = new Dialog("Fly to "+ card.getName() + "?" , skin ){
+		            		@Override
+		            		protected void result(Object object) {
+		            			if ( (boolean) ( object ) )
+		            			{
+		            				ClientComm.send("DirectFlight/"+card.getName());
+		            			}
+		        	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+		        	            dialogStage = null;
+		            		}
+		            	};
+	
+		        		dialogStage = new Stage( new ScreenViewport() );
+		        		
+		        		confirmFlight.button( "Yes", true );
+		        		confirmFlight.button( "No", false );
+		        		
+		                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+		                confirmFlight.show( dialogStage );
+					}
+		        });
+	        }
+	        
+			float x = playerCardXOffset + playerCardGap + (handIdx*(playerCardXSize+ playerCardGap) );
+			float y = playerCardYOffset/2;
+	        button.setBounds(x, y, playerCardXSize, playerCardYSize);
+	        handPanelGroup.addActor(button); //Add the button to the stage to perform rendering and take input.
+	        handIdx++;
+		}
+		buttonStage.addActor( handPanelGroup );
+		
+	}
+	
+	static void updateCityTouchability()
 	{
+		ArrayList<CityNode> adjCities = lookupCity( currentPlayer.getCity() ).getConnectedCities();
+		for ( CityNode curr : adjCities )
+		{
+			cityButtons.get( lookupCityIndex( curr.getName() ) ).setTouchable( Touchable.enabled );
+		}
+	}
+	
+	static void initButtonStage()
+	{
+
 		buttonStage = new Stage(new ScreenViewport()); //Set up a stage for the ui
-        
+		buttonGroup = new Group(); //Set up a stage for the ui
+		
+		createCityButtons();
+		createActionButtons();
+		
+		buttonStage.addActor( buttonGroup );
+		
+		updateHandPanelStage();
+		
+        Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	}
+	
+	static void createCityButtons()
+	{
         for( final CityNode curr : cityNodes )
 		{
+        	Label cityLabel = new Label( curr.getName().toUpperCase(), skin );
+			cityLabel.getStyle().fontColor = Color.WHITE;
+        	
 			Texture UpDown	 						= new Texture( Gdx.files.internal( curr.getColour() + "City.png") );
 			TextureRegion TR_UD 					= new TextureRegion( UpDown );
 			final TextureRegionDrawable Draw_UD 	= new TextureRegionDrawable( TR_UD );
@@ -324,45 +546,205 @@ public class GameScreen implements Screen {
 			cityButtonStyle.up			= Draw_UD;
 			cityButtonStyle.down		= Draw_UD;
 			cityButtonStyle.over 		= Draw_O;
-			cityButtonStyle.checkedOver = Draw_O;
+			cityButtonStyle.checkedOver = Draw_UD;
 			
-	        button = new Button( cityButtonStyle );
-	        button.addCaptureListener( new InputListener() {
-	            @Override
-	            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-	                button.setBackground(Draw_O);
-	            }
-
-	            @Override
-	            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-	                button.setBackground(Draw_UD);
-	            }
-	        });
-	        
-
-	        button.addListener( new ChangeListener() {
+	        final Button cityButton = new Button( cityButtonStyle );
+	       
+	        cityButton.addListener( new ChangeListener() {
 	            @Override
 				public void changed(ChangeEvent event, Actor actor) {
-	            	String CityName = curr.getName();
-	            	// RealTODO: Call Drive( CityName ) on Server
+	            	if ( actionsRemaining > 0 && clientPlayer == currentPlayer )
+	            	{
+		            	String cityName = curr.getName();
+		            	ClientComm.send( "Drive/"+cityName );
+		            	// IMPLEMENT Call Drive( CityName ) on Server
+	            	}
 				}
 	        });
 	        
 			float x = curr.getXInWindowCoords( windWidth );
 			float y = curr.getYInWindowCoords( windHeight );
-	        button.setBounds(x, y, nodeSize, nodeSize);
-	        buttonStage.addActor(button); //Add the button to the stage to perform rendering and take input.
+			cityButton.setBounds(x, y, nodeSize, nodeSize);
+			cityButton.setTouchable( Touchable.disabled );
+			
+			
+			cityLabel.setFontScale(0.75f);
+			cityLabel.setBounds( x - cityLabel.getWidth()/4, y - nodeSize*1.5f, cityLabel.getWidth(), cityLabel.getHeight() );
+			buttonGroup.addActor( cityLabel);
+			
+	        
+	        cityButtons.add( cityButton );
+	        buttonGroup.addActor(cityButton); //Add the button to the stage to perform rendering and take input.
+
+			cityLabel.getStyle().fontColor = Color.WHITE;
 		}
+	}
+	
+	static void createActionButtons()
+	{
+
+        skin.getFont( "font").getData().setScale( actionButtonFontScaleFactor, actionButtonFontScaleFactor);
         
         TextButton treatDiseaseButton = new TextButton("Treat Disease", skin);
-        treatDiseaseButton.addListener( new ChangeListener() {
-        	public void changed(ChangeEvent event, Actor actor) 
+        treatDiseaseButton.addListener( new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y)  
         	{
-        		
+            	if( currentPlayer == clientPlayer && actionsRemaining > 0 )
+            	{
+	        		CityNode city = lookupCity( clientPlayer.getCity() );
+	        		boolean[] coloursPresent = city.getDiseaseColours(); 
+	        		
+	        		Dialog colourSelect = new Dialog( "Select Disease Colour to Remove",skin ){
+	                    protected void result(Object object)
+	                    {
+	                    	if ( object != null )
+	                    	{
+	                    		CityNode city = lookupCity( clientPlayer.getCity() );
+	                    		ClientComm.send( "TreatDisease/" + city.getColour().toLowerCase() );
+	                    		city.removeCubeByColour( (DiseaseColour)object );
+	                    	}
+	                    	Gdx.input.setInputProcessor( buttonStage );
+	                    	dialogStage = null;
+	                    }
+	                };
+	                
+	        		for( int i = 0; i < 4; i++ )
+	        		{
+	        			if ( coloursPresent[i] )
+	        			{
+	        				colourSelect.button( DiseaseColour.getDiseaseName( DiseaseColour.values()[i] ), DiseaseColour.values()[i] );
+	        			}
+	        		}
+	        		colourSelect.button( "Cancel", null );
+	        		dialogStage = new Stage( new ScreenViewport() );
+	        		Gdx.input.setInputProcessor( dialogStage );
+	        		colourSelect.show( dialogStage );
+            	}
         	}
         } );
         
-        Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        treatDiseaseButton.setBounds( 0, windHeight-actionButtonYSize, actionButtonXSize, actionButtonYSize);
+        buttonGroup.addActor( treatDiseaseButton );
+        
+        TextButton shareKnowledgeButton = new TextButton("Share Knowledge", skin);
+        shareKnowledgeButton.addListener( new ChangeListener() {
+        	public void changed(ChangeEvent event, Actor actor) 
+        	{
+        		if ( currentPlayer == clientPlayer && actionsRemaining > 0)
+        		{
+        			dialogStage = new Stage( new ScreenViewport() );
+        			Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+        			
+        			Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
+        				protected void result(Object object){
+        					String selected = selectBox.getSelected();
+        		            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        		            dialogStage = null;
+        		            ClientComm.send("ShareKnowledge/"+selected);
+        		        }
+        			};
+        			        			
+        			int size = 0;
+        			for ( int i = 0; i < players.length; i++ )
+        			{
+        				if ( players[i] != null )
+        					size++;
+        			}
+
+        			String[] items = new String[size];
+        			size  = 0;
+        			for ( int i = 0; i < players.length; i++ )
+        			{
+        				if ( players[i] != null )
+        				{
+        					items[ size ] = players[i].getName();
+        					size++;
+        				}
+        			}
+
+        			discardPrompt.setSize(250,150);
+        			discardPrompt.setPosition( windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2 );
+        			discardPrompt.button( "Select" );
+        			selectBox.setItems( items );
+        			discardPrompt.getContentTable().add(selectBox);
+
+        			dialogStage.addActor(discardPrompt);
+        			Gdx.input.setInputProcessor(dialogStage);
+        		}
+        	}
+        } );
+        
+        shareKnowledgeButton.setBounds( 0, windHeight-actionButtonYSize*2.125f, actionButtonXSize, actionButtonYSize);
+        buttonGroup.addActor( shareKnowledgeButton );
+        
+        TextButton showInfectionDiscard = new TextButton( "Show Infection Discard", skin );
+        showInfectionDiscard.addListener( new ChangeListener() {
+        	public void changed(ChangeEvent event, Actor actor) 
+        	{
+        		
+        		Dialog showInfectionDiscard = new Dialog( "Infection Discardpile", skin ){
+        	        protected void result(Object object)
+        	        {
+        	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        	            dialogStage = null;
+        	        }
+        		};
+        		
+        		infectionDiscardTable = new Table( skin );
+        		
+        		for( String cityName : infectionDiscardPile )
+        		{
+        			//Label label = new Label( cityName );
+        			infectionDiscardTable.add( cityName );
+        			infectionDiscardTable.row();
+        		}
+        		
+        		showInfectionDiscard.getContentTable().add( infectionDiscardTable ).height( playerDiscardPile.size() * 35f );;
+        		showInfectionDiscard.button( "Close" );
+        		dialogStage = new Stage( new ScreenViewport() );
+        		showInfectionDiscard.show( dialogStage );
+	            Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+        	}
+        } );
+        
+        showInfectionDiscard.setBounds( 0, windHeight-actionButtonYSize*3.25f, actionButtonXSize, actionButtonYSize);
+        buttonGroup.addActor( showInfectionDiscard );
+        
+        TextButton showPlayerDiscard = new TextButton( "Show Player Discard", skin );
+        showPlayerDiscard.addListener( new ChangeListener() {
+        	public void changed(ChangeEvent event, Actor actor) 
+        	{
+        		
+        		Dialog showPlayerDiscard = new Dialog( "Player Discardpile", skin ){
+        	        protected void result(Object object)
+        	        {
+        	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        	            dialogStage = null;
+        	        }
+        		};
+
+        		
+        		playerDiscardTable = new Table( altSkin );
+        		
+        		for( String cityName : playerDiscardPile )
+        		{
+        			//Label label = new Label( cityName );
+        			playerDiscardTable.add( cityName );
+        			playerDiscardTable.row();
+        		}
+        		
+        		showPlayerDiscard.getContentTable().add( playerDiscardTable ).height( playerDiscardPile.size() * 25f );
+        		showPlayerDiscard.button( "Close" );
+        		dialogStage = new Stage( new ScreenViewport() );
+        		showPlayerDiscard.show( dialogStage );
+	            Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+        	}
+        } );
+        
+        showPlayerDiscard.setBounds( 0, windHeight-actionButtonYSize*4.375f, actionButtonXSize, actionButtonYSize);
+        buttonGroup.addActor( showPlayerDiscard );
 	}
 	
 	@Override
@@ -373,6 +755,30 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		if ( ClientComm.messageQueue != null )
+		{
+			if ( ClientComm.messageQueue.size() > 0  )
+			{
+				//Eat message
+				if ( ClientComm.possibleActions != null )
+				{
+					for ( Action a: ClientComm.possibleActions )
+					{
+						String[] message = clientComm.messageQueue.remove(0);
+						if ( message.length > 0 )
+						{
+							String toExecute = message[0];
+							if(a.getName().equals(toExecute))
+							{
+								a.execute(message);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         
@@ -382,18 +788,7 @@ public class GameScreen implements Screen {
 		
 		Pixmap connections = new Pixmap( (int)windWidth, (int)windHeight, Pixmap.Format.RGBA8888 );
 		connections.setColor( Color.WHITE );
-		
-		/*
-		CityNode curr0 = cityNodes[0];
-		CityNode other = cityNodes[1];
-		int x0 = (int)curr0.getXInWindowCoords( windWidth );
-		int y0 = (int)curr0.getYInWindowCoords( windHeight );
-		int x1 = (int)other.getXInWindowCoords( windWidth );
-		int y1 = (int)other.getYInWindowCoords( windHeight );
-		connections.drawLine( (int)(x0 + nodeSize/2),  (int)(windHeight-y0 - nodeSize/2),  (int)(x1 + nodeSize/2),  (int)(windHeight-y1 - nodeSize/2));
-		*/
-		
-		
+				
 		for( CityNode curr : cityNodes )
 		{
 			int x0 = (int)curr.getXInWindowCoords( windWidth );
@@ -416,16 +811,48 @@ public class GameScreen implements Screen {
 			batch.draw(connectionsTexture, 0, 0, windWidth, windHeight);
 		batch.end();
 		connectionsTexture.dispose();
+			
 		
 		cubeOrbitRotation = (float) (( cubeOrbitRotation - delta*cubeOrbitRate ) % (Math.PI * 2));
 		updateDiseaseStage();
 		diseaseStage.draw();
 		
-		if ( isMyTurn )
+		updateCityTouchability();
+		
+		updateHandPanelStage();
+		
+		if ( currentPlayer == clientPlayer && actionsRemaining > 0 )
 			buttonStage.act();
+		else if ( currentPlayer == clientPlayer && actionsRemaining <= 0 )
+		{
+			if ( !turnEnded )
+			{
+				Dialog endTurnDialog = new Dialog( "No Actions Left", skin ){
+			        protected void result(Object object)
+			        {
+			            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+			            dialogStage = null;
+			        }
+				};
+
+				endTurnDialog.button("End Turn");
+				dialogStage = new Stage( new ScreenViewport() );
+				endTurnDialog.show( dialogStage );
+				Gdx.input.setInputProcessor(dialogStage);
+				turnEnded = true;
+				ClientComm.send("EndTurn");
+			}
+		}
+			
 		buttonStage.draw();
 		
 		pawnStage.draw();
+		
+		if ( dialogStage != null )
+		{
+			dialogStage.draw();
+			dialogStage.act();
+		}
 	}
 
 	@Override
@@ -466,4 +893,245 @@ public class GameScreen implements Screen {
 		}
 		return null;
 	}
+	
+	public static int lookupCityIndex( String name )
+	{
+		for( int i = 0; i < cityNodes.length; i++ )
+		{
+			CityNode curr = cityNodes[i];
+			if ( curr.getName().equals( name ) ) return i;
+		}
+		return -1;
+	}
+	
+	public static PlayerInfo lookupPlayer( String name )
+	{
+		for ( PlayerInfo player : players )
+		{
+			if ( player == null )
+				continue;
+			
+			if ( player.getName().equals( name ) )
+				return player;
+		}
+		return null;
+	}
+	
+	public static DiseaseColour lookupDisease( String name )
+	{
+		switch( name )
+		{
+			case "blue":
+				return DiseaseColour.BLUE;
+			
+			case "red":
+				return DiseaseColour.BLUE;
+
+			case "yellow":
+				return DiseaseColour.YELLOW;
+
+			case "black":
+				return DiseaseColour.BLACK;
+				
+			default:
+				return null;
+		}
+	}
+	
+	public static void requestConsent( String message )
+	{
+		Dialog consentRequest = new Dialog( message, skin ){
+	        protected void result(Object object)
+	        {
+	        	if ( (boolean) object )
+	        	{
+	        		ClientComm.send("data/true");	        	
+	        	}
+	        	else
+	        	{
+	        		ClientComm.send("data/false");	    
+	        	}
+
+	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	            dialogStage = null;
+	        }
+		};
+		
+		dialogStage = new Stage( new ScreenViewport() );
+		consentRequest.button( "Accept", true );
+		consentRequest.button( "Refuse", false );
+		
+        Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+		consentRequest.show( dialogStage );
+		
+	}
+
+	public static void UpdatePlayerLocation( String PlayerName, String CityName)
+	{
+		PlayerInfo player = lookupPlayer( PlayerName );
+		
+		if ( player != null )
+			player.setCity( CityName );
+	}
+	
+	public static void RemoveCube(String CityName, String DiseaseColor, String Number)
+	{
+		CityNode city = lookupCity( CityName );
+		DiseaseColour disease = lookupDisease( DiseaseColor );
+		
+		if ( city != null && disease != null )
+			city.removeCubeByColour( disease );
+	}
+	
+	public static void AskForConsent()
+	{
+		requestConsent("Allow share knowledge");
+	}
+	
+	public static void AskForDiscard()
+	{
+		dialogStage = new Stage( new ScreenViewport() );
+		Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+		final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+		
+		Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
+			protected void result(Object object){
+				String selected = selectBox.getSelected();
+	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	            dialogStage = null;
+	            ClientComm.send("data/"+selected);
+	        }
+		};
+		
+		String[] items = new String[ currentPlayer.getHandSize() ] ;
+		
+		for ( int i = 0; i < currentPlayer.getHandSize(); i++ )
+		{
+			PlayerCardInfo card = currentPlayer.getHand().get( i );
+			items[i] = card.getName();
+		}
+
+		discardPrompt.setSize(250,150);
+		discardPrompt.setPosition( windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2 );
+		discardPrompt.button( "Select" );
+		selectBox.setItems( items );
+		discardPrompt.getContentTable().add(selectBox);
+
+		dialogStage.addActor(discardPrompt);
+		Gdx.input.setInputProcessor(dialogStage);
+		
+	}
+	
+	public static void RemoveCardFromHand( String PlayerName, String CardName, String DiscardBool)
+	{
+		PlayerInfo player = lookupPlayer( PlayerName );
+		
+		if ( player != null )
+		{
+			player.removeCardFromHand( CardName );
+			if ( Boolean.valueOf( DiscardBool ) )
+				playerDiscardPile.add( CardName );
+		}
+		
+	}
+	
+	public static void AddCardToHand( String PlayerName, String CardName)
+	{
+		PlayerInfo player = lookupPlayer( PlayerName );
+		
+		if ( player != null )
+		{
+			player.addCardToHand( new PlayerCardInfo( CardName ) );
+		}
+	}
+	
+	public static void AddDiseaseCubeToCity( String CityName, String DiseaseColor)
+	{
+		CityNode city = lookupCity( CityName );
+		DiseaseColour disease = lookupDisease( DiseaseColor );
+		
+		if ( city != null && disease != null )
+			city.addCube( new DiseaseCubeInfo( disease ) );
+	}
+	
+	public static void AddInfectionCardToDiscard( String InfectionCardName )
+	{
+		infectionDiscardPile.add( InfectionCardName );
+	}
+	
+	public static void IncOutbreakCounter()
+	{
+		outbreaks++;
+	}
+	
+	public static void IncInfectionRate()
+	{
+		Dialog notifyEpidemic = new Dialog( "An Epidemic has Occured", skin ){
+	        protected void result(Object object)
+	        {
+	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	            dialogStage = null;
+	        }
+		};
+		notifyEpidemic.setColor( Color.GREEN );
+
+		notifyEpidemic.button("Okay");
+		
+		
+		dialogStage = new Stage( new ScreenViewport() );
+		notifyEpidemic.show( dialogStage );
+		Gdx.input.setInputProcessor(dialogStage);
+		
+		currentInfectionRateIdx++;
+	}
+	
+	public static void ClearInfectionDiscard()
+	{
+		infectionDiscardPile.clear();
+	}
+	
+	public static void NotifyTurn( String PlayerName, String isTurnClient )
+	{
+		PlayerInfo player = lookupPlayer( PlayerName );
+		
+		if ( player != null )
+		{
+			if ( currentPlayer != null )
+			{
+				currentPlayer = player;
+				if( clientPlayer == currentPlayer )
+				{
+					Dialog notifyTurnDialog = new Dialog( "It's now your turn", skin ){
+				        protected void result(Object object)
+				        {
+				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+				            dialogStage = null;
+				        }
+					};
+
+					notifyTurnDialog.button("Okay");
+					dialogStage = new Stage( new ScreenViewport() );
+					notifyTurnDialog.show( dialogStage );
+					Gdx.input.setInputProcessor(dialogStage);
+					turnEnded = false;
+				}
+			}
+		}
+	}
+	
+	public static void StartGame()
+	{
+		
+	}
+	
+	public static void DecrementActions()
+	{
+		actionsRemaining--;
+	}
+	
+	public static void ResetActions()
+	{
+		actionsRemaining = 4;
+	}
+
 }
