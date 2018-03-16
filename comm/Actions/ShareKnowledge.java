@@ -4,7 +4,7 @@ public class ShareKnowledge implements Action{
 
 	@Override
 	public void execute(String[] args) {
-//		GameManager.ShareKnowledge(args[2]);
+		GameManager.ShareKnowledge(args[2]);
 		
 	}
 

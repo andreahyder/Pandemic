@@ -4,7 +4,7 @@ public class ToggleReady implements Action{
 
 	@Override
 	public void execute(String[] args) {
-//		GameManager.ToggleReady(args[0]);
+		GameManager.ToggleReady(args[0]);
 		
 	}
 

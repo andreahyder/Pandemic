@@ -4,7 +4,7 @@ public class ChangeName implements Action{
 
 	@Override
 	public void execute(String[] args) {
-	//	GameManager.ChangeName(args[0], args[2]);
+		GameManager.ChangeName(args[0], args[2]);
 		
 	}
 
