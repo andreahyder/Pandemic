@@ -38,7 +38,7 @@ public class CityNode {
 	{
 		cubes.add( cube );
 	}
-	
+		
 	public ArrayList<DiseaseCubeInfo> getCubes()
 	{
 		return cubes;
@@ -77,5 +77,28 @@ public class CityNode {
 	public float getYInWindowCoords( float windowHeight )
 	{
 		return ( ( y + 1.0f ) / 2.0f ) * windowHeight;
+	}
+	
+	public boolean[] getDiseaseColours()
+	{
+		boolean[] coloursPresent = { false, false , false, false };
+		for ( DiseaseCubeInfo cube : cubes )
+		{
+			coloursPresent[ cube.getColourIndex() ] |= true;
+		}
+		return coloursPresent;
+	}
+	
+	public void removeCubeByColour( DiseaseColour lookupColour )
+	{
+		for ( int i = 0; i < cubes.size(); i++  )
+		{
+			DiseaseCubeInfo cube = cubes.get(i);
+			if ( cube.getColour() == lookupColour )
+			{
+				cubes.remove(i);
+				return;
+			}
+		}
 	}
 }

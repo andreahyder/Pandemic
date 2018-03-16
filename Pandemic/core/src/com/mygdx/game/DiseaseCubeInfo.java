@@ -12,4 +12,9 @@ public class DiseaseCubeInfo {
 	{
 		return colour.ordinal();
 	}
+	
+	public DiseaseColour getColour()
+	{
+		return colour;
+	}
 }
