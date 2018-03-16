@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -39,7 +40,6 @@ import com.mygdx.game.MenuScreen.JoinGameTextInput;
 import com.mygdx.game.Actions.Action;
 import com.sun.xml.internal.ws.assembler.dev.ServerTubelineAssemblyContext;
 
-import javafx.scene.control.Label;
 
 public class GameScreen implements Screen {
 	final static float nodeSize = 17.50f;
@@ -193,8 +193,10 @@ public class GameScreen implements Screen {
 	static Stage dialogStage;
 	static Stage handPanelStage;
 	static Table infectionDiscardTable;
+	static Table playerDiscardTable;
 	static Group buttonGroup, handPanelGroup;
 	static Skin skin;
+	static Skin altSkin = new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
     static Button button;
     static boolean isMyTurn = true;
     static float cubeOrbitRotation = 0;
@@ -234,6 +236,13 @@ public class GameScreen implements Screen {
 		infectionDiscardPile.add("Tokyo");
 		infectionDiscardPile.add("Johannesburg");
 		infectionDiscardPile.add("Tehran");
+		//////////////////////////////////
+		
+		//TESTER PLAYER DISCARD////////
+		playerDiscardPile.add("Jakarta");
+		playerDiscardPile.add("Santiago");
+		playerDiscardPile.add("Karachi");
+		playerDiscardPile.add("Beijing");
 		//////////////////////////////////
 		
 		//TESTER CARDS
@@ -522,6 +531,9 @@ public class GameScreen implements Screen {
 	{
         for( final CityNode curr : cityNodes )
 		{
+        	Label cityLabel = new Label( curr.getName().toUpperCase(), skin );
+			cityLabel.getStyle().fontColor = Color.WHITE;
+        	
 			Texture UpDown	 						= new Texture( Gdx.files.internal( curr.getColour() + "City.png") );
 			TextureRegion TR_UD 					= new TextureRegion( UpDown );
 			final TextureRegionDrawable Draw_UD 	= new TextureRegionDrawable( TR_UD );
@@ -554,10 +566,17 @@ public class GameScreen implements Screen {
 			float y = curr.getYInWindowCoords( windHeight );
 			cityButton.setBounds(x, y, nodeSize, nodeSize);
 			cityButton.setTouchable( Touchable.disabled );
-	        
+			
+			
+			cityLabel.setFontScale(0.75f);
+			cityLabel.setBounds( x - cityLabel.getWidth()/4, y - nodeSize*1.5f, cityLabel.getWidth(), cityLabel.getHeight() );
+			buttonGroup.addActor( cityLabel);
+			
 	        
 	        cityButtons.add( cityButton );
 	        buttonGroup.addActor(cityButton); //Add the button to the stage to perform rendering and take input.
+
+			cityLabel.getStyle().fontColor = Color.WHITE;
 		}
 	}
 	
@@ -682,7 +701,7 @@ public class GameScreen implements Screen {
         			infectionDiscardTable.row();
         		}
         		
-        		showInfectionDiscard.getContentTable().add( infectionDiscardTable );
+        		showInfectionDiscard.getContentTable().add( infectionDiscardTable ).height( playerDiscardPile.size() * 35f );;
         		showInfectionDiscard.button( "Close" );
         		dialogStage = new Stage( new ScreenViewport() );
         		showInfectionDiscard.show( dialogStage );
@@ -692,6 +711,40 @@ public class GameScreen implements Screen {
         
         showInfectionDiscard.setBounds( 0, windHeight-actionButtonYSize*3.25f, actionButtonXSize, actionButtonYSize);
         buttonGroup.addActor( showInfectionDiscard );
+        
+        TextButton showPlayerDiscard = new TextButton( "Show Player Discard", skin );
+        showPlayerDiscard.addListener( new ChangeListener() {
+        	public void changed(ChangeEvent event, Actor actor) 
+        	{
+        		
+        		Dialog showPlayerDiscard = new Dialog( "Player Discardpile", skin ){
+        	        protected void result(Object object)
+        	        {
+        	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        	            dialogStage = null;
+        	        }
+        		};
+
+        		
+        		playerDiscardTable = new Table( altSkin );
+        		
+        		for( String cityName : playerDiscardPile )
+        		{
+        			//Label label = new Label( cityName );
+        			playerDiscardTable.add( cityName );
+        			playerDiscardTable.row();
+        		}
+        		
+        		showPlayerDiscard.getContentTable().add( playerDiscardTable ).height( playerDiscardPile.size() * 25f );
+        		showPlayerDiscard.button( "Close" );
+        		dialogStage = new Stage( new ScreenViewport() );
+        		showPlayerDiscard.show( dialogStage );
+	            Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+        	}
+        } );
+        
+        showPlayerDiscard.setBounds( 0, windHeight-actionButtonYSize*4.375f, actionButtonXSize, actionButtonYSize);
+        buttonGroup.addActor( showPlayerDiscard );
 	}
 	
 	@Override
