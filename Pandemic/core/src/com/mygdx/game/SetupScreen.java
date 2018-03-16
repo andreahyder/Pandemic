@@ -187,8 +187,21 @@ public class SetupScreen implements Screen {
 						{
 							if( message[0].equals( "StartGame" ) )
 							{
+								String[] pNames = message[1].split("[,]");
+								for( int i = 0; i < pNames.length; i++ )
+								{
+									if( !parent.getCurrentPlayer().getName().equals(pNames[i]) )
+									{
+										parent.addPlayer( new PlayerInfo( pNames[i], PawnColour.values()[i], false ) );
+										
+									}
+									else
+									{
+										parent.getCurrentPlayer().setColour( PawnColour.values()[i] );
+									}
+								}
 								parent.changeScreen( Screens.GAME );
-							}
+							} 
 						}
 					}
 				}

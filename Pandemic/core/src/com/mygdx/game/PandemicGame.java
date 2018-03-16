@@ -25,7 +25,7 @@ public class PandemicGame extends Game {
 	private PlayerInfo[] players;
 	private int numPlayers;
 	private PlayerInfo currentPlayer;
-	
+	public static String clientPlayerName = "";
 	
 	public void changeScreen( Screens screen )
 	{
@@ -81,12 +81,7 @@ public class PandemicGame extends Game {
 		
 		nameScreen = new NameScreen( this );
 		setScreen( nameScreen );
-
-		this.addPlayer( new PlayerInfo( "Joined Player 1", false ) );
-		this.addPlayer( new PlayerInfo( "Joined Player 2", false ) );
 		
-		this.players[0].setColour( PawnColour.CYAN );
-		this.players[1].setColour( PawnColour.GREEN );
 		
 	}
 	

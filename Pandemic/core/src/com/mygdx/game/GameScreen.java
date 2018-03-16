@@ -693,52 +693,126 @@ public class GameScreen implements Screen {
         			boolean hasCard = playerHasCityCard( currentPlayer, cityName );
         			if( hasCard )
         			{
+        				ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
+        				for ( PlayerInfo player : players )
+        				{
+        					if( player != null && player != currentPlayer )
+        					{
+        						if ( player.getCity().equals(cityName) )
+        						{
+        							playerList.add( player );
+        						}
+        					}
+        				}
         				
+        				String[] list = new String[ playerList.size() ];
+        				if ( playerList.size() != 0 )
+        				{
+            				for ( int i = 0; i < playerList.size(); i++ )
+            				{
+            					list[ i ] = playerList.get( i ).getName();
+            				}
+            				
+            				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+                			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+                			
+                			Dialog skPrompt = new Dialog("Choose a Player to give card to",skin){
+                				protected void result(Object object){
+                					String selected = selectBox.getSelected();
+                		            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+                		            //dialogStage = null;
+                		            ClientComm.send("ShareKnowledge/"+selected);
+                		        }
+                			};
+
+                			skPrompt.setSize(250,150);
+                			skPrompt.setPosition( windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2 );
+                			skPrompt.button( "Select" );
+                			selectBox.setItems( list );
+                			skPrompt.getContentTable().add(selectBox);
+
+                			dialogStage.addActor(skPrompt);
+                			Gdx.input.setInputProcessor(dialogStage);
+        				}
+        				else
+        				{
+        					Dialog skPrompt = new Dialog( "No Valid Targets", skin ){
+        				        protected void result(Object object)
+        				        {
+        				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        				            //dialogStage = null;
+        				        }
+        					};
+
+        					skPrompt.button("Okay");
+        					dialogStage.clear();;
+        					skPrompt.show( dialogStage );
+        					Gdx.input.setInputProcessor(dialogStage);
+        				}
         			}
         			else
         			{
-        				
-        			}
-        			
-        			
-        			Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
-        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
-        			
-        			Dialog discardPrompt = new Dialog("Choose a Player to Share Knowledge with",skin){
-        				protected void result(Object object){
-        					String selected = selectBox.getSelected();
-        		            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-        		            //dialogStage = null;
-        		            ClientComm.send("ShareKnowledge/"+selected);
-        		        }
-        			};
-        			        			
-        			int size = 0;
-        			for ( int i = 0; i < players.length; i++ )
-        			{
-        				if ( players[i] != null )
-        					size++;
-        			}
-
-        			String[] items = new String[size];
-        			size  = 0;
-        			for ( int i = 0; i < players.length; i++ )
-        			{
-        				if ( players[i] != null )
+        				ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
+        				for ( PlayerInfo player : players )
         				{
-        					items[ size ] = players[i].getName();
-        					size++;
+        					if( player != null && player != currentPlayer )
+        					{
+        						if ( player.getCity().equals(cityName) )
+        						{
+        							playerList.add( player );
+        						}
+        					}
+        				}
+        				
+        				PlayerInfo holdingPlayer = null;
+        				for ( PlayerInfo player : players )
+        				{
+        					if( player == null )
+        						continue;
+        					
+        					for( PlayerCardInfo card : player.getHand() )
+        					{
+        						if ( card.getName().equals( cityName ) )
+        						{
+        							holdingPlayer = player;
+        							break;
+        						}
+        					}
+        					if ( holdingPlayer == player && player != null )
+        						break;
+        				}
+        				if ( holdingPlayer != null )
+        				{
+        					Dialog skPrompt = new Dialog( "Take " + cityName + " from " + holdingPlayer.getName() , skin ){
+        				        protected void result(Object object)
+        				        {
+        				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        				            //dialogStage = null;
+        				        }
+        					};
+
+        					skPrompt.button("Okay", true);
+        					skPrompt.button("No", false);
+        					dialogStage.clear();;
+        					skPrompt.show( dialogStage );
+        					Gdx.input.setInputProcessor(dialogStage);
+        				}
+        				else
+        				{
+        					Dialog skPrompt = new Dialog( "No Valid Targets", skin ){
+        				        protected void result(Object object)
+        				        {
+        				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        				            //dialogStage = null;
+        				        }
+        					};
+
+        					skPrompt.button("Okay");
+        					dialogStage.clear();;
+        					skPrompt.show( dialogStage );
+        					Gdx.input.setInputProcessor(dialogStage);
         				}
         			}
-
-        			discardPrompt.setSize(250,150);
-        			discardPrompt.setPosition( windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2 );
-        			discardPrompt.button( "Select" );
-        			selectBox.setItems( items );
-        			discardPrompt.getContentTable().add(selectBox);
-
-        			dialogStage.addActor(discardPrompt);
-        			Gdx.input.setInputProcessor(dialogStage);
         		}
         	}
         } );
