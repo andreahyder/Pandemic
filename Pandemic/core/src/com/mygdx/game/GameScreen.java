@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -167,6 +168,37 @@ public class GameScreen implements Screen {
 		new String[] {"Manila","red","Sydney","Ho Chi Minh City","Hong Kong","Taipei", "San Francisco"},
 		new String[] {"Sydney","red","Jakarta","Manila", "Los Angeles" }
 	};
+	
+
+	Texture[] infectRateCircles = new Texture[] 
+	{
+		new Texture(Gdx.files.internal("infectRate2.png")),
+		new Texture(Gdx.files.internal("infectRate2.png")),
+		new Texture(Gdx.files.internal("infectRate2.png")),
+		new Texture(Gdx.files.internal("infectRate3.png")),
+		new Texture(Gdx.files.internal("infectRate3.png")),
+		new Texture(Gdx.files.internal("infectRate4.png")),
+		new Texture(Gdx.files.internal("infectRate4.png"))	
+	};
+	
+	Texture[] outbreakRateCircles = new Texture[] 
+	{
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png"))
+	};
+	
+	Texture greyBarOfNumbers = new Texture(Gdx.files.internal("numbersBar.png"));
+	Texture deck = new Texture(Gdx.files.internal("faceDownCard.png"));
+	Texture yellow = new Texture(Gdx.files.internal("YellowDiseaseCube.png"));
+	Texture red = new Texture(Gdx.files.internal("RedDiseaseCube.png"));
+	Texture blue = new Texture(Gdx.files.internal("BlueDiseaseCube.png"));
+	Texture black = new Texture(Gdx.files.internal("BlackDiseaseCube.png"));
 	
 	public static ClientComm clientComm;
 	
@@ -853,6 +885,22 @@ public class GameScreen implements Screen {
 			dialogStage.draw();
 			dialogStage.act();
 		}
+		
+		batch.begin();
+			batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 520f, 150f);
+			batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
+			batch.draw(yellow, windWidth*0.414f, windHeight*0.968f, 50f, 35f);
+			batch.draw(red, windWidth*0.464f, windHeight*0.968f, 50f, 35f);
+			batch.draw(blue, windWidth*0.514f, windHeight*0.968f, 50f, 35f);
+			batch.draw(black, windWidth*0.564f, windHeight*0.968f, 50f, 35f);
+		batch.end();
+		
+		displayCurrPlayer();
+		displayInfectionRate( currentInfectionRateIdx );
+		displayOutbreakCounter( outbreaks );
+		displayNumbers( 23, 23, 23, 23, 23 );
+		displayNumberOfActionsLeft( actionsRemaining );
+		displayPlayerColours();
 	}
 
 	@Override
@@ -885,6 +933,175 @@ public class GameScreen implements Screen {
 
 	}
 
+	void displayCurrPlayer(){
+		
+		BitmapFont font = new BitmapFont();
+		BitmapFont secondPart = new BitmapFont();
+		
+//		String str = "";
+		
+		/*float x = curr.getXInWindowCoords( windWidth * 0.85 );
+		float y = curr.getYInWindowCoords( windHeight * 0.1 );*/
+		
+//		for(int i = 0; i < 1.6 * (currentPlayer.getName().length() + 2); i++){	str += " ";	}
+		
+		Color[] colors = {
+				Color.GREEN,
+				Color.CYAN,
+				Color.PURPLE,
+				Color.PINK,
+				Color.MAROON,
+				Color.BROWN
+		};
+		
+		currentPlayer.setColour(PawnColour.PINK);
+		
+		batch.begin();
+			font.setColor(colors[currentPlayer.getColour().ordinal()]);
+			secondPart.draw(batch, currentPlayer.getName() + "'s Turn", windWidth*0.87f, windHeight*0.98f);
+			font.draw(batch, currentPlayer.getName() + "'s", windWidth*0.87f, windHeight*0.98f);
+		batch.end();
+		
+		font.dispose();
+		secondPart.dispose();
+	}
+	
+	void displayInfectionRate(int position){
+		
+		BitmapFont font = new BitmapFont();
+				
+				if(position >= 0 && position <= 2){
+					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate2Green.png"));
+				}
+				else if(position > 2 && position <= 4){
+					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate3Green.png"));
+				}
+				else if(position > 4 && position <= 6){
+					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate4Green.png"));
+				}
+				else{
+					System.out.println("Invalid position");
+				}
+				
+				batch.begin();
+				
+				font.setColor(Color.GREEN);
+				
+				font.draw(batch, "Infection Rate:", windWidth * 0.765f, windHeight * 0.12f);
+				
+				for(int i = 0; i < infectRateCircles.length; i++){			
+					
+					batch.draw(infectRateCircles[i], windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
+					
+				}
+				
+				batch.end();
+				
+				infectRateCircles[position].dispose();
+			}
+
+	void displayOutbreakCounter(int position){
+		
+		BitmapFont font = new BitmapFont();
+		
+		for(int i = 0; i <= position; i++){
+			if(position >= 0 && position <= 7){
+				outbreakRateCircles[i] = new Texture(Gdx.files.internal("outBreakLogo.png"));
+			}
+			else{
+				System.out.println("Invalid position");
+				return;
+			}
+		}
+		
+		batch.begin();
+		
+		font.setColor(Color.RED);
+		
+		font.draw(batch, "Number Of OutBreaks:", windWidth * 0.685f, windHeight * 0.06f);
+		
+		for(int i = 0; i < outbreakRateCircles.length; i++){			
+			
+			batch.draw(outbreakRateCircles[i], windWidth * (float)(0.77 + (i * 2.6 * 0.01)), windHeight * 0.035f, 50f, 50f);
+			
+		}
+		
+		batch.end();
+		
+		outbreakRateCircles[position].dispose();
+	}
+	
+	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo){
+		
+		BitmapFont deckFont = new BitmapFont();
+		BitmapFont yellowFont = new BitmapFont();
+		BitmapFont redFont = new BitmapFont();
+		BitmapFont blueFont = new BitmapFont();
+		BitmapFont blackFont = new BitmapFont();
+		
+		
+		
+		batch.begin();
+		
+			deckFont.draw(batch, Integer.toString(deckNo)+",", windWidth*0.3925f, windHeight*0.99f);
+			yellowFont.draw(batch, Integer.toString(yellowNo)+",", windWidth*0.436f, windHeight*0.99f);
+			redFont.draw(batch, Integer.toString(redNo)+",", windWidth*0.485f, windHeight*0.99f);
+			blueFont.draw(batch, Integer.toString(blueNo)+",", windWidth*0.538f, windHeight*0.99f);
+			blackFont.draw(batch, Integer.toString(blackNo)+",", windWidth*0.588f, windHeight*0.99f);
+		
+		batch.end();
+		
+		deckFont.dispose();
+		yellowFont.dispose();
+		redFont.dispose();
+		blueFont.dispose();
+		blackFont.dispose();
+		
+	}
+	
+	void displayNumberOfActionsLeft(int remActions){
+		
+		BitmapFont font = new BitmapFont();
+		
+		batch.begin();
+		font.setColor(Color.RED);
+		font.draw(batch, "Remaining Actions: " + Integer.toString(remActions), windWidth*0.87f, windHeight*0.95f);
+		batch.end();
+		
+		font.dispose();
+	}
+	
+	void displayPlayerColours(){
+		BitmapFont playersColores = new BitmapFont();
+		BitmapFont colourToBeDrawn = new BitmapFont();
+		
+		Color[] colors = {
+				Color.GREEN,
+				Color.CYAN,
+				Color.PURPLE,
+				Color.PINK,
+				Color.MAROON,
+				Color.BROWN
+		};
+//		String.valueOf(color.getRGB())
+		batch.begin();
+		for(int i = 0; i < players.length; i++){
+			if(players[i] != null){
+				colourToBeDrawn.setColor(colors[players[i].getColour().ordinal()]);
+				colourToBeDrawn.getData().setScale(1.25f);
+				colourToBeDrawn.draw(batch, players[i].getName() + " is " + String.valueOf((players[i].getColour())), windWidth * 0.01f, windHeight - (50f * 1.125f * 4f) - (float)((i+2) * 25f));
+				playersColores.getData().setScale(1.25f);
+				playersColores.draw( batch, players[i].getName() + " is ", windWidth * 0.01f, windHeight - (50f * 1.125f * 4f) - (float)((i+2) * 25f));
+			}
+		}
+		batch.end();
+		
+		playersColores.dispose();
+		
+		colourToBeDrawn.dispose();
+	} 
+
+	
 	public static CityNode lookupCity( String name )
 	{
 		for( CityNode curr : cityNodes )
