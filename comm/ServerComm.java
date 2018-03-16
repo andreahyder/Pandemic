@@ -4,10 +4,6 @@ import java.lang.Thread;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-
-
-import Actions.Action;
-
 import java.net.ServerSocket;
 
 public class ServerComm {
@@ -85,7 +81,7 @@ public class ServerComm {
 		pString = client + "/"+ pString;
 		String[] temp = pString.split("/");
 		if(temp[1].matches("data")){
-			response = temp[2];
+			changeResponse(temp[2]);
 		}
 		else{
 			messageQueue.add(temp);

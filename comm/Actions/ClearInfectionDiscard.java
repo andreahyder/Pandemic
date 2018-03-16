@@ -1,6 +1,6 @@
 package Actions;
 
-public class AddInfectionCardToDiscard implements Action{
+public class ClearInfectionDiscard implements Action{
 
 	@Override
 	public void execute(String[] args) {
@@ -11,7 +11,7 @@ public class AddInfectionCardToDiscard implements Action{
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "AddInfectionCardToDiscard";
+		return "ClearInfectionDiscard";
 	}
 
 }
