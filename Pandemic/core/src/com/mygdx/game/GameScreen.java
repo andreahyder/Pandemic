@@ -933,10 +933,14 @@ public class GameScreen implements Screen {
 		{
 			if ( !turnEnded )
 			{
+				ClientComm.send("EndTurn");
+				turnEnded = true;
+				/*
 				Dialog endTurnDialog = new Dialog( "No Actions Left", skin ){
 			        protected void result(Object object)
 			        {
 			            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+						ClientComm.send("EndTurn");
 			            //dialogStage = null;
 			        }
 				};
@@ -944,11 +948,10 @@ public class GameScreen implements Screen {
 				endTurnDialog.button("End Turn");
 				dialogStage.clear();;
 				endTurnDialog.show( dialogStage );
-				endTurnDialog.button("End Turn");
 				Gdx.input.setInputProcessor(dialogStage);
 				turnEnded = true;
 				endTurnDialog.clear();
-				ClientComm.send("EndTurn");
+				*/
 			}
 		}
 
@@ -1393,6 +1396,8 @@ public class GameScreen implements Screen {
 		{
 			if ( currentPlayer != null )
 			{
+
+				actionsRemaining = 4;
 				currentPlayer = player;
 				if( clientPlayer == currentPlayer )
 				{
