@@ -4,7 +4,7 @@ public class AddPlayer implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameManager.AddPlayer(args[2]);
+		//GameManager.AddPlayer(args[2]);
 		
 	}
 

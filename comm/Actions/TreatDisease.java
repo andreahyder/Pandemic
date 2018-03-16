@@ -4,7 +4,7 @@ public class TreatDisease implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameManager.TreatDisease(args[2]);
+//		GameManager.TreatDisease(args[2]);
 		
 	}
 

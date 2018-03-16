@@ -3,6 +3,8 @@ import Actions.*;
 import java.lang.Thread;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
 
 import Actions.Action;
 
@@ -14,7 +16,7 @@ public class ServerComm {
 	static ArrayList<String[]> messageQueue = new ArrayList<String[]>();
 	static String response = null;
 	static ArrayList<Action> possibleActions = initializePossibleActions();
-	static void setupConnection(int port) throws IOException{
+	static void setupConnection(int port) throws IOException{ //Create a thread in main and run this cuz it's gonna loop
 		try {
 			listener = new ServerSocket(port);
 		} catch (IOException e) {
@@ -26,13 +28,35 @@ public class ServerComm {
 			@Override
 			public void run() {
 				while(true){
-					if (!messageQueue.isEmpty()){
+					if (messageQueue.isEmpty()){
+						try {
+							TimeUnit.SECONDS.sleep(1);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						/*String[] currentMessage = messageQueue.remove(0);
+						System.out.println(currentMessage[0] + currentMessage[1]);
+						//String[] args = currentMessage.split("/");
+						String toExecute = currentMessage[1];
+						for (Action a: possibleActions){
+							if(a.getName().equals(toExecute)){
+								a.execute(currentMessage);
+							}
+						}*/
+					}
+					else{
+						/*System.out.println("You got mail!");
+						String[] hahaha = messageQueue.get(0);
+						System.out.println(hahaha[1] + hahaha[2]);
+						messageQueue.remove(0);*/
 						String[] currentMessage = messageQueue.remove(0);
 						//String[] args = currentMessage.split("/");
 						String toExecute = currentMessage[1];
 						for (Action a: possibleActions){
 							if(a.getName().equals(toExecute)){
 								a.execute(currentMessage);
+								break;
 							}
 						}
 					}
@@ -40,8 +64,9 @@ public class ServerComm {
 				
 			}
 			
-		});
+		}).start();
 		while(true){
+			System.out.println("Listening to connections.");
 			Socket client = listener.accept();
 			ClientThread newClientThread = new ClientThread(client, i);
 			clientList.add(newClientThread);
@@ -56,7 +81,7 @@ public class ServerComm {
 			}
 		}
 	}
-	static void addToActionQueue(String pString, int client){
+	public static void addToActionQueue(String pString, int client){
 		pString = client + "/"+ pString;
 		String[] temp = pString.split("/");
 		if(temp[1].matches("data")){
@@ -80,6 +105,7 @@ public class ServerComm {
 		toReturn.add(new ChangeName());
 		toReturn.add(new Discard());
 		toReturn.add(new EndTurn());
+		toReturn.add(new Print());
 		return toReturn;
 	}
 }

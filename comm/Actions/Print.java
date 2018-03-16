@@ -1,17 +1,16 @@
 package Actions;
 
-public class ToggleReady implements Action{
+public class Print implements Action{
 
 	@Override
 	public void execute(String[] args) {
-//		GameManager.ToggleReady(args[0]);
-		
+		System.out.print(args[2]);		
 	}
 
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "ToggleReady";
+		return "Print";
 	}
 	
 }

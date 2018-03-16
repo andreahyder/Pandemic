@@ -4,7 +4,7 @@ public class EndTurn implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameManager.EndTurn();
+		//GameManager.EndTurn();
 		
 	}
 
