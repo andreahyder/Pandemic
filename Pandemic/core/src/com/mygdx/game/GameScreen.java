@@ -1091,36 +1091,42 @@ public class GameScreen implements Screen {
 	void displayInfectionRate(int position){
 		
 		BitmapFont font = new BitmapFont();
+		Texture temp = null;
+		
+		if(position >= 0 && position <= 2){
+			temp = new Texture(Gdx.files.internal("infectRate2Green.png"));
+		}
+		else if(position > 2 && position <= 4){
+			temp = new Texture(Gdx.files.internal("infectRate3Green.png"));
+		}
+		else if(position > 4 && position <= 6){
+			temp = new Texture(Gdx.files.internal("infectRate4Green.png"));
+		}
+		else{
+			System.out.println("Invalid position");
+		}
 				
-				if(position >= 0 && position <= 2){
-					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate2Green.png"));
-				}
-				else if(position > 2 && position <= 4){
-					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate3Green.png"));
-				}
-				else if(position > 4 && position <= 6){
-					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate4Green.png"));
-				}
-				else{
-					System.out.println("Invalid position");
-				}
+		batch.begin();
+			
+		font.setColor(Color.GREEN);
+			
+		font.draw(batch, "Infection Rate:", windWidth * 0.765f, windHeight * 0.12f);
+			
+		for(int i = 0; i < infectRateCircles.length; i++){			
 				
-				batch.begin();
-				
-				font.setColor(Color.GREEN);
-				
-				font.draw(batch, "Infection Rate:", windWidth * 0.765f, windHeight * 0.12f);
-				
-				for(int i = 0; i < infectRateCircles.length; i++){			
-					
-					batch.draw(infectRateCircles[i], windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
-					
-				}
-				
-				batch.end();
-				
-				infectRateCircles[position].dispose();
+			if(position != i){
+				batch.draw(infectRateCircles[i], windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
 			}
+			else{
+				batch.draw(temp, windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
+			}
+				
+		}
+				
+		batch.end();
+				
+		temp.dispose();
+	}
 
 	void displayOutbreakCounter(int amountOfOutbreaks){
 		
