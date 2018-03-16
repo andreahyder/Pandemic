@@ -146,6 +146,12 @@ public class Game {
 			PlayerCard t1 = playerDeck.remove(0);
 			if(t1.type.equals(Type.Epidemic)) {
 				infectionCount++;
+				
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage("IncInfectionRate/", j);
+				}
+				
+				
 				InfectionCard t2 = infectionDeck.remove(infectionDeck.size()-1);
 				int c = t2.city.countDiseaseCube(t2.city.disease.color);
 				if(c == 0) {
@@ -159,9 +165,18 @@ public class Game {
 					InfectionCard d = infectionDiscardPile.remove(0);
 					infectionDeck.add(0,d);
 				}
+				
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage("ClearInfectionDiscard/", j);
+				}
 			}
 			else {
 				p.hand.add(t1);
+				
+				String mes = "AddCardToHand/" + p.username + "/" + t1.city.name + "/";
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 		}
 	}
@@ -172,6 +187,11 @@ public class Game {
 		for(int i = 0; i < count; i++) {
 			if(c.city.countDiseaseCube(color) != 3) {
 				c.city.addDiseaseCube(color);
+				
+				String mes = "AddDiseaseCubeToCity/" + c.city.name + "/" + color.toString() + "/";	
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 			else {
 				ArrayList<City> outbreakList = new ArrayList<City>();
@@ -183,6 +203,11 @@ public class Game {
 						if(!link.outbroken) {
 							if(link.countDiseaseCube(color) != 3) {
 								link.addDiseaseCube(color);
+								
+								String mes = "AddDiseaseCubeToCity/" + link.name + "/" + color.toString() + "/";	
+								for(int j = 0; j < players.size(); j++) {
+									ServerComm.sendMessage(mes, j);
+								}
 							}
 							else {
 								outbreakList.add(link);
@@ -192,9 +217,17 @@ public class Game {
 					}
 					outbreakList.remove(0);
 				}
+				for(City cit: cities) {
+					cit.outbroken = false;
+				}
 			}
 		}
 		infectionDiscardPile.add(c);
+		
+		String mes = "AddInfectionCardToDiscard/" + c.city.name + "/";	
+		for(int i = 0; i < players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+		}
 	}
 }
 
