@@ -13,6 +13,8 @@ public class PandemicGame extends Game {
 		MENU, GAME, SETUP, LOAD, JOINLIST
 	}
 	
+	public static ClientComm clientComm;
+	
 	private JoinListScreen joinListScreen;
 	private SetupScreen	setupScreen;
 	//private JoinScreen joinScreen;
@@ -38,6 +40,7 @@ public class PandemicGame extends Game {
 				{
 					gameScreen = new GameScreen( this, players );
 				}
+				gameScreen.clientComm = clientComm;
 				setScreen( gameScreen );
 				break;
 				

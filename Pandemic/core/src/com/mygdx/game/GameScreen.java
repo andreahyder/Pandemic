@@ -35,6 +35,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
+import com.mygdx.game.Actions.Action;
 import com.sun.xml.internal.ws.assembler.dev.ServerTubelineAssemblyContext;
 
 import javafx.scene.control.Label;
@@ -166,31 +167,35 @@ public class GameScreen implements Screen {
 		new String[] {"Sydney","red","Jakarta","Manila", "Los Angeles" }
 	};
 	
+	public static ClientComm clientComm;
+	
 	static CityNode[] cityNodes;
 	static PlayerInfo[] players;
 	static PlayerInfo clientPlayer;
-	PlayerInfo currentPlayer;
+	static PlayerInfo currentPlayer;
 	
-	PandemicGame parent;
+	static PandemicGame parent;
 
-	Texture[] playerTextures;
-	Texture[] diseaseCubeTextures;
-	Texture[] cityCardTextures;
+	static Texture[] playerTextures;
+	static Texture[] diseaseCubeTextures;
+	static Texture[] cityCardTextures;
 	
-	Texture	handPanelTexture;
-	float windWidth, windHeight;
-	Texture background;
-	SpriteBatch batch;
-	Stage buttonStage, pawnStage, diseaseStage, dialogStage, handPanelStage;
-	Table infectionDiscardTable;
-	Group buttonGroup, handPanelGroup;
-	Skin skin;
-    Button button;
-    ArrayList<Button> cityButtons = new ArrayList<Button>();
-    ArrayList<String> infectionDiscardPile = new ArrayList<String>();
-    boolean isMyTurn = true;
-    float cubeOrbitRotation = 0;
-	PlayerInfo handShownPlayer;
+	static Texture	handPanelTexture;
+	static float windWidth, windHeight;
+	static Texture background;
+	static SpriteBatch batch;
+	static Stage buttonStage, pawnStage, diseaseStage;
+	static Stage dialogStage;
+	static Stage handPanelStage;
+	static Table infectionDiscardTable;
+	static Group buttonGroup, handPanelGroup;
+	static Skin skin;
+    static Button button;
+    static ArrayList<Button> cityButtons = new ArrayList<Button>();
+    static ArrayList<String> infectionDiscardPile = new ArrayList<String>();
+    static boolean isMyTurn = true;
+    static float cubeOrbitRotation = 0;
+	static PlayerInfo handShownPlayer;
 	
 	
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -244,11 +249,9 @@ public class GameScreen implements Screen {
 		initHandButtonStage();
 		
 		updatePawnStage();
-		
-		requestConsent("Allow share knowledge");
 	}
 	
-	void initGeneralTextures()
+	static void initGeneralTextures()
 	{
 		background 	= new Texture(Gdx.files.internal( "board.png" ) );
 		
@@ -276,7 +279,7 @@ public class GameScreen implements Screen {
 		handPanelTexture = new Texture( Gdx.files.internal( "handPanel.png") );
 	}
 	
-	void initGameState()
+	static void initGameState()
 	{
 
 		for( int i = 0; i < players.length; i++ )
@@ -305,7 +308,7 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void initHandButtonStage()
+	static void initHandButtonStage()
 	{
 		int buttNum = 0;
 		for ( final PlayerInfo player : players )
@@ -342,7 +345,7 @@ public class GameScreen implements Screen {
 		}
 	}	
 			
-	void updatePawnStage()	
+	static void updatePawnStage()	
 	{
 		pawnStage = new Stage( new ScreenViewport() );
 		
@@ -394,7 +397,7 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void updateDiseaseStage()
+	static void updateDiseaseStage()
 	{
 		diseaseStage = new Stage( new ScreenViewport() );
 		for ( CityNode curr : cityNodes )
@@ -413,7 +416,7 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void updateHandPanelStage()
+	static void updateHandPanelStage()
 	{	
 		handPanelGroup = new Group();
 		
@@ -460,7 +463,7 @@ public class GameScreen implements Screen {
 		
 	}
 	
-	void updateCityTouchability()
+	static void updateCityTouchability()
 	{
 		ArrayList<CityNode> adjCities = lookupCity( currentPlayer.getCity() ).getConnectedCities();
 		for ( CityNode curr : adjCities )
@@ -469,7 +472,7 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void initButtonStage()
+	static void initButtonStage()
 	{
 
 		buttonStage = new Stage(new ScreenViewport()); //Set up a stage for the ui
@@ -486,7 +489,7 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 	}
 	
-	void createCityButtons()
+	static void createCityButtons()
 	{
         for( final CityNode curr : cityNodes )
 		{
@@ -525,7 +528,7 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void createActionButtons()
+	static void createActionButtons()
 	{
 
         skin.getFont( "font").getData().setScale( actionButtonFontScaleFactor, actionButtonFontScaleFactor);
@@ -615,7 +618,7 @@ public class GameScreen implements Screen {
         buttonGroup.addActor( showInfectionDiscard );
 	}
 	
-	void createPlayerHandButtons()
+	static void createPlayerHandButtons()
 	{
 		//Create clientPlayer Hand
 		
@@ -630,6 +633,30 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		if ( ClientComm.messageQueue != null )
+		{
+			if ( ClientComm.messageQueue.size() > 0  )
+			{
+				//Eat message
+				if ( ClientComm.possibleActions != null )
+				{
+					for ( Action a: ClientComm.possibleActions )
+					{
+						String[] message = clientComm.messageQueue.remove(0);
+						if ( message.length > 0 )
+						{
+							String toExecute = message[0];
+							if(a.getName().equals(toExecute))
+							{
+								a.execute(message);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         
@@ -733,7 +760,41 @@ public class GameScreen implements Screen {
 		return -1;
 	}
 	
-	public void requestConsent( String message )
+	public static PlayerInfo lookupPlayer( String name )
+	{
+		for ( PlayerInfo player : players )
+		{
+			if ( player == null )
+				continue;
+			
+			if ( player.getName().equals( name ) )
+				return player;
+		}
+		return null;
+	}
+	
+	public static DiseaseColour lookupDisease( String name )
+	{
+		switch( name )
+		{
+			case "blue":
+				return DiseaseColour.BLUE;
+			
+			case "red":
+				return DiseaseColour.BLUE;
+
+			case "yellow":
+				return DiseaseColour.YELLOW;
+
+			case "black":
+				return DiseaseColour.BLACK;
+				
+			default:
+				return null;
+		}
+	}
+	
+	public static void requestConsent( String message )
 	{
 		Dialog consentRequest = new Dialog( message, skin ){
 	        protected void result(Object object)
@@ -758,6 +819,77 @@ public class GameScreen implements Screen {
 		
         Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
 		consentRequest.show( dialogStage );
+		
+	}
+
+	public static void UpdatePlayerLocation( String PlayerName, String CityName)
+	{
+		PlayerInfo player = lookupPlayer( PlayerName );
+		
+		if ( player != null )
+			player.setCity( CityName );
+	}
+	
+	public static void RemoveCube(String CityName, String DiseaseColor, String Number)
+	{
+		CityNode city = lookupCity( CityName );
+		DiseaseColour disease = lookupDisease( DiseaseColor );
+		
+		if ( city != null && disease != null )
+			city.removeCubeByColour( disease );
+	}
+	
+	public static void AskForConsent()
+	{
+		requestConsent("Allow share knowledge");
+	}
+	
+	public static void AskForDiscard()
+	{
+		
+	}
+	
+	public static void RemoveCardFromHand( String PlayerName, String CardName, String DiscardBool)
+	{
+		
+	}
+	
+	public static void AddCardToHand( String PlayerName, String CardName)
+	{
+		
+	}
+	public static void AddDiseaseCubeToCity( String CityName, String DiseaseColor)
+	{
+		
+	}
+	
+	public static void AddInfectionCardToDiscard( String InfectionCardName)
+	{
+		
+	}
+	
+	public static void IncOutbreakCounter()
+	{
+		
+	}
+	
+	public static void IncInfectionRate()
+	{
+		
+	}
+	
+	public static void ClearInfectionDiscard()
+	{
+		
+	}
+	
+	public static void NotifyTurn( String PlayerName, String isTurnClient)
+	{
+		
+	}
+	
+	public static void StartGame()
+	{
 		
 	}
 }

@@ -38,12 +38,7 @@ public class CityNode {
 	{
 		cubes.add( cube );
 	}
-	
-	public void removeCube( DiseaseColour rmColour )
-	{
 		
-	}
-	
 	public ArrayList<DiseaseCubeInfo> getCubes()
 	{
 		return cubes;
