@@ -1,11 +1,12 @@
 package com.mygdx.game.Actions;
 
+import com.mygdx.game.GameScreen;
+
 public class AskForDiscard implements Action {
 
 	@Override
 	public void execute(String[] args) {
-		// TODO Auto-generated method stub
-		
+		GameScreen.AskForDiscard();
 	}
 
 	@Override

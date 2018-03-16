@@ -62,7 +62,7 @@ public class GameScreen implements Screen {
 	final static float handButtonXSize = 50f;
 	final static float handButtonYSize = 25f;
 	
-	
+	final static int[] infectionRateTrack = { 2, 2, 2, 3, 3, 4 ,4 };
 	
 	static float[][] positions = new float[][]
 			{
@@ -173,6 +173,10 @@ public class GameScreen implements Screen {
 	static PlayerInfo[] players;
 	static PlayerInfo clientPlayer;
 	static PlayerInfo currentPlayer;
+	static int outbreaks = 0;
+	static int currentInfectionRateIdx = 0;
+	static int actionsRemaining = 4;
+	static boolean turnEnded = false;
 	
 	static PandemicGame parent;
 
@@ -480,7 +484,6 @@ public class GameScreen implements Screen {
 		
 		createCityButtons();
 		createActionButtons();
-		createPlayerHandButtons();
 		
 		buttonStage.addActor( buttonGroup );
 		
@@ -512,8 +515,11 @@ public class GameScreen implements Screen {
 	        cityButton.addListener( new ChangeListener() {
 	            @Override
 				public void changed(ChangeEvent event, Actor actor) {
-	            	String cityName = curr.getName();
-	            	// RealTODO: Call Drive( CityName ) on Server
+	            	if ( actionsRemaining > 0 && clientPlayer == currentPlayer )
+	            	{
+		            	String cityName = curr.getName();
+		            	// RealTODO: Call Drive( CityName ) on Server
+	            	}
 				}
 	        });
 	        
@@ -538,34 +544,36 @@ public class GameScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y)  
         	{
-        		CityNode city = lookupCity( clientPlayer.getCity() );
-        		boolean[] coloursPresent = city.getDiseaseColours(); 
-        		
-        		Dialog colourSelect = new Dialog( "Select Disease Colour to Remove",skin ){
-                    protected void result(Object object)
-                    {
-                    	if ( object != null )
-                    	{
-                    		CityNode city = lookupCity( clientPlayer.getCity() );
-                    		city.removeCubeByColour( (DiseaseColour)object );
-                    	}
-                    	Gdx.input.setInputProcessor( buttonStage );
-                    	dialogStage = null;
-                    }
-                };
-                
-        		for( int i = 0; i < 4; i++ )
-        		{
-        			if ( coloursPresent[i] )
-        			{
-        				colourSelect.button( DiseaseColour.getDiseaseName( DiseaseColour.values()[i] ), DiseaseColour.values()[i] );
-        			}
-        		}
-        		colourSelect.button( "Cancel", null );
-        		dialogStage = new Stage( new ScreenViewport() );
-        		Gdx.input.setInputProcessor( dialogStage );
-        		colourSelect.show( dialogStage );
-        		
+            	if( currentPlayer == clientPlayer && actionsRemaining > 0 )
+            	{
+	        		CityNode city = lookupCity( clientPlayer.getCity() );
+	        		boolean[] coloursPresent = city.getDiseaseColours(); 
+	        		
+	        		Dialog colourSelect = new Dialog( "Select Disease Colour to Remove",skin ){
+	                    protected void result(Object object)
+	                    {
+	                    	if ( object != null )
+	                    	{
+	                    		CityNode city = lookupCity( clientPlayer.getCity() );
+	                    		city.removeCubeByColour( (DiseaseColour)object );
+	                    	}
+	                    	Gdx.input.setInputProcessor( buttonStage );
+	                    	dialogStage = null;
+	                    }
+	                };
+	                
+	        		for( int i = 0; i < 4; i++ )
+	        		{
+	        			if ( coloursPresent[i] )
+	        			{
+	        				colourSelect.button( DiseaseColour.getDiseaseName( DiseaseColour.values()[i] ), DiseaseColour.values()[i] );
+	        			}
+	        		}
+	        		colourSelect.button( "Cancel", null );
+	        		dialogStage = new Stage( new ScreenViewport() );
+	        		Gdx.input.setInputProcessor( dialogStage );
+	        		colourSelect.show( dialogStage );
+            	}
         	}
         } );
         
@@ -576,7 +584,10 @@ public class GameScreen implements Screen {
         shareKnowledgeButton.addListener( new ChangeListener() {
         	public void changed(ChangeEvent event, Actor actor) 
         	{
-        		
+        		if ( currentPlayer == clientPlayer && actionsRemaining > 0)
+        		{
+        			
+        		}
         	}
         } );
         
@@ -587,6 +598,7 @@ public class GameScreen implements Screen {
         showInfectionDiscard.addListener( new ChangeListener() {
         	public void changed(ChangeEvent event, Actor actor) 
         	{
+        		
         		Dialog showInfectionDiscard = new Dialog( "Infection Discardpile", skin ){
         	        protected void result(Object object)
         	        {
@@ -612,17 +624,8 @@ public class GameScreen implements Screen {
         	}
         } );
         
-        
-        
         showInfectionDiscard.setBounds( 0, windHeight-actionButtonYSize*3.25f, actionButtonXSize, actionButtonYSize);
         buttonGroup.addActor( showInfectionDiscard );
-	}
-	
-	static void createPlayerHandButtons()
-	{
-		//Create clientPlayer Hand
-		
-		//////////////////////////
 	}
 	
 	@Override
@@ -698,8 +701,29 @@ public class GameScreen implements Screen {
 		updateCityTouchability();
 		
 		updateHandPanelStage();
-		if ( isMyTurn )
+		
+		if ( currentPlayer == clientPlayer && actionsRemaining > 0 )
 			buttonStage.act();
+		else if ( currentPlayer == clientPlayer && actionsRemaining <= 0 )
+		{
+			if ( !turnEnded )
+			{
+				Dialog endTurnDialog = new Dialog( "No Actions Left", skin ){
+			        protected void result(Object object)
+			        {
+			            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+			            dialogStage = null;
+			        }
+				};
+
+				endTurnDialog.button("End Turn");
+				dialogStage = new Stage( new ScreenViewport() );
+				endTurnDialog.show( dialogStage );
+				Gdx.input.setInputProcessor(dialogStage);
+				turnEnded = true;
+			}
+		}
+			
 		buttonStage.draw();
 		
 		pawnStage.draw();
@@ -851,45 +875,114 @@ public class GameScreen implements Screen {
 	
 	public static void RemoveCardFromHand( String PlayerName, String CardName, String DiscardBool)
 	{
+		PlayerInfo player = lookupPlayer( PlayerName );
+		
+		if ( player != null )
+		{
+			player.removeCardFromHand( CardName );
+			//IMPLEMENT ADD TO PLAYER DISCAQRD 
+		}
 		
 	}
 	
 	public static void AddCardToHand( String PlayerName, String CardName)
 	{
+		PlayerInfo player = lookupPlayer( PlayerName );
 		
-	}
-	public static void AddDiseaseCubeToCity( String CityName, String DiseaseColor)
-	{
-		
+		if ( player != null )
+		{
+			player.addCardToHand( new PlayerCardInfo( CardName ) );
+			//IMPLEMENT ADD TO PLAYER DISCAQRD 
+		}
 	}
 	
-	public static void AddInfectionCardToDiscard( String InfectionCardName)
+	public static void AddDiseaseCubeToCity( String CityName, String DiseaseColor)
 	{
+		CityNode city = lookupCity( CityName );
+		DiseaseColour disease = lookupDisease( DiseaseColor );
 		
+		if ( city != null && disease != null )
+			city.addCube( new DiseaseCubeInfo( disease ) );
+	}
+	
+	public static void AddInfectionCardToDiscard( String InfectionCardName )
+	{
+		infectionDiscardPile.add( InfectionCardName );
 	}
 	
 	public static void IncOutbreakCounter()
 	{
-		
+		outbreaks++;
 	}
 	
 	public static void IncInfectionRate()
 	{
+		Dialog notifyEpidemic = new Dialog( "An Epidemic has Occured", skin ){
+	        protected void result(Object object)
+	        {
+	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	            dialogStage = null;
+	        }
+		};
+		notifyEpidemic.setColor( Color.GREEN );
+
+		notifyEpidemic.button("Okay");
 		
+		
+		dialogStage = new Stage( new ScreenViewport() );
+		notifyEpidemic.show( dialogStage );
+		Gdx.input.setInputProcessor(dialogStage);
+		
+		currentInfectionRateIdx++;
 	}
 	
 	public static void ClearInfectionDiscard()
 	{
-		
+		infectionDiscardPile.clear();
 	}
 	
-	public static void NotifyTurn( String PlayerName, String isTurnClient)
+	public static void NotifyTurn( String PlayerName, String isTurnClient )
 	{
+		PlayerInfo player = lookupPlayer( PlayerName );
 		
+		if ( player != null )
+		{
+			if ( currentPlayer != null )
+			{
+				currentPlayer = player;
+				if( clientPlayer == currentPlayer )
+				{
+					Dialog notifyTurnDialog = new Dialog( "It's now your turn", skin ){
+				        protected void result(Object object)
+				        {
+				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+				            dialogStage = null;
+				        }
+					};
+
+					notifyTurnDialog.button("Okay");
+					dialogStage = new Stage( new ScreenViewport() );
+					notifyTurnDialog.show( dialogStage );
+					Gdx.input.setInputProcessor(dialogStage);
+					turnEnded = false;
+				}
+			}
+		}
 	}
 	
 	public static void StartGame()
 	{
 		
 	}
+	
+	public static void DecrementActions()
+	{
+		actionsRemaining--;
+	}
+	
+	public static void ResetActions()
+	{
+		actionsRemaining = 4;
+	}
+
 }

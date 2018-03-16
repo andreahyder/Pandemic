@@ -10,7 +10,7 @@ public class PandemicGame extends Game {
 
 	public enum Screens
 	{
-		MENU, GAME, SETUP, LOAD, JOINLIST
+		MENU, GAME, SETUP, NAME, JOINLIST
 	}
 	
 	public static ClientComm clientComm;
@@ -20,10 +20,11 @@ public class PandemicGame extends Game {
 	//private JoinScreen joinScreen;
 	private MenuScreen menuScreen;
 	private GameScreen gameScreen;
-	private LoadScreen loadScreen;
+	private NameScreen nameScreen;
 	
 	private PlayerInfo[] players;
 	private int numPlayers;
+	private PlayerInfo currentPlayer;
 	
 	
 	public void changeScreen( Screens screen )
@@ -40,13 +41,13 @@ public class PandemicGame extends Game {
 				{
 					gameScreen = new GameScreen( this, players );
 				}
-				gameScreen.clientComm = clientComm;
+				GameScreen.clientComm = clientComm;
 				setScreen( gameScreen );
 				break;
 				
-			case LOAD:
-				if ( loadScreen == null ) loadScreen = new LoadScreen( this );
-				setScreen( loadScreen );
+			case NAME:
+				if ( nameScreen == null ) nameScreen = new NameScreen( this );
+				setScreen( nameScreen );
 				break;
 				
 			case SETUP:
@@ -78,15 +79,34 @@ public class PandemicGame extends Game {
 
 		
 		
-		loadScreen = new LoadScreen( this );
-		setScreen( loadScreen );
+		nameScreen = new NameScreen( this );
+		setScreen( nameScreen );
 
 		this.addPlayer( new PlayerInfo( "Joined Player 1", false ) );
 		this.addPlayer( new PlayerInfo( "Joined Player 2", false ) );
 		
 		this.players[0].setColour( PawnColour.CYAN );
 		this.players[1].setColour( PawnColour.GREEN );
-		this.players[2].setColour( PawnColour.PINK );
 		
+	}
+	
+	public int getNumPlayers()
+	{
+		return numPlayers;
+	}
+	
+	public PlayerInfo[] getPlayers()
+	{
+		return players;
+	}
+	
+	public PlayerInfo getCurrentPlayer()
+	{
+		return currentPlayer;
+	}
+	
+	public void setCurrentPlayer( PlayerInfo newCurrPlayer )
+	{
+		currentPlayer = newCurrPlayer;
 	}
 }

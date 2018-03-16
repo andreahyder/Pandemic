@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.mygdx.game.PandemicGame.Screens;
 
 public class MenuScreen implements Screen 
 {
@@ -20,6 +21,7 @@ public class MenuScreen implements Screen
 	private PandemicGame parent;
 	private Stage stage;
 	private Skin skin;
+	private String IP = "";
 	
 	MenuScreen( PandemicGame _parent )
 	{
@@ -86,7 +88,7 @@ public class MenuScreen implements Screen
 			
 			if( validIP )
 			{
-				//NetworkManager.joinGame( text );
+				IP = text;
 			}
 			else 
 			{
@@ -133,6 +135,12 @@ public class MenuScreen implements Screen
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
 		stage.draw();
+		
+		if ( !IP.equals( "" ) )
+		{
+			parent.changeScreen( Screens.SETUP );
+			// IMPLEMENT addPlayer to Server Game 
+		}
 	}
 
 	@Override

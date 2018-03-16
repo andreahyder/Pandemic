@@ -4,7 +4,6 @@ public class GiveConsent implements Action{
 
 	@Override
 	public void execute(String[] args) {
-//		ServerComm.response = "bsadf";
 		
 	}
 

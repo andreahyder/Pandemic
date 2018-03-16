@@ -18,6 +18,13 @@ public class PlayerInfo {
 		isClientPlayer = _isClintPlayer;
 	}
 	
+	public PlayerInfo(String _name, PawnColour _colour, boolean _isClintPlayer ) 
+	{
+		name 	= _name;
+		colour 	= _colour;
+		isClientPlayer = _isClintPlayer;
+	}
+
 	public void setCity( String newCity )
 	{
 		currCity = newCity;
@@ -40,8 +47,8 @@ public class PlayerInfo {
 	
 	public boolean toggleReady()
 	{
-		readyStatus = !readyStatus;
-		return readyStatus;
+		this.readyStatus = !this.readyStatus;
+		return this.readyStatus;
 	}
 	
 	public boolean getReady() 
