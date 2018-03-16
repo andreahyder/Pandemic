@@ -1,73 +1,34 @@
+import Actions.*;
+import Server.*;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import java.io.PrintWriter;
+import java.net.*;
 
 public class Main {
-
-	public static void main(String[] args) {
-		//GameManager
-		
-		//3 players join the game
-		GameManager.AddPlayer("Bob");
-		GameManager.AddPlayer("Chris");
-		GameManager.AddPlayer("Roflcopter");
-		
-		//3 players ready
-		GameManager.ToggleReady(2);
-		GameManager.ToggleReady(0);
-		GameManager.ToggleReady(1);
-		
-		//print out the starting player hands
-		System.out.print("Bob: ");
-		for(PlayerCard c: GameManager.game.getPlayer("Bob").hand) {	
-			System.out.print("["+c.city.name + "] ");
-		}
-		System.out.println("");
-		System.out.print("Chris: ");
-		for(PlayerCard c: GameManager.game.getPlayer("Chris").hand) {	
-			System.out.print("["+c.city.name + "] ");
-		}
-		System.out.println("");
-		System.out.print("Roflcopter: ");
-		for(PlayerCard c: GameManager.game.getPlayer("Roflcopter").hand) {	
-			System.out.print("["+c.city.name + "] ");
-		}
-		System.out.println("");
-		System.out.println("");
-		
-		//print out infection discard pile, and number of disease cubes in corresponding cities
-		for(InfectionCard c: GameManager.game.infectionDiscardPile) {
-			System.out.println(c.city.name + ": " + c.city.countDiseaseCube(c.city.disease.color) + " cubes");
-		}
-		System.out.println("");
-		
-		for(Disease d: GameManager.game.diseases) {
-			System.out.println(d.cubes.size() + " " + d.color + " cubes left.");
-		}
-		
-		//(illegal) share knowledge GameManager. Bob steals a card from Roflcopter
-		GameManager.ShareKnowledge("Bob", "Roflcopter");
-		
-		System.out.print("Bob: ");
-		for(PlayerCard c: GameManager.game.getPlayer("Bob").hand) {	
-			System.out.print("["+c.city.name + "] ");
-		}
-		System.out.print(" actions left: "+ GameManager.game.getPlayer("Bob").pawn.actions);
-		System.out.println("");
-		System.out.print("Chris: ");
-		for(PlayerCard c: GameManager.game.getPlayer("Chris").hand) {	
-			System.out.print("["+c.city.name + "] ");
-		}
-		System.out.print(" actions left: "+ GameManager.game.getPlayer("Chris").pawn.actions);
-		System.out.println("");
-		System.out.print("Roflcopter: ");
-		for(PlayerCard c: GameManager.game.getPlayer("Roflcopter").hand) {	
-			System.out.print("["+c.city.name + "] ");
-		}
-		System.out.print(" actions left: "+ GameManager.game.getPlayer("Roflcopter").pawn.actions);
-		System.out.println("");
-		System.out.println("");
-		
-		String s = null;
-		if(s == null) {
-			System.out.println("ll");
-		}
+	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException{
+		new Thread(new Runnable(){
+			@Override
+			public void run() {
+				try {
+					ServerComm.setupConnection(6666);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		TimeUnit.SECONDS.sleep(3);
+		Socket mySocket = new Socket("132.206.52.33", 6666);
+		new ClientThread(mySocket, 1).start();
+	    PrintWriter out = new PrintWriter(mySocket.getOutputStream(), true);
+	    Socket mySocket2 = new Socket("132.206.52.33", 6666);
+	    PrintWriter out2 = new PrintWriter(mySocket2.getOutputStream(), true);
+	    out.println("Print/aaaaa");
+	    TimeUnit.SECONDS.sleep(2);
+	    out2.println("Print/plzwork");
+	    
 	}
 }

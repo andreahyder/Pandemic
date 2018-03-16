@@ -1,3 +1,4 @@
+package Server;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -145,6 +146,8 @@ public class Game {
 		for(int i = 0; i < count; i++) {
 			PlayerCard t1 = playerDeck.remove(0);
 			if(t1.type.equals(Type.Epidemic)) {
+				System.out.println("Player " + p.username + " drew an EPIDEMIC card!");
+				
 				infectionCount++;
 				
 				for(int j = 0; j < players.size(); j++) {
@@ -171,6 +174,8 @@ public class Game {
 				}
 			}
 			else {
+				System.out.println("Player " + p.username + " drew " + t1.city.name + ".");
+				
 				p.hand.add(t1);
 				
 				String mes = "AddCardToHand/" + p.username + "/" + t1.city.name + "/";
@@ -188,12 +193,16 @@ public class Game {
 			if(c.city.countDiseaseCube(color) != 3) {
 				c.city.addDiseaseCube(color);
 				
+				System.out.println("Infected " + c.city.name + " with a " + color.toString() + " disease cube!");
+				
 				String mes = "AddDiseaseCubeToCity/" + c.city.name + "/" + color.toString() + "/";	
 				for(int j = 0; j < players.size(); j++) {
 					ServerComm.sendMessage(mes, j);
 				}
 			}
 			else {
+				System.out.println("OUTBREAK IN " + c + "!");
+				
 				ArrayList<City> outbreakList = new ArrayList<City>();
 				outbreakList.add(c.city);
 				c.city.outbroken = true;
@@ -202,6 +211,8 @@ public class Game {
 					for(City link: outbreakList.get(0).connected) {
 						if(!link.outbroken) {
 							if(link.countDiseaseCube(color) != 3) {
+								System.out.println("Infected " + link.name + " with a " + color.toString() + " disease cube!");
+								
 								link.addDiseaseCube(color);
 								
 								String mes = "AddDiseaseCubeToCity/" + link.name + "/" + color.toString() + "/";	
@@ -210,6 +221,8 @@ public class Game {
 								}
 							}
 							else {
+								System.out.println("CHAIN OUTBREAK IN " + link + "!");
+								
 								outbreakList.add(link);
 								link.outbroken = true;
 							}

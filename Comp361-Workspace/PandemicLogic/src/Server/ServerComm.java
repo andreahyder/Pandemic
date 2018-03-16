@@ -1,5 +1,8 @@
-import java.io.IOException;
+package Server;
+
 import Actions.*;
+
+import java.io.IOException;
 import java.lang.Thread;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -12,7 +15,7 @@ public class ServerComm {
 	static ArrayList<String[]> messageQueue = new ArrayList<String[]>();
 	static String response = null;
 	static ArrayList<Action> possibleActions = initializePossibleActions();
-	static void setupConnection(int port) throws IOException{ //Create a thread in main and run this cuz it's gonna loop
+	public static void setupConnection(int port) throws IOException{ //Create a thread in main and run this cuz it's gonna loop
 		try {
 			listener = new ServerSocket(port);
 		} catch (IOException e) {
@@ -70,7 +73,7 @@ public class ServerComm {
 			i++;
 		}		
 	}
-	void sendMessage(String message, int clientNumber){
+	static void sendMessage(String message, int clientNumber){
 		for (ClientThread t: clientList){
 			if (t.getClientNumber() == clientNumber){
 				t.send(message);
@@ -99,7 +102,6 @@ public class ServerComm {
 		toReturn.add(new ShareKnowledge());
 		toReturn.add(new ToggleReady());
 		toReturn.add(new ChangeName());
-		toReturn.add(new Discard());
 		toReturn.add(new EndTurn());
 		toReturn.add(new Print());
 		return toReturn;

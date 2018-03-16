@@ -1,3 +1,4 @@
+package Server;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -5,7 +6,7 @@ import java.io.PrintWriter;
 import java.net.*;
 
 public class comm {
-	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException{
+	/*public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException{
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
@@ -27,5 +28,5 @@ public class comm {
 	    TimeUnit.SECONDS.sleep(2);
 	    out2.println("Print/plzwork");
 	    
-	}
+	}*/
 }

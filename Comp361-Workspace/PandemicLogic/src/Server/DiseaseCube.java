@@ -1,3 +1,4 @@
+package Server;
 
 public class DiseaseCube {
 	Disease disease;

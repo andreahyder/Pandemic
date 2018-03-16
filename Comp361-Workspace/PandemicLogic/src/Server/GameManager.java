@@ -1,10 +1,11 @@
+package Server;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class GameManager {
 	//ArrayList<Game> games;
-	static Game game = new Game();
-	static ArrayList<Player> playerList = new ArrayList<Player>();
+	public static Game game = new Game();
+	public static ArrayList<Player> playerList = new ArrayList<Player>();
 	
 	GameManager(){
 		//playerList = new ArrayList<Player>();
@@ -18,20 +19,22 @@ public class GameManager {
 	}*/
 	
 	//when a player joins the game
-	static void AddPlayer(String name) {
+	public static void AddPlayer(String name) {
 		Player t1 = new Player(name);
 		playerList.add(t1);
 		game.players.add(t1);
 		t1.givePawn(game.getCity("Atlanta"));
 	}
 	
-	static void ChangeName(String newname) {
-		Player t1 = game.getCurrentPlayer();
+	public static void ChangeName(String indexs, String newname) {
+		int index = Integer.parseInt(indexs);
+		Player t1 = game.getPlayer(index);
 		t1.username = newname;
 	}
 	
 	//when a player is ready to start the game
-	static void ToggleReady(int index) {
+	public static void ToggleReady(String indexs) {
+		int index = Integer.parseInt(indexs);
 		Player t1 = game.getPlayer(index);
 		t1.ready = true;
 		
@@ -62,8 +65,13 @@ public class GameManager {
 				game.infectCity(t2, 1);
 			}
 			
-			mes = "NotifyTurn/" + game.players.get(game.turn).username + "/" +;
+			mes = "ResetActions/";
 			ServerComm.sendMessage(mes, game.turn);
+			
+			mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 		}
 	}
 	
@@ -91,24 +99,31 @@ public class GameManager {
 	}*/
 	
 	//drive
-	static void Drive(String name, String city) {
+	public static void Drive(String city) {
 		Player t1 = game.getCurrentPlayer();
 		City t2 = game.getCity(city);
 		t1.pawn.move(t2);
+		
+		System.out.println(t1.username + " drived to " + city + ".");
 		
 		String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
 		for(int i = 0; i < game.players.size(); i++) {
 			ServerComm.sendMessage(mes, i);
 		}
+		
+		mes = "DecrementActions/";
+		ServerComm.sendMessage(mes, game.turn);
 	}
 	
 	//directFlight
-	static void DirectFlight(String name, String city) {
+	public static void DirectFlight(String city) {
 		Player t1 = game.getCurrentPlayer();
 		City t2 = game.getCity(city); 
 		t1.pawn.move(t2);
 		PlayerCard t3 = t1.hand.remove(t1.getCard(city));
 		game.playerDiscardPile.add(t3);
+		
+		System.out.println(t1.username + " directly flew to " + city + ".");
 		
 		String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
 		String mes2 = "RemoveCardFromHand/" + t1.username + "/" + city + "/true/";
@@ -116,23 +131,31 @@ public class GameManager {
 			ServerComm.sendMessage(mes, i);
 			ServerComm.sendMessage(mes2, i);
 		}
+		
+		mes = "DecrementActions/";
+		ServerComm.sendMessage(mes, game.turn);
 	}
 	
 	//treatDisease
-	static void TreatDisease(String name, String color) {
+	public static void TreatDisease(String color) {
 		int count = 1;
 		Player t1 = game.getCurrentPlayer();
 		Color c = Color.valueOf(color);
 		t1.pawn.treat(c);
 		
+		System.out.println(t1.username + " treated a " + color.toString() + "disease cube in " + t1.pawn.city.name + ".");
+		
 		String mes = "RemoveCube/" + t1.pawn.city.name + "/" + color + "/" + count + "/";
 		for(int i = 0; i < game.players.size(); i++) {
 			ServerComm.sendMessage(mes, i);
 		}
+		
+		mes = "DecrementActions/";
+		ServerComm.sendMessage(mes, game.turn);
 	}
 	
 	//shareKnowledge 
-	static void ShareKnowledge(String name, String target) {
+	public static void ShareKnowledge(String target) {
 		Player t1 = game.getCurrentPlayer();
 		Player t2 = game.getPlayer(target);
 		int index = game.players.indexOf(t2);
@@ -150,6 +173,8 @@ public class GameManager {
 			if(a != -1) {
 				t1.share(t2, a, true);
 				
+				System.out.println(t1.username + " shared their card with " + t2.username + " at " + t3 + ".");
+				
 				String mes = "RemoveCardFromHand/" + t1.username + "/" + t3 + "/false/";
 				String mes2 = "AddCardToHand/" + t2.username + "/" + t3 + "/";
 				for(int i = 0; i < game.players.size(); i++) {
@@ -162,6 +187,8 @@ public class GameManager {
 			else if(b != -1) {
 				t2.share(t1, b, false);
 				
+				System.out.println(t2.username + " shared their card with " + t1.username + " at " + t3 + ".");
+				
 				String mes = "RemoveCardFromHand/" + t2.username + "/" + t3 + "/false/";
 				String mes2 = "AddCardToHand/" + t1.username + "/" + t3 + "/";
 				for(int i = 0; i < game.players.size(); i++) {
@@ -171,6 +198,9 @@ public class GameManager {
 					ServerComm.sendMessage(mes2,i);
 				}
 			}
+			
+			String mes = "DecrementActions/";
+			ServerComm.sendMessage(mes, game.turn);
 		}
 		else {
 			
@@ -178,9 +208,13 @@ public class GameManager {
 	}
 	
 	//can be called anytime when game stage attribute is set to Action. There is no Draw stage attribute, because it isn't required.
-	static void EndTurn(String name) {
+	public static void EndTurn() {
 		Player t1 = game.getCurrentPlayer();
 		t1.pawn.actions = 4;
+		
+		String mes = "ResetActions/";
+		ServerComm.sendMessage(mes, game.turn);
+		
 		game.drawCard(t1, 2);
 		
 		while(t1.hand.size() > 7) {
@@ -193,9 +227,9 @@ public class GameManager {
 			PlayerCard t2 = t1.hand.remove(t1.getCard(s));
 			game.playerDiscardPile.add(t2);
 			
-			String mes = "RemoveCardFromHand/" + t1.username + "/" + t2.city.name + "/true/";
+			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t2.city.name + "/true/";
 			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes, i);
+				ServerComm.sendMessage(mes2, i);
 			}
 		}
 		
@@ -214,8 +248,13 @@ public class GameManager {
 			game.turn++;
 		}
 		
-		String mes = "NotifyTurn/" + game.players.get(game.turn).username + "/" +;
+		mes = "ResetActions/";
 		ServerComm.sendMessage(mes, game.turn);
+		
+		mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
+		for(int i = 0; i < game.players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+		}
 	}
 	
 	//can be called when game stage is Infection. Changes stage to Action at the end, and changes turn to the next player.
@@ -236,7 +275,7 @@ public class GameManager {
 	
 	
 	//helper function to return a player from a name string
-	static Player getPlayer(String s) {
+	public static Player getPlayer(String s) {
 		int i = 0;
 		Boolean found = false;
 		while(i < playerList.size() && !found) {

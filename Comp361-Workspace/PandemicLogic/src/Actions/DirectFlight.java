@@ -1,5 +1,7 @@
 package Actions;
 
+import Server.*;
+
 public class DirectFlight implements Action{
 
 	@Override
