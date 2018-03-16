@@ -33,7 +33,7 @@ public class ClientThread extends Thread{
 		out.println(outMessage);
 	}
 	public void callback(String inMessage){
-		System.out.println(inMessage);
+		ServerComm.addToActionQueue(inMessage, clientNumber);
 	}
 	int getClientNumber(){
 		return clientNumber;

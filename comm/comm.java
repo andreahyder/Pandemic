@@ -5,7 +5,6 @@ import java.net.*;
 public class comm {
 	public static void main(String[] args) throws UnknownHostException, IOException{
 		new Thread(new Runnable(){
-
 			@Override
 			public void run() {
 				try {
@@ -17,9 +16,10 @@ public class comm {
 			}
 			
 		}).start();
-		Socket mySocket = new Socket("192.168.0.1", 6666);
+		Socket mySocket = new Socket("132.206.52.35", 6666);
+		new ClientThread(mySocket, 1).start();
 	    PrintWriter out = new PrintWriter(mySocket.getOutputStream(), true);
-	    Socket mySocket2 = new Socket("192.168.0.1", 6666);
+	    Socket mySocket2 = new Socket("132.206.52.35", 6666);
 	    PrintWriter out2 = new PrintWriter(mySocket2.getOutputStream(), true);
 	    out.println("aaaaaaaaaa");
 	    out2.println("bbbbbbbbbbb");
