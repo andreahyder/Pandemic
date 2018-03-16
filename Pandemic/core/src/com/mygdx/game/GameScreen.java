@@ -944,6 +944,7 @@ public class GameScreen implements Screen {
 				endTurnDialog.button("End Turn");
 				dialogStage.clear();;
 				endTurnDialog.show( dialogStage );
+				endTurnDialog.button("End Turn");
 				Gdx.input.setInputProcessor(dialogStage);
 				turnEnded = true;
 				endTurnDialog.clear();
@@ -953,6 +954,7 @@ public class GameScreen implements Screen {
 
 		buttonStage.draw();
 		
+		updatePawnStage();
 		pawnStage.draw();
 
 		if ( dialogStage != null )
@@ -1383,7 +1385,7 @@ public class GameScreen implements Screen {
 		infectionDiscardPile.clear();
 	}
 	
-	public static void NotifyTurn( String PlayerName, String isTurnClient )
+	public static void NotifyTurn( String PlayerName )
 	{
 		PlayerInfo player = lookupPlayer( PlayerName );
 		

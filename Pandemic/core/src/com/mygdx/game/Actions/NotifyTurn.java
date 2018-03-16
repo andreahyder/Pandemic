@@ -6,7 +6,7 @@ public class NotifyTurn implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameScreen.NotifyTurn( args[1], args[2] );
+		GameScreen.NotifyTurn( args[1] );
 	}
 
 	@Override
