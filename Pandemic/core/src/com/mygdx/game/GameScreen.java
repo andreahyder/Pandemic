@@ -292,6 +292,12 @@ public class GameScreen implements Screen {
 		}
 		//////////////
 				
+
+		diseaseStage = new Stage( new ScreenViewport() ); //TEST
+		dialogStage = new Stage( new ScreenViewport() );
+		pawnStage = new Stage( new ScreenViewport() );
+		handPanelGroup = new Group();
+		
 		updateDiseaseStage();
 		
 		initButtonStage();
@@ -397,7 +403,7 @@ public class GameScreen implements Screen {
 			
 	static void updatePawnStage()	
 	{
-		pawnStage = new Stage( new ScreenViewport() );
+		pawnStage.clear();
 		
 		HashMap<CityNode, ArrayList<PlayerInfo>> countMap = new HashMap<CityNode, ArrayList<PlayerInfo>>();
 		for( PlayerInfo player : players )
@@ -449,7 +455,10 @@ public class GameScreen implements Screen {
 	
 	static void updateDiseaseStage()
 	{
-		diseaseStage = new Stage( new ScreenViewport() );
+		if (diseaseStage != null)
+		{
+			diseaseStage.clear();
+		}
 		for ( CityNode curr : cityNodes )
 		{
 			ArrayList<DiseaseCubeInfo> localCubes = curr.getCubes();
@@ -462,13 +471,14 @@ public class GameScreen implements Screen {
 				Image cube = new Image( diseaseCubeTextures[ localCubes.get( i ).getColourIndex() ] );
 				cube.setBounds( x ,y, cubeSize, cubeSize);
 				diseaseStage.addActor( cube );
+				
 			}
 		}
 	}
 	
 	static void updateHandPanelStage()
 	{	
-		handPanelGroup = new Group();
+		handPanelGroup.clear();
 		
 		if ( handShownPlayer == null )
 			return;
@@ -509,11 +519,12 @@ public class GameScreen implements Screen {
 		            				ClientComm.send("DirectFlight/"+card.getName());
 		            			}
 		        	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-		        	            dialogStage = null;
+		        	            //dialogStage = null;
 		            		}
 		            	};
 	
-		        		dialogStage = new Stage( new ScreenViewport() );
+		        		//dialogStag/e = new Stage( new ScreenViewport() );//
+		        		dialogStage.clear();
 		        		
 		        		confirmFlight.button( "Yes", true );
 		        		confirmFlight.button( "No", false );
@@ -612,6 +623,17 @@ public class GameScreen implements Screen {
 		}
 	}
 	
+	static boolean playerHasCityCard( PlayerInfo player, String CardName )
+	{
+		boolean hasCard = false;
+		for ( PlayerCardInfo card : currentPlayer.getHand() )
+		{
+			hasCard |= ( CardName.equals(card.getName() ) );
+		}
+		
+		return hasCard;
+	}
+	
 	static void createActionButtons()
 	{
 
@@ -637,7 +659,7 @@ public class GameScreen implements Screen {
 	                    		city.removeCubeByColour( (DiseaseColour)object );
 	                    	}
 	                    	Gdx.input.setInputProcessor( buttonStage );
-	                    	dialogStage = null;
+	                    	//dialogStage = null;
 	                    }
 	                };
 	                
@@ -649,7 +671,7 @@ public class GameScreen implements Screen {
 	        			}
 	        		}
 	        		colourSelect.button( "Cancel", null );
-	        		dialogStage = new Stage( new ScreenViewport() );
+	        		dialogStage.clear();;
 	        		Gdx.input.setInputProcessor( dialogStage );
 	        		colourSelect.show( dialogStage );
             	}
@@ -665,15 +687,28 @@ public class GameScreen implements Screen {
         	{
         		if ( currentPlayer == clientPlayer && actionsRemaining > 0)
         		{
-        			dialogStage = new Stage( new ScreenViewport() );
+        			dialogStage.clear();
+        			
+        			String cityName = currentPlayer.getCity();
+        			boolean hasCard = playerHasCityCard( currentPlayer, cityName );
+        			if( hasCard )
+        			{
+        				
+        			}
+        			else
+        			{
+        				
+        			}
+        			
+        			
         			Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
         			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
         			
-        			Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
+        			Dialog discardPrompt = new Dialog("Choose a Player to Share Knowledge with",skin){
         				protected void result(Object object){
         					String selected = selectBox.getSelected();
         		            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-        		            dialogStage = null;
+        		            //dialogStage = null;
         		            ClientComm.send("ShareKnowledge/"+selected);
         		        }
         			};
@@ -720,11 +755,11 @@ public class GameScreen implements Screen {
         	        protected void result(Object object)
         	        {
         	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-        	            dialogStage = null;
+        	            //dialogStage = null;
         	        }
         		};
         		
-        		infectionDiscardTable = new Table( skin );
+        		infectionDiscardTable = new Table( altSkin );
         		
         		for( String cityName : infectionDiscardPile )
         		{
@@ -735,7 +770,7 @@ public class GameScreen implements Screen {
         		
         		showInfectionDiscard.getContentTable().add( infectionDiscardTable ).height( playerDiscardPile.size() * 35f );;
         		showInfectionDiscard.button( "Close" );
-        		dialogStage = new Stage( new ScreenViewport() );
+        		dialogStage.clear();;
         		showInfectionDiscard.show( dialogStage );
 	            Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
         	}
@@ -753,7 +788,7 @@ public class GameScreen implements Screen {
         	        protected void result(Object object)
         	        {
         	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-        	            dialogStage = null;
+        	            //dialogStage = null;
         	        }
         		};
 
@@ -769,7 +804,7 @@ public class GameScreen implements Screen {
         		
         		showPlayerDiscard.getContentTable().add( playerDiscardTable ).height( playerDiscardPile.size() * 25f );
         		showPlayerDiscard.button( "Close" );
-        		dialogStage = new Stage( new ScreenViewport() );
+        		dialogStage.clear();;
         		showPlayerDiscard.show( dialogStage );
 	            Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
         	}
@@ -847,16 +882,18 @@ public class GameScreen implements Screen {
 			batch.draw(connectionsTexture, 0, 0, windWidth, windHeight);
 		batch.end();
 		connectionsTexture.dispose();
-			
+
 		
+		///////////////////////////////////////////////////////////////////////////////////////////////////
 		cubeOrbitRotation = (float) (( cubeOrbitRotation - delta*cubeOrbitRate ) % (Math.PI * 2));
 		updateDiseaseStage();
 		diseaseStage.draw();
+		//diseaseStage.dispose();
 		
 		updateCityTouchability();
-		
+
 		updateHandPanelStage();
-		
+
 		if ( currentPlayer == clientPlayer && actionsRemaining > 0 )
 			buttonStage.act();
 		else if ( currentPlayer == clientPlayer && actionsRemaining <= 0 )
@@ -867,29 +904,30 @@ public class GameScreen implements Screen {
 			        protected void result(Object object)
 			        {
 			            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-			            dialogStage = null;
+			            //dialogStage = null;
 			        }
 				};
 
 				endTurnDialog.button("End Turn");
-				dialogStage = new Stage( new ScreenViewport() );
+				dialogStage.clear();;
 				endTurnDialog.show( dialogStage );
 				Gdx.input.setInputProcessor(dialogStage);
 				turnEnded = true;
+				endTurnDialog.clear();
 				ClientComm.send("EndTurn");
 			}
 		}
-			
+
 		buttonStage.draw();
 		
 		pawnStage.draw();
-		
+
 		if ( dialogStage != null )
 		{
 			dialogStage.draw();
 			dialogStage.act();
 		}
-		
+
 		batch.begin();
 			batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 520f, 150f);
 			batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
@@ -1076,6 +1114,7 @@ public class GameScreen implements Screen {
 	}
 	
 	void displayPlayerColours(){
+
 		BitmapFont playersColores = new BitmapFont();
 		BitmapFont colourToBeDrawn = new BitmapFont();
 		
@@ -1173,11 +1212,11 @@ public class GameScreen implements Screen {
 	        	}
 
 	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-	            dialogStage = null;
+	            //dialogStage = null;
 	        }
 		};
 		
-		dialogStage = new Stage( new ScreenViewport() );
+		dialogStage.clear();;
 		consentRequest.button( "Accept", true );
 		consentRequest.button( "Refuse", false );
 		
@@ -1210,7 +1249,7 @@ public class GameScreen implements Screen {
 	
 	public static void AskForDiscard()
 	{
-		dialogStage = new Stage( new ScreenViewport() );
+		dialogStage.clear();;
 		Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 		final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
 		
@@ -1218,7 +1257,7 @@ public class GameScreen implements Screen {
 			protected void result(Object object){
 				String selected = selectBox.getSelected();
 	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-	            dialogStage = null;
+	            //dialogStage = null;
 	            ClientComm.send("data/"+selected);
 	        }
 		};
@@ -1290,7 +1329,7 @@ public class GameScreen implements Screen {
 	        protected void result(Object object)
 	        {
 	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-	            dialogStage = null;
+	            //dialogStage = null;
 	        }
 		};
 		notifyEpidemic.setColor( Color.GREEN );
@@ -1298,7 +1337,7 @@ public class GameScreen implements Screen {
 		notifyEpidemic.button("Okay");
 		
 		
-		dialogStage = new Stage( new ScreenViewport() );
+		dialogStage.clear();;
 		notifyEpidemic.show( dialogStage );
 		Gdx.input.setInputProcessor(dialogStage);
 		
@@ -1325,12 +1364,12 @@ public class GameScreen implements Screen {
 				        protected void result(Object object)
 				        {
 				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-				            dialogStage = null;
+				            //dialogStage = null;
 				        }
 					};
 
 					notifyTurnDialog.button("Okay");
-					dialogStage = new Stage( new ScreenViewport() );
+					dialogStage.clear();;
 					notifyTurnDialog.show( dialogStage );
 					Gdx.input.setInputProcessor(dialogStage);
 					turnEnded = false;
