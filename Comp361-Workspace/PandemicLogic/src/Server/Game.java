@@ -178,7 +178,7 @@ public class Game {
 				
 				p.hand.add(t1);
 				
-				String mes = "AddCardToHand/" + p.username + "/" + t1.city.name + "/";
+				String mes = "AddCardToHand/" + p.username + "/" + t1.city.name + "/true/";
 				for(int j = 0; j < players.size(); j++) {
 					ServerComm.sendMessage(mes, j);
 				}

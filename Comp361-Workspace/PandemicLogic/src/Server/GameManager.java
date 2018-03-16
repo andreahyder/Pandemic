@@ -50,7 +50,11 @@ public class GameManager {
 			for(Player p:game.players) {
 				game.drawCard(p, numcard);
 			}
-			Collections.shuffle(game.playerDeck);
+			//Collections.shuffle(game.playerDeck);
+			PlayerCard tempp = game.playerDeck.remove(game.playerDeck.size()-1);
+			PlayerCard tempp2 = game.playerDeck.remove(game.playerDeck.size()-1);
+			game.playerDeck.add(0, tempp);
+			game.playerDeck.add(0, tempp2);
 			
 			for(int i = 0; i < 3; i++) {
 				InfectionCard t2 = game.infectionDeck.remove(0);
@@ -176,7 +180,7 @@ public class GameManager {
 				System.out.println(t1.username + " shared their card with " + t2.username + " at " + t3 + ".");
 				
 				String mes = "RemoveCardFromHand/" + t1.username + "/" + t3 + "/false/";
-				String mes2 = "AddCardToHand/" + t2.username + "/" + t3 + "/";
+				String mes2 = "AddCardToHand/" + t2.username + "/" + t3 + "/false/";
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
@@ -190,7 +194,7 @@ public class GameManager {
 				System.out.println(t2.username + " shared their card with " + t1.username + " at " + t3 + ".");
 				
 				String mes = "RemoveCardFromHand/" + t2.username + "/" + t3 + "/false/";
-				String mes2 = "AddCardToHand/" + t1.username + "/" + t3 + "/";
+				String mes2 = "AddCardToHand/" + t1.username + "/" + t3 + "/false/";
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
