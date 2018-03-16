@@ -796,14 +796,18 @@ public class GameScreen implements Screen {
 				{
 					for ( Action a: ClientComm.possibleActions )
 					{
-						String[] message = clientComm.messageQueue.remove(0);
-						if ( message.length > 0 )
+						String[] message = ClientComm.messageQueue.get(0);
+						if ( message != null )
 						{
-							String toExecute = message[0];
-							if(a.getName().equals(toExecute))
+							if ( message.length > 0 )
 							{
-								a.execute(message);
-								break;
+								String toExecute = message[0];
+								if(a.getName().equals(toExecute))
+								{
+									ClientComm.messageQueue.remove( 0 );
+									a.execute(message);
+									break;
+								}
 							}
 						}
 					}
@@ -1100,7 +1104,6 @@ public class GameScreen implements Screen {
 		
 		colourToBeDrawn.dispose();
 	} 
-
 	
 	public static CityNode lookupCity( String name )
 	{
