@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -195,11 +196,14 @@ public class GameScreen implements Screen {
 	static Group buttonGroup, handPanelGroup;
 	static Skin skin;
     static Button button;
-    static ArrayList<Button> cityButtons = new ArrayList<Button>();
-    static ArrayList<String> infectionDiscardPile = new ArrayList<String>();
     static boolean isMyTurn = true;
     static float cubeOrbitRotation = 0;
 	static PlayerInfo handShownPlayer;
+    
+    static ArrayList<Button> cityButtons 			= new ArrayList<Button>();
+    static ArrayList<String> infectionDiscardPile	= new ArrayList<String>();
+    static ArrayList<String> playerDiscardPile 		= new ArrayList<String>();
+    
 	
 	
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -253,6 +257,7 @@ public class GameScreen implements Screen {
 		initHandButtonStage();
 		
 		updatePawnStage();
+		
 	}
 	
 	static void initGeneralTextures()
@@ -450,12 +455,33 @@ public class GameScreen implements Screen {
 	            }
 	        });
 	        
-
-	        button.addListener( new ChangeListener() {
-	            @Override
-				public void changed(ChangeEvent event, Actor actor) {
-				}
-	        });
+	        if( handShownPlayer == clientPlayer && actionsRemaining > 0 && !turnEnded && clientPlayer == currentPlayer)
+		    {
+		        button.addListener( new ChangeListener() {
+		            @Override
+					public void changed(ChangeEvent event, Actor actor) {
+		            	Dialog confirmFlight = new Dialog("Fly to "+ card.getName() + "?" , skin ){
+		            		@Override
+		            		protected void result(Object object) {
+		            			if ( (boolean) ( object ) )
+		            			{
+		            				ClientComm.send("DirectFlight/"+card.getName());
+		            			}
+		        	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+		        	            dialogStage = null;
+		            		}
+		            	};
+	
+		        		dialogStage = new Stage( new ScreenViewport() );
+		        		
+		        		confirmFlight.button( "Yes", true );
+		        		confirmFlight.button( "No", false );
+		        		
+		                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+		                confirmFlight.show( dialogStage );
+					}
+		        });
+	        }
 	        
 			float x = playerCardXOffset + playerCardGap + (handIdx*(playerCardXSize+ playerCardGap) );
 			float y = playerCardYOffset/2;
@@ -518,7 +544,8 @@ public class GameScreen implements Screen {
 	            	if ( actionsRemaining > 0 && clientPlayer == currentPlayer )
 	            	{
 		            	String cityName = curr.getName();
-		            	// RealTODO: Call Drive( CityName ) on Server
+		            	ClientComm.send( "Drive/"+cityName );
+		            	// IMPLEMENT Call Drive( CityName ) on Server
 	            	}
 				}
 	        });
@@ -555,6 +582,7 @@ public class GameScreen implements Screen {
 	                    	if ( object != null )
 	                    	{
 	                    		CityNode city = lookupCity( clientPlayer.getCity() );
+	                    		ClientComm.send( "TreatDisease/" + city.getColour().toLowerCase() );
 	                    		city.removeCubeByColour( (DiseaseColour)object );
 	                    	}
 	                    	Gdx.input.setInputProcessor( buttonStage );
@@ -586,7 +614,45 @@ public class GameScreen implements Screen {
         	{
         		if ( currentPlayer == clientPlayer && actionsRemaining > 0)
         		{
+        			dialogStage = new Stage( new ScreenViewport() );
+        			Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
         			
+        			Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
+        				protected void result(Object object){
+        					String selected = selectBox.getSelected();
+        		            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+        		            dialogStage = null;
+        		            ClientComm.send("ShareKnowledge/"+selected);
+        		        }
+        			};
+        			        			
+        			int size = 0;
+        			for ( int i = 0; i < players.length; i++ )
+        			{
+        				if ( players[i] != null )
+        					size++;
+        			}
+
+        			String[] items = new String[size];
+        			size  = 0;
+        			for ( int i = 0; i < players.length; i++ )
+        			{
+        				if ( players[i] != null )
+        				{
+        					items[ size ] = players[i].getName();
+        					size++;
+        				}
+        			}
+
+        			discardPrompt.setSize(250,150);
+        			discardPrompt.setPosition( windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2 );
+        			discardPrompt.button( "Select" );
+        			selectBox.setItems( items );
+        			discardPrompt.getContentTable().add(selectBox);
+
+        			dialogStage.addActor(discardPrompt);
+        			Gdx.input.setInputProcessor(dialogStage);
         		}
         	}
         } );
@@ -721,6 +787,7 @@ public class GameScreen implements Screen {
 				endTurnDialog.show( dialogStage );
 				Gdx.input.setInputProcessor(dialogStage);
 				turnEnded = true;
+				ClientComm.send("EndTurn");
 			}
 		}
 			
@@ -825,11 +892,11 @@ public class GameScreen implements Screen {
 	        {
 	        	if ( (boolean) object )
 	        	{
-	        		//send consent: true 
+	        		ClientComm.send("data/true");	        	
 	        	}
 	        	else
 	        	{
-	        		//send consent: false
+	        		ClientComm.send("data/false");	    
 	        	}
 
 	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
@@ -870,6 +937,35 @@ public class GameScreen implements Screen {
 	
 	public static void AskForDiscard()
 	{
+		dialogStage = new Stage( new ScreenViewport() );
+		Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+		final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+		
+		Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
+			protected void result(Object object){
+				String selected = selectBox.getSelected();
+	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	            dialogStage = null;
+	            ClientComm.send("data/"+selected);
+	        }
+		};
+		
+		String[] items = new String[ currentPlayer.getHandSize() ] ;
+		
+		for ( int i = 0; i < currentPlayer.getHandSize(); i++ )
+		{
+			PlayerCardInfo card = currentPlayer.getHand().get( i );
+			items[i] = card.getName();
+		}
+
+		discardPrompt.setSize(250,150);
+		discardPrompt.setPosition( windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2 );
+		discardPrompt.button( "Select" );
+		selectBox.setItems( items );
+		discardPrompt.getContentTable().add(selectBox);
+
+		dialogStage.addActor(discardPrompt);
+		Gdx.input.setInputProcessor(dialogStage);
 		
 	}
 	
@@ -880,7 +976,8 @@ public class GameScreen implements Screen {
 		if ( player != null )
 		{
 			player.removeCardFromHand( CardName );
-			//IMPLEMENT ADD TO PLAYER DISCAQRD 
+			if ( Boolean.valueOf( DiscardBool ) )
+				playerDiscardPile.add( CardName );
 		}
 		
 	}
@@ -892,7 +989,6 @@ public class GameScreen implements Screen {
 		if ( player != null )
 		{
 			player.addCardToHand( new PlayerCardInfo( CardName ) );
-			//IMPLEMENT ADD TO PLAYER DISCAQRD 
 		}
 	}
 	

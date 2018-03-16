@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import java.io.IOException;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.TextInputListener;
 import com.badlogic.gdx.Screen;
@@ -138,7 +140,16 @@ public class MenuScreen implements Screen
 		
 		if ( !IP.equals( "" ) )
 		{
-			parent.changeScreen( Screens.SETUP );
+			try 
+			{
+				ClientComm.setupConnection( IP, 6000 );
+				parent.changeScreen( Screens.SETUP );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				JoinGameTextInput listener = new JoinGameTextInput();
+				Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
+			} //IMPLEMENT
 			// IMPLEMENT addPlayer to Server Game 
 		}
 	}

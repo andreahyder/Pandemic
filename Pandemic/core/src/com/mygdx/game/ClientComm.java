@@ -54,8 +54,8 @@ public class ClientComm {
 		}).start();
 		*/
 	}
-	void send(String message){
-		ct.send(message);
+	static void send(String message){
+		ct.send(message); 
 	}
 	static void addToActionQueue(String pString){
 		String[] temp = pString.split("/");
