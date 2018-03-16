@@ -30,6 +30,8 @@ public class Player {
 		pawn = new Pawn(this, c);
 	}
 	
+	
+	
 	int getCard(String s){
 		int i = 0;
 		Boolean found = false;

@@ -71,6 +71,21 @@ public class Game {
 		Collections.shuffle(infectionDeck);
 	}
 	
+	Boolean allReady() {
+		Boolean y = true;
+		for(Player p: players) {
+			if(!p.ready) {
+				y = false;
+			}
+		}
+		return y;
+	}
+	
+	//return the current player
+	Player getCurrentPlayer() {
+		return players.get(turn);
+	}
+	
 	//return a player with the specified name in the game
 	Player getPlayer(String s) {
 		int i = 0;
@@ -89,6 +104,10 @@ public class Game {
 		else {
 			return null;
 		}
+	}
+	
+	Player getPlayer(int i) {
+		return players.get(i);
 	}
 	
 	//return a city with the specified name in the game

@@ -2,71 +2,72 @@
 public class Main {
 
 	public static void main(String[] args) {
-		//test
-		GameManager test = new GameManager();
+		//GameManager
 		
 		//3 players join the game
-		test.addPlayer("Bob");
-		test.addPlayer("Chris");
-		test.addPlayer("Roflcopter");
+		GameManager.AddPlayer("Bob");
+		GameManager.AddPlayer("Chris");
+		GameManager.AddPlayer("Roflcopter");
 		
 		//3 players ready
-		test.toggleReady("Bob");
-		test.toggleReady("Roflcopter");
-		test.toggleReady("Chris");
-		
-		//start the game
-		test.startGame();
+		GameManager.ToggleReady(2);
+		GameManager.ToggleReady(0);
+		GameManager.ToggleReady(1);
 		
 		//print out the starting player hands
 		System.out.print("Bob: ");
-		for(PlayerCard c: test.game.getPlayer("Bob").hand) {	
+		for(PlayerCard c: GameManager.game.getPlayer("Bob").hand) {	
 			System.out.print("["+c.city.name + "] ");
 		}
 		System.out.println("");
 		System.out.print("Chris: ");
-		for(PlayerCard c: test.game.getPlayer("Chris").hand) {	
+		for(PlayerCard c: GameManager.game.getPlayer("Chris").hand) {	
 			System.out.print("["+c.city.name + "] ");
 		}
 		System.out.println("");
 		System.out.print("Roflcopter: ");
-		for(PlayerCard c: test.game.getPlayer("Roflcopter").hand) {	
+		for(PlayerCard c: GameManager.game.getPlayer("Roflcopter").hand) {	
 			System.out.print("["+c.city.name + "] ");
 		}
 		System.out.println("");
 		System.out.println("");
 		
 		//print out infection discard pile, and number of disease cubes in corresponding cities
-		for(InfectionCard c: test.game.infectionDiscardPile) {
+		for(InfectionCard c: GameManager.game.infectionDiscardPile) {
 			System.out.println(c.city.name + ": " + c.city.countDiseaseCube(c.city.disease.color) + " cubes");
 		}
 		System.out.println("");
 		
-		for(Disease d: test.game.diseases) {
+		for(Disease d: GameManager.game.diseases) {
 			System.out.println(d.cubes.size() + " " + d.color + " cubes left.");
 		}
 		
-		//(illegal) share knowledge test. Bob steals a card from Roflcopter
-		test.shareKnowledge("Bob", "Roflcopter");
+		//(illegal) share knowledge GameManager. Bob steals a card from Roflcopter
+		GameManager.ShareKnowledge("Bob", "Roflcopter");
 		
 		System.out.print("Bob: ");
-		for(PlayerCard c: test.game.getPlayer("Bob").hand) {	
+		for(PlayerCard c: GameManager.game.getPlayer("Bob").hand) {	
 			System.out.print("["+c.city.name + "] ");
 		}
-		System.out.print(" actions left: "+ test.game.getPlayer("Bob").pawn.actions);
+		System.out.print(" actions left: "+ GameManager.game.getPlayer("Bob").pawn.actions);
 		System.out.println("");
 		System.out.print("Chris: ");
-		for(PlayerCard c: test.game.getPlayer("Chris").hand) {	
+		for(PlayerCard c: GameManager.game.getPlayer("Chris").hand) {	
 			System.out.print("["+c.city.name + "] ");
 		}
-		System.out.print(" actions left: "+ test.game.getPlayer("Chris").pawn.actions);
+		System.out.print(" actions left: "+ GameManager.game.getPlayer("Chris").pawn.actions);
 		System.out.println("");
 		System.out.print("Roflcopter: ");
-		for(PlayerCard c: test.game.getPlayer("Roflcopter").hand) {	
+		for(PlayerCard c: GameManager.game.getPlayer("Roflcopter").hand) {	
 			System.out.print("["+c.city.name + "] ");
 		}
-		System.out.print(" actions left: "+ test.game.getPlayer("Roflcopter").pawn.actions);
+		System.out.print(" actions left: "+ GameManager.game.getPlayer("Roflcopter").pawn.actions);
 		System.out.println("");
 		System.out.println("");
+		
+		String s = null;
+		if(s == null) {
+			System.out.println("ll");
+		}
 	}
 }
