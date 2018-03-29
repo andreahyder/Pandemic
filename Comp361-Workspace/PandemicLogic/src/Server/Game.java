@@ -203,6 +203,11 @@ public class Game {
 			else {
 				System.out.println("OUTBREAK IN " + c + "!");
 				
+				String mes2 = "IncOutbreakCounter/";	
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage(mes2, j);
+				}
+				
 				ArrayList<City> outbreakList = new ArrayList<City>();
 				outbreakList.add(c.city);
 				c.city.outbroken = true;
@@ -222,6 +227,11 @@ public class Game {
 							}
 							else {
 								System.out.println("CHAIN OUTBREAK IN " + link + "!");
+								
+								String mes = "IncOutbreakCounter/";	
+								for(int j = 0; j < players.size(); j++) {
+									ServerComm.sendMessage(mes, j);
+								}
 								
 								outbreakList.add(link);
 								link.outbroken = true;

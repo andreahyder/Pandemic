@@ -65,17 +65,19 @@ public class ServerComm {
 			
 		}).start();
 		while(true){
-			System.out.println("Listening to connections.");
+			System.out.println("Listening for connections.");
 			Socket client = listener.accept();
 			ClientThread newClientThread = new ClientThread(client, i);
 			clientList.add(newClientThread);
 			newClientThread.start();
+			System.out.println("New client connection established. Client number: " + i);
 			i++;
 		}		
 	}
 	static void sendMessage(String message, int clientNumber){
 		for (ClientThread t: clientList){
 			if (t.getClientNumber() == clientNumber){
+				System.out.println("Sent message: " + message + " to player " + clientNumber);
 				t.send(message);
 			}
 		}

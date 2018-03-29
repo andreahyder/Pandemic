@@ -2,6 +2,7 @@ import Actions.*;
 import Server.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import java.io.PrintWriter;
@@ -13,7 +14,7 @@ public class Main {
 			@Override
 			public void run() {
 				try {
-					ServerComm.setupConnection(6000);
+					ServerComm.setupConnection(6004);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

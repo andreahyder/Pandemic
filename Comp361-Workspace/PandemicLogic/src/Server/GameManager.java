@@ -24,11 +24,16 @@ public class GameManager {
 		playerList.add(t1);
 		game.players.add(t1);
 		t1.givePawn(game.getCity("Atlanta"));
+		
+		System.out.println("New player joined: " + t1.username);
 	}
 	
 	public static void ChangeName(String indexs, String newname) {
 		int index = Integer.parseInt(indexs);
 		Player t1 = game.getPlayer(index);
+		
+		System.out.println(t1.username + "changed their name to " + newname);
+		
 		t1.username = newname;
 	}
 	
@@ -38,23 +43,32 @@ public class GameManager {
 		Player t1 = game.getPlayer(index);
 		t1.ready = true;
 		
+		System.out.println(t1.username + " is ready.");
+		
 		if(game.allReady()) {
+			System.out.println("All players ready. Game started.");
+			
 			game.stage = Stage.Action;
 			
-			String mes = "StartGame/";
+			String tmes = "";
+			for(Player p: game.players){
+				tmes += p.username;
+				tmes += ",";
+			}
+			String mes = "StartGame/" + tmes + "/";
 			for(int i = 0; i < game.players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
 			}
 			
-			int numcard = 2;
+			int numcard = 7;
 			for(Player p:game.players) {
 				game.drawCard(p, numcard);
 			}
-			//Collections.shuffle(game.playerDeck);
-			PlayerCard tempp = game.playerDeck.remove(game.playerDeck.size()-1);
-			PlayerCard tempp2 = game.playerDeck.remove(game.playerDeck.size()-1);
-			game.playerDeck.add(0, tempp);
-			game.playerDeck.add(0, tempp2);
+			Collections.shuffle(game.playerDeck);
+			//PlayerCard tempp = game.playerDeck.remove(game.playerDeck.size()-1);
+			//PlayerCard tempp2 = game.playerDeck.remove(game.playerDeck.size()-1);
+			//game.playerDeck.add(5, tempp);
+			//game.playerDeck.add(0, tempp2);
 			
 			for(int i = 0; i < 3; i++) {
 				InfectionCard t2 = game.infectionDeck.remove(0);
@@ -68,9 +82,6 @@ public class GameManager {
 				InfectionCard t2 = game.infectionDeck.remove(0);
 				game.infectCity(t2, 1);
 			}
-			
-			mes = "ResetActions/";
-			ServerComm.sendMessage(mes, game.turn);
 			
 			mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
 			for(int i = 0; i < game.players.size(); i++) {
@@ -216,15 +227,16 @@ public class GameManager {
 		Player t1 = game.getCurrentPlayer();
 		t1.pawn.actions = 4;
 		
-		String mes = "ResetActions/";
-		ServerComm.sendMessage(mes, game.turn);
-		
 		game.drawCard(t1, 2);
 		
 		while(t1.hand.size() > 7) {
 			
 			ServerComm.sendMessage("AskForDiscard/",game.turn);
-			while(ServerComm.response == null) {}
+			int count = 0;
+			while(ServerComm.response == null) {
+				count++;
+				System.out.println(count);
+			}
 			String s = ServerComm.response;
 			ServerComm.response = null;
 			
@@ -252,10 +264,7 @@ public class GameManager {
 			game.turn++;
 		}
 		
-		mes = "ResetActions/";
-		ServerComm.sendMessage(mes, game.turn);
-		
-		mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
+		String mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
 		for(int i = 0; i < game.players.size(); i++) {
 			ServerComm.sendMessage(mes, i);
 		}

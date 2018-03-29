@@ -34,6 +34,7 @@ public class ClientThread extends Thread{
 		out.println(outMessage);
 	}
 	public void callback(String inMessage){
+		System.out.println("Received message: " + inMessage + " from player " + clientNumber);
 		ServerComm.addToActionQueue(inMessage, clientNumber);
 	}
 	int getClientNumber(){

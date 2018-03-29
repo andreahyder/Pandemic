@@ -36,7 +36,9 @@ public class City {
 				DiseaseCube t1 = cubes.remove(count);
 				t1.disease.cubes.add(t1);
 				t1.location = null;
+				done = true;
 			}
+			count++;
 		}
 	}
 	
