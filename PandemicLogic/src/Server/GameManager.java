@@ -223,7 +223,7 @@ public class GameManager {
 	}
 	
 	//can be called anytime when game stage attribute is set to Action. There is no Draw stage attribute, because it isn't required.
-	public static void EndTurn() {
+	public static void EndTurn(){
 		Player t1 = game.getCurrentPlayer();
 		t1.pawn.actions = 4;
 		
@@ -234,10 +234,15 @@ public class GameManager {
 			ServerComm.sendMessage("AskForDiscard/",game.turn);
 			int count = 0;
 			while(ServerComm.response == null) {
-				count++;
-				System.out.println(count);
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			String s = ServerComm.response;
+			System.out.println(s);
 			ServerComm.response = null;
 			
 			PlayerCard t2 = t1.hand.remove(t1.getCard(s));
