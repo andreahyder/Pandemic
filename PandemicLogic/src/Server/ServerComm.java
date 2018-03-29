@@ -86,15 +86,13 @@ public class ServerComm {
 		pString = client + "/"+ pString;
 		String[] temp = pString.split("/");
 		if(temp[1].matches("data")){
-			changeResponse(temp[2]);
+			response = temp[2];
 		}
 		else{
 			messageQueue.add(temp);
 		}
 	}
-	static void changeResponse(String r){
-		response = r;
-	}
+	
 	static ArrayList<Action> initializePossibleActions(){
 		ArrayList<Action> toReturn = new ArrayList<Action>();
 		toReturn.add(new AddPlayer());
