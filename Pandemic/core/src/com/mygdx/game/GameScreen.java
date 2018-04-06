@@ -170,7 +170,7 @@ public class GameScreen implements Screen {
 	};
 	
 
-	Texture[] infectRateCircles = new Texture[] 
+	Texture[] infectRateWhiteCircles = new Texture[] 
 	{
 		new Texture(Gdx.files.internal("infectRate2.png")),
 		new Texture(Gdx.files.internal("infectRate2.png")),
@@ -180,6 +180,14 @@ public class GameScreen implements Screen {
 		new Texture(Gdx.files.internal("infectRate4.png")),
 		new Texture(Gdx.files.internal("infectRate4.png"))	
 	};
+	
+	Texture[] infectRateGreenCircles = new Texture[] 
+	{
+		new Texture(Gdx.files.internal("infectRate2Green.png")),
+		new Texture(Gdx.files.internal("infectRate3Green.png")),
+		new Texture(Gdx.files.internal("infectRate4Green.png")),
+	};
+			
 	
 	Texture[] outbreakRateCircles = new Texture[] 
 	{
@@ -222,6 +230,8 @@ public class GameScreen implements Screen {
 	static Texture[] diseaseCubeTextures;
 	static Texture[] cityCardTextures;
 	
+	static Texture outbrokenMarkerTexture = new Texture(Gdx.files.internal("outBreakLogo.png"));
+	
 	static Texture	handPanelTexture;
 	static float windWidth, windHeight;
 	static Texture background;
@@ -235,6 +245,20 @@ public class GameScreen implements Screen {
 	static Skin skin;
 	static Skin altSkin = new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
     static Button button;
+    
+    static BitmapFont outbreakFont 		= new BitmapFont();
+    static BitmapFont infectFont 		= new BitmapFont();
+	static BitmapFont font 				= new BitmapFont();
+	static BitmapFont secondPart 		= new BitmapFont();
+	static BitmapFont deckFont 			= new BitmapFont();
+	static BitmapFont yellowFont 		= new BitmapFont();
+	static BitmapFont redFont 			= new BitmapFont();
+	static BitmapFont blueFont 			= new BitmapFont();
+	static BitmapFont blackFont 		= new BitmapFont();
+	static BitmapFont numActionsFont	= new BitmapFont();
+	static BitmapFont playersColores 	= new BitmapFont();
+	static BitmapFont colourToBeDrawn 	= new BitmapFont();
+	
     static boolean isMyTurn = true;
     static float cubeOrbitRotation = 0;
 	static PlayerInfo handShownPlayer;
@@ -290,6 +314,8 @@ public class GameScreen implements Screen {
 		updatePawnStage();
 		
     	IncInfectionRate();
+    	IncOutbreakCounter();
+    	IncOutbreakCounter();
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -806,6 +832,7 @@ public class GameScreen implements Screen {
         					dialogStage.clear();;
         					skPrompt.show( dialogStage );
         					Gdx.input.setInputProcessor(dialogStage);
+        		            ClientComm.send("ShareKnowledge/"+currentPlayer.getCity() );
         				}
         				else
         				{
@@ -1067,8 +1094,6 @@ public class GameScreen implements Screen {
 
 	void displayCurrPlayer(){
 		
-		BitmapFont font = new BitmapFont();
-		BitmapFont secondPart = new BitmapFont();
 		
 //		String str = "";
 		
@@ -1091,23 +1116,19 @@ public class GameScreen implements Screen {
 			secondPart.draw(batch, currentPlayer.getName() + "'s Turn", windWidth*0.87f, windHeight*0.98f);
 			font.draw(batch, currentPlayer.getName() + "'s", windWidth*0.87f, windHeight*0.98f);
 		batch.end();
-		
-		font.dispose();
-		secondPart.dispose();
 	}
 	
 	void displayInfectionRate(int position){
 		
-		BitmapFont font = new BitmapFont();
 				
 				if(position >= 0 && position <= 2){
-					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate2Green.png"));
+					infectRateWhiteCircles[position] = infectRateGreenCircles[0];
 				}
 				else if(position > 2 && position <= 4){
-					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate3Green.png"));
+					infectRateWhiteCircles[position] = infectRateGreenCircles[1];
 				}
 				else if(position > 4 && position <= 6){
-					infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate4Green.png"));
+					infectRateWhiteCircles[position] = infectRateGreenCircles[2];
 				}
 				else{
 					System.out.println("Invalid position");
@@ -1115,28 +1136,26 @@ public class GameScreen implements Screen {
 				
 				batch.begin();
 				
-				font.setColor(Color.GREEN);
+				infectFont.setColor(Color.GREEN);
 				
-				font.draw(batch, "Infection Rate:", windWidth * 0.765f, windHeight * 0.12f);
+				infectFont.draw(batch, "Infection Rate:", windWidth * 0.765f, windHeight * 0.12f);
 				
-				for(int i = 0; i < infectRateCircles.length; i++){			
+				for(int i = 0; i < infectRateWhiteCircles.length; i++){			
 					
-					batch.draw(infectRateCircles[i], windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
+					batch.draw(infectRateWhiteCircles[i], windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
 					
 				}
 				
 				batch.end();
-				
-				infectRateCircles[position].dispose();
+				 
 			}
 
 	void displayOutbreakCounter(int amountOfOutbreaks){
 		
-		BitmapFont font = new BitmapFont();
 		
 		for(int i = 0; i < amountOfOutbreaks; i++){
 			if(amountOfOutbreaks >= 0 && amountOfOutbreaks <= 8){
-				outbreakRateCircles[i] = new Texture(Gdx.files.internal("outBreakLogo.png"));
+				outbreakRateCircles[i] = outbrokenMarkerTexture;
 			}
 			else{
 				System.out.println("Invalid position");
@@ -1146,9 +1165,9 @@ public class GameScreen implements Screen {
 		
 		batch.begin();
 		
-		font.setColor(Color.RED);
+		outbreakFont.setColor(Color.RED);
 		
-		font.draw(batch, "Number Of OutBreaks:", windWidth * 0.685f, windHeight * 0.06f);
+		outbreakFont.draw(batch, "Number Of OutBreaks:", windWidth * 0.685f, windHeight * 0.06f);
 		
 		for(int i = 0; i < outbreakRateCircles.length; i++){			
 			
@@ -1157,56 +1176,29 @@ public class GameScreen implements Screen {
 		}
 		
 		batch.end();
-		if( amountOfOutbreaks > 0){
-			outbreakRateCircles[amountOfOutbreaks-1].dispose();
-		}
 	}
 	
 	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo){
-		
-		BitmapFont deckFont = new BitmapFont();
-		BitmapFont yellowFont = new BitmapFont();
-		BitmapFont redFont = new BitmapFont();
-		BitmapFont blueFont = new BitmapFont();
-		BitmapFont blackFont = new BitmapFont();
-		
-		
-		
 		batch.begin();
-		
 			deckFont.draw(batch, Integer.toString(deckNo)+",", windWidth*0.3925f, windHeight*0.99f);
 			yellowFont.draw(batch, Integer.toString(yellowNo)+",", windWidth*0.436f, windHeight*0.99f);
 			redFont.draw(batch, Integer.toString(redNo)+",", windWidth*0.485f, windHeight*0.99f);
 			blueFont.draw(batch, Integer.toString(blueNo)+",", windWidth*0.538f, windHeight*0.99f);
 			blackFont.draw(batch, Integer.toString(blackNo)+",", windWidth*0.588f, windHeight*0.99f);
-		
 		batch.end();
-		
-		deckFont.dispose();
-		yellowFont.dispose();
-		redFont.dispose();
-		blueFont.dispose();
-		blackFont.dispose();
 		
 	}
 	
-	void displayNumberOfActionsLeft(int remActions){
-		
-		BitmapFont font = new BitmapFont();
-		
+	void displayNumberOfActionsLeft(int remActions)
+	{
 		batch.begin();
-		font.setColor(Color.RED);
-		font.draw(batch, "Remaining Actions: " + Integer.toString(remActions), windWidth*0.87f, windHeight*0.95f);
+		numActionsFont.setColor(Color.RED);
+		numActionsFont.draw(batch, "Remaining Actions: " + Integer.toString(remActions), windWidth*0.87f, windHeight*0.95f);
 		batch.end();
-		
-		font.dispose();
 	}
 	
-	void displayPlayerColours(){
-
-		BitmapFont playersColores = new BitmapFont();
-		BitmapFont colourToBeDrawn = new BitmapFont();
-		
+	void displayPlayerColours()
+	{
 		Color[] colors = {
 				Color.GREEN,
 				Color.CYAN,
@@ -1227,10 +1219,6 @@ public class GameScreen implements Screen {
 			}
 		}
 		batch.end();
-		
-		playersColores.dispose();
-		
-		colourToBeDrawn.dispose();
 	} 
 	
 	public static CityNode lookupCity( String name )
