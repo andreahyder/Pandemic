@@ -10,7 +10,7 @@ public class PandemicGame extends Game {
 
 	public enum Screens
 	{
-		MENU, GAME, SETUP, NAME, JOINLIST
+		MENU, GAME, SETUP, NAME, JOINLIST, GAME_DEBUG
 	}
 	
 	public static ClientComm clientComm;
@@ -59,7 +59,15 @@ public class PandemicGame extends Game {
 				if ( joinListScreen == null ) joinListScreen = new JoinListScreen( this );
 				setScreen( joinListScreen );
 				break;
-				
+			
+			case GAME_DEBUG:
+				if ( gameScreen == null ) 
+				{
+					gameScreen = new GameScreen( this );
+				}
+				GameScreen.clientComm = clientComm;
+				setScreen( gameScreen );
+				break;
 		}
 		
 	}

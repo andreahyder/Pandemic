@@ -7,7 +7,7 @@ public class AddCardToHand implements Action {
 		
 	@Override
 	public void execute(String[] args) {
-		GameScreen.AddCardToHand( args[1], args[2] );
+		GameScreen.AddCardToHand( args[1], args[2], args[3] );
 	}
 
 	@Override

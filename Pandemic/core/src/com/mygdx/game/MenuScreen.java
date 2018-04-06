@@ -44,7 +44,7 @@ public class MenuScreen implements Screen
 		newGame.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				parent.changeScreen( PandemicGame.Screens.GAME );	
+				parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
 			}
 		});
 		

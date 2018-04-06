@@ -209,6 +209,11 @@ public class GameScreen implements Screen {
 	static int outbreaks = 0;
 	static int currentInfectionRateIdx = 0;
 	static int actionsRemaining = 4;
+	static int remCardsDeck = 53;		// ADDED
+	static int remYellowCubes = 24;
+	static int remRedCubes = 24;
+	static int remBlueCubes = 24;
+	static int remBlackCubes = 24;		// ADDED
 	static boolean turnEnded = false;
 	
 	static PandemicGame parent;
@@ -240,6 +245,53 @@ public class GameScreen implements Screen {
     
 	
 	
+    GameScreen( PandemicGame _parent ) //Debug Constructor
+    {
+    	parent = _parent;
+    	
+    	players = new PlayerInfo[5];
+    	players[0] = new PlayerInfo( "Barry", true );
+    	players[0].colour = PawnColour.values()[0];
+    	
+    	players[1] = new PlayerInfo( "Larry", false );
+    	players[1].colour = PawnColour.values()[1];
+    	
+    	players[2] = new PlayerInfo( "Carrie", false );
+    	players[2].colour = PawnColour.values()[2];
+    	
+    	players[3] = new PlayerInfo( "Jarry", false );
+    	players[3].colour = PawnColour.values()[3];
+    	
+    	players[4] = new PlayerInfo( "Agarry", false );
+    	players[4].colour = PawnColour.values()[4];
+    	
+    	currentPlayer = players[0];
+    	clientPlayer = players[0];
+    	
+    	batch 	= new SpriteBatch();
+		skin 	= new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
+
+		windWidth 	= Gdx.graphics.getWidth();
+		windHeight 	= Gdx.graphics.getHeight();
+
+		initGameState();
+		initGeneralTextures();
+
+		diseaseStage = new Stage( new ScreenViewport() ); //TEST
+		dialogStage = new Stage( new ScreenViewport() );
+		pawnStage = new Stage( new ScreenViewport() );
+		handPanelGroup = new Group();
+		
+		updateDiseaseStage();
+		
+		initButtonStage();
+		initHandButtonStage();
+		
+		updatePawnStage();
+		
+    	IncInfectionRate();
+    }
+    
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
 	{
 		parent 	= _parent;
@@ -944,7 +996,6 @@ public class GameScreen implements Screen {
 			            //dialogStage = null;
 			        }
 				};
-
 				endTurnDialog.button("End Turn");
 				dialogStage.clear();;
 				endTurnDialog.show( dialogStage );
@@ -978,7 +1029,8 @@ public class GameScreen implements Screen {
 		displayCurrPlayer();
 		displayInfectionRate( currentInfectionRateIdx );
 		displayOutbreakCounter( outbreaks );
-		displayNumbers( 23, 23, 23, 23, 23 );
+		displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes);	// ADDED
+		//displayNumbers( 23, 23, 23, 23, 23 );
 		displayNumberOfActionsLeft( actionsRemaining );
 		displayPlayerColours();
 	}
@@ -1033,8 +1085,6 @@ public class GameScreen implements Screen {
 				Color.MAROON,
 				Color.BROWN
 		};
-		
-		currentPlayer.setColour(PawnColour.PINK);
 		
 		batch.begin();
 			font.setColor(colors[currentPlayer.getColour().ordinal()]);
@@ -1279,6 +1329,34 @@ public class GameScreen implements Screen {
 		
 		if ( city != null && disease != null )
 			city.removeCubeByColour( disease );
+		
+		if (DiseaseColor.equals("yellow") && Integer.parseInt(Number) >= remYellowCubes){
+			remYellowCubes++;
+		}
+		else if (DiseaseColor.equals("yellow") && Integer.parseInt(Number) < remYellowCubes){
+			remYellowCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("blue") && Integer.parseInt(Number) >= remBlueCubes){
+			remBlueCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("blue") && Integer.parseInt(Number) < remBlueCubes){
+			remBlueCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("red") && Integer.parseInt(Number) >= remRedCubes){
+			remRedCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor == "red" && Integer.parseInt(Number) < remRedCubes){
+			remRedCubes += Integer.parseInt(Number);
+		}
+		else if (DiseaseColor.equals("black") && Integer.parseInt(Number) >= remBlackCubes){
+			remBlackCubes += Integer.parseInt(Number);;
+		}
+		else if (DiseaseColor.equals("black") && Integer.parseInt(Number) < remBlackCubes){
+			remBlackCubes += Integer.parseInt(Number);
+		}
+		else{
+			System.out.println("Invalid Color");
+		}
 	}
 	
 	public static void AskForConsent()
@@ -1333,13 +1411,17 @@ public class GameScreen implements Screen {
 		
 	}
 	
-	public static void AddCardToHand( String PlayerName, String CardName)
+	public static void AddCardToHand( String PlayerName, String CardName, String Boolean)
 	{
 		PlayerInfo player = lookupPlayer( PlayerName );
 		
 		if ( player != null )
 		{
 			player.addCardToHand( new PlayerCardInfo( CardName ) );
+		}
+		if(Boolean.equals("true"))
+		{
+			remCardsDeck--;
 		}
 	}
 	
@@ -1350,6 +1432,34 @@ public class GameScreen implements Screen {
 		
 		if ( city != null && disease != null )
 			city.addCube( new DiseaseCubeInfo( disease ) );
+		
+		if (DiseaseColor.equals("yellow") && 1 >= remYellowCubes){
+			remYellowCubes = 0;
+		}
+		else if (DiseaseColor.equals("yellow") && 1 < remYellowCubes){
+			remYellowCubes -= 1;
+		}
+		else if (DiseaseColor.equals("blue") && 1 >= remBlueCubes){
+			remBlueCubes = 0;
+		}
+		else if (DiseaseColor.equals("blue") && 1 < remBlueCubes){
+			remBlueCubes -= 1;
+		}
+		else if (DiseaseColor.equals("red") && 1 >= remRedCubes){
+			remRedCubes = 0;
+		}
+		else if (DiseaseColor == "red" && 1 < remRedCubes){
+			remRedCubes -= 1;
+		}
+		else if (DiseaseColor.equals("black") && 1 >= remBlackCubes){
+			remBlackCubes = 0;
+		}
+		else if (DiseaseColor.equals("black") && 1 < remBlackCubes){
+			remBlackCubes -= 1;
+		}
+		else{
+			System.out.println("Invalid Color");
+		}
 	}
 	
 	public static void AddInfectionCardToDiscard( String InfectionCardName )
