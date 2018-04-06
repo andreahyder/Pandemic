@@ -44,7 +44,7 @@ public class MenuScreen implements Screen
 		newGame.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				parent.changeScreen( PandemicGame.Screens.GAME );	
+				parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
 			}
 		});
 		
@@ -142,7 +142,9 @@ public class MenuScreen implements Screen
 		{
 			try 
 			{
-				ClientComm.setupConnection( IP, 6000 );
+				ClientComm.setupConnection( IP, 6004 );
+				IP = "";
+				ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
 				parent.changeScreen( Screens.SETUP );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

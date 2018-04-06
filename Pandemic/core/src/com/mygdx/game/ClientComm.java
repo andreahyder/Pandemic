@@ -76,6 +76,7 @@ public class ClientComm {
 		toReturn.add(new ClearInfectionDiscard());
 		toReturn.add(new NotifyTurn());
 		toReturn.add(new StartGame());
+		toReturn.add(new DecrementActions());
 		return toReturn;
 	}
 }

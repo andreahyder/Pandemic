@@ -8,7 +8,7 @@ public class PlayerInfo {
 	PawnColour colour;
 	int slotNum = -1;
 	String name;
-	String currCity;
+	String currCity = "Atlanta";
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
 	

@@ -2,17 +2,18 @@ package com.mygdx.game.Actions;
 
 import com.mygdx.game.GameScreen;
 
-public class NotifyTurn implements Action{
+public class DecrementActions implements Action {
 
+		
 	@Override
 	public void execute(String[] args) {
-		GameScreen.NotifyTurn( args[1] );
+		GameScreen.DecrementActions();
 	}
 
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "NotifyTurn";
+		return "DecrementActions";
 	}
 
 }

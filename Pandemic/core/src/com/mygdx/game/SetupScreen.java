@@ -90,6 +90,7 @@ public class SetupScreen implements Screen {
 			public void changed(ChangeEvent event, Actor actor) {
 				PlayerInfo currentPlayer = parent.getCurrentPlayer();		
 				currentPlayer.toggleReady();
+				ClientComm.send("ToggleReady");
 				
 //				for (int i=0; i<1; i++){
 //					Label labelR = new Label( "" ,skin );
@@ -171,8 +172,41 @@ public class SetupScreen implements Screen {
 		stage.draw();
 		stage.act();
 		
-		if(checkAllReady()==true){
-			parent.changeScreen( Screens.GAME );
+
+		if ( ClientComm.messageQueue != null )
+		{
+			if ( ClientComm.messageQueue.size() > 0  )
+			{
+				//Eat message
+				if ( ClientComm.possibleActions != null )
+				{
+					String[] message = ClientComm.messageQueue.get(0);
+					if ( message != null )
+					{
+						if ( message.length > 0 )
+						{
+							if( message[0].equals( "StartGame" ) )
+							{
+								String[] pNames = message[1].split("[,]");
+								for( int i = 0; i < pNames.length; i++ )
+								{
+									if( !parent.getCurrentPlayer().getName().equals(pNames[i]) )
+									{
+										parent.addPlayer( new PlayerInfo( pNames[i], PawnColour.values()[i], false ) );
+										
+									}
+									else
+									{
+										parent.getCurrentPlayer().setColour( PawnColour.values()[i] );
+									}
+									GameScreen.currentPlayer = parent.getPlayers()[0];
+								}
+								parent.changeScreen( Screens.GAME );
+							} 
+						}
+					}
+				}
+			}
 		}
 		
 	}
