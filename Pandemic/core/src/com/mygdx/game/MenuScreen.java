@@ -142,7 +142,7 @@ public class MenuScreen implements Screen
 		{
 			try 
 			{
-				ClientComm.setupConnection( IP, 6006 );
+				ClientComm.setupConnection( IP, 6009 );
 				IP = "";
 				ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
 				parent.changeScreen( Screens.SETUP );
