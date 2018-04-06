@@ -127,7 +127,10 @@ public class GameManager {
 		}
 		
 		mes = "DecrementActions/";
-		ServerComm.sendMessage(mes, game.turn);
+		for( int i = 0; i < game.players.size(); i++ )
+		{ 
+			ServerComm.sendMessage( mes, i );
+		}
 	}
 	
 	//directFlight
@@ -148,7 +151,10 @@ public class GameManager {
 		}
 		
 		mes = "DecrementActions/";
-		ServerComm.sendMessage(mes, game.turn);
+		for( int i = 0; i < game.players.size(); i++ )
+		{ 
+			ServerComm.sendMessage( mes, i );
+		}
 	}
 	
 	//treatDisease
@@ -166,7 +172,10 @@ public class GameManager {
 		}
 		
 		mes = "DecrementActions/";
-		ServerComm.sendMessage(mes, game.turn);
+		for( int i = 0; i < game.players.size(); i++ )
+		{ 
+			ServerComm.sendMessage( mes, i );
+		}
 	}
 	
 	//shareKnowledge 
@@ -176,7 +185,14 @@ public class GameManager {
 		int index = game.players.indexOf(t2);
 		
 		ServerComm.sendMessage("AskForConsent/",index);
-		while(ServerComm.response == null){}
+		while(ServerComm.response == null){
+			try {
+				Thread.sleep(15);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		String ans = ServerComm.response;
 		Boolean consent = ans.matches("true");
 		ServerComm.response = null;
@@ -215,7 +231,10 @@ public class GameManager {
 			}
 			
 			String mes = "DecrementActions/";
-			ServerComm.sendMessage(mes, game.turn);
+			for( int i = 0; i < game.players.size(); i++ )
+			{ 
+				ServerComm.sendMessage( mes, i );
+			}
 		}
 		else {
 			

@@ -14,7 +14,7 @@ public class Main {
 			@Override
 			public void run() {
 				try {
-					ServerComm.setupConnection(6004);
+					ServerComm.setupConnection(6011);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
