@@ -832,7 +832,7 @@ public class GameScreen implements Screen {
         					dialogStage.clear();;
         					skPrompt.show( dialogStage );
         					Gdx.input.setInputProcessor(dialogStage);
-        		            ClientComm.send("ShareKnowledge/"+currentPlayer.getCity() );
+        		            ClientComm.send("ShareKnowledge/"+holdingPlayer.getName() );
         				}
         				else
         				{
