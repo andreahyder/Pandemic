@@ -61,6 +61,8 @@ public class GameScreen implements Screen {
 	final static float handButtonYOffset = 15f;
 	final static float handButtonXSize = 50f;
 	final static float handButtonYSize = 25f;
+	final static float researchStationYSize = 35f;
+	final static float researchStationXSize = 40f;
 	
 	final static int[] infectionRateTrack = { 2, 2, 2, 3, 3, 4 ,4 };
 	
@@ -293,6 +295,10 @@ public class GameScreen implements Screen {
 		updatePawnStage();
 		
     	IncInfectionRate();
+
+    	AddDiseaseCubeToCity( "Atlanta", "blue" );
+    	AddDiseaseCubeToCity( "Atlanta", "blue" );
+    	AddDiseaseCubeToCity( "Atlanta", "blue" );
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -379,6 +385,10 @@ public class GameScreen implements Screen {
 		{
 			cityNodes[ i ].addConnectedCities( cityNodes ); 
 		}
+		
+		researchStationCityNames.add( "Atlanta" );
+		lookupCity( "Atlanta" ).putResearchStation();
+		remResearchStations--;
 	}
 	
 	static void initHandButtonStage()
@@ -713,6 +723,21 @@ public class GameScreen implements Screen {
 		return hasCard;
 	}
 
+	static void drawResearchStations()
+	{
+		for( String station : researchStationCityNames )
+		{
+			CityNode city = lookupCity( station );
+			if( city.hasResearchStation )
+			{
+				float x = city.getXInWindowCoords( windWidth ) + nodeSize/2 - researchStationXSize / 2;
+				float y = city.getYInWindowCoords( windHeight ) + nodeSize/2 - researchStationYSize / 2 - researchStationYSize/4.f;
+				batch.begin();
+					batch.draw( researchStation, x, y, researchStationXSize, researchStationYSize );
+				batch.end();
+			}
+		}
+	}
 	
 	static void createActionButtons()
 	{
@@ -1089,6 +1114,7 @@ public class GameScreen implements Screen {
 		batch.begin();
 			batch.draw(background, 0, 0, windWidth, windHeight);
 		batch.end();
+		
 
 		drawConnections();
 		
@@ -1097,7 +1123,6 @@ public class GameScreen implements Screen {
 		cubeOrbitRotation = (float) (( cubeOrbitRotation - delta*cubeOrbitRate ) % (Math.PI * 2));
 		updateDiseaseStage();
 		diseaseStage.draw();
-		//diseaseStage.dispose();
 		
 		updateCityTouchability();
 
@@ -1158,6 +1183,7 @@ public class GameScreen implements Screen {
 		//displayNumbers( 23, 23, 23, 23, 23 );
 		displayNumberOfActionsLeft( actionsRemaining );
 		displayPlayerColours();
+		drawResearchStations();
 	}
 
 	@Override
