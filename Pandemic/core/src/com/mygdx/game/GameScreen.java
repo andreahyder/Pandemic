@@ -184,6 +184,7 @@ public class GameScreen implements Screen {
 	static int remRedCubes = 24;
 	static int remBlueCubes = 24;
 	static int remBlackCubes = 24;		// ADDED
+	static int remResearchStations = 6;
 	static boolean turnEnded = false;
 	
 	static PandemicGame parent;
@@ -220,6 +221,7 @@ public class GameScreen implements Screen {
 	static Texture red = new Texture(Gdx.files.internal("RedDiseaseCube.png"));
 	static Texture blue = new Texture(Gdx.files.internal("BlueDiseaseCube.png"));
 	static Texture black = new Texture(Gdx.files.internal("BlackDiseaseCube.png"));
+	static Texture researchStation = new Texture(Gdx.files.internal( "researchStation.png"));
 	static Texture background;
 	static Texture connectionsTexture;
 	
@@ -1071,16 +1073,17 @@ public class GameScreen implements Screen {
 		batch.begin();
 			batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 520f, 150f);
 			batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
-			batch.draw(yellow, windWidth*0.414f, windHeight*0.968f, 50f, 35f);
-			batch.draw(red, windWidth*0.464f, windHeight*0.968f, 50f, 35f);
-			batch.draw(blue, windWidth*0.514f, windHeight*0.968f, 50f, 35f);
-			batch.draw(black, windWidth*0.564f, windHeight*0.968f, 50f, 35f);
+			batch.draw(yellow, windWidth*0.404f, windHeight*0.968f, 50f, 35f);
+			batch.draw(red, windWidth*0.444f, windHeight*0.968f, 50f, 35f);
+			batch.draw(blue, windWidth*0.484f, windHeight*0.968f, 50f, 35f);
+			batch.draw(black, windWidth*0.524f, windHeight*0.968f, 50f, 35f);
+			batch.draw(researchStation, windWidth*0.564f, windHeight*0.968f, 40f, 35f);
 		batch.end();
 		
 		displayCurrPlayer();
 		displayInfectionRate( currentInfectionRateIdx );
 		displayOutbreakCounter( outbreaks );
-		displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes);	// ADDED
+		displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remResearchStations);	// ADDED
 		//displayNumbers( 23, 23, 23, 23, 23 );
 		displayNumberOfActionsLeft( actionsRemaining );
 		displayPlayerColours();
@@ -1210,23 +1213,25 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo){
+	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int researchNo){
 		
 		BitmapFont deckFont = new BitmapFont();
 		BitmapFont yellowFont = new BitmapFont();
 		BitmapFont redFont = new BitmapFont();
 		BitmapFont blueFont = new BitmapFont();
 		BitmapFont blackFont = new BitmapFont();
+		BitmapFont researchFont = new BitmapFont();
 		
 		
 		
 		batch.begin();
 		
 			deckFont.draw(batch, Integer.toString(deckNo)+",", windWidth*0.3925f, windHeight*0.99f);
-			yellowFont.draw(batch, Integer.toString(yellowNo)+",", windWidth*0.436f, windHeight*0.99f);
-			redFont.draw(batch, Integer.toString(redNo)+",", windWidth*0.485f, windHeight*0.99f);
-			blueFont.draw(batch, Integer.toString(blueNo)+",", windWidth*0.538f, windHeight*0.99f);
-			blackFont.draw(batch, Integer.toString(blackNo)+",", windWidth*0.588f, windHeight*0.99f);
+			yellowFont.draw(batch, Integer.toString(yellowNo)+",", windWidth*0.426f, windHeight*0.99f);
+			redFont.draw(batch, Integer.toString(redNo)+",", windWidth*0.466f, windHeight*0.99f);
+			blueFont.draw(batch, Integer.toString(blueNo)+",", windWidth*0.506f, windHeight*0.99f);
+			blackFont.draw(batch, Integer.toString(blackNo)+",", windWidth*0.546f, windHeight*0.99f);
+			researchFont.draw(batch, Integer.toString(researchNo)+",", windWidth*0.582f, windHeight*0.99f);
 		
 		batch.end();
 		
