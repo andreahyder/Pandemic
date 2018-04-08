@@ -39,7 +39,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
 import com.mygdx.game.Actions.Action;
-import com.sun.xml.internal.ws.assembler.dev.ServerTubelineAssemblyContext;
 
 
 public class GameScreen implements Screen {
@@ -170,35 +169,6 @@ public class GameScreen implements Screen {
 	};
 	
 
-	Texture[] infectRateCircles = new Texture[] 
-	{
-		new Texture(Gdx.files.internal("infectRate2.png")),
-		new Texture(Gdx.files.internal("infectRate2.png")),
-		new Texture(Gdx.files.internal("infectRate2.png")),
-		new Texture(Gdx.files.internal("infectRate3.png")),
-		new Texture(Gdx.files.internal("infectRate3.png")),
-		new Texture(Gdx.files.internal("infectRate4.png")),
-		new Texture(Gdx.files.internal("infectRate4.png"))	
-	};
-	
-	Texture[] outbreakRateCircles = new Texture[] 
-	{
-		new Texture(Gdx.files.internal("outBreak.png")),
-		new Texture(Gdx.files.internal("outBreak.png")),
-		new Texture(Gdx.files.internal("outBreak.png")),
-		new Texture(Gdx.files.internal("outBreak.png")),
-		new Texture(Gdx.files.internal("outBreak.png")),
-		new Texture(Gdx.files.internal("outBreak.png")),
-		new Texture(Gdx.files.internal("outBreak.png")),
-		new Texture(Gdx.files.internal("outBreak.png"))
-	};
-	
-	Texture greyBarOfNumbers = new Texture(Gdx.files.internal("numbersBar.png"));
-	Texture deck = new Texture(Gdx.files.internal("faceDownCard.png"));
-	Texture yellow = new Texture(Gdx.files.internal("YellowDiseaseCube.png"));
-	Texture red = new Texture(Gdx.files.internal("RedDiseaseCube.png"));
-	Texture blue = new Texture(Gdx.files.internal("BlueDiseaseCube.png"));
-	Texture black = new Texture(Gdx.files.internal("BlackDiseaseCube.png"));
 	
 	public static ClientComm clientComm;
 	
@@ -218,13 +188,44 @@ public class GameScreen implements Screen {
 	
 	static PandemicGame parent;
 
+	static Texture[] infectRateCircles = new Texture[] 
+	{
+		new Texture(Gdx.files.internal("infectRate2.png")),
+		new Texture(Gdx.files.internal("infectRate2.png")),
+		new Texture(Gdx.files.internal("infectRate2.png")),
+		new Texture(Gdx.files.internal("infectRate3.png")),
+		new Texture(Gdx.files.internal("infectRate3.png")),
+		new Texture(Gdx.files.internal("infectRate4.png")),
+		new Texture(Gdx.files.internal("infectRate4.png"))	
+	};
+	static Texture[] outbreakRateCircles = new Texture[] 
+	{
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png")),
+		new Texture(Gdx.files.internal("outBreak.png"))
+	};
+	static Texture[] cityCardTextures;
 	static Texture[] playerTextures;
 	static Texture[] diseaseCubeTextures;
-	static Texture[] cityCardTextures;
 	
-	static Texture	handPanelTexture;
-	static float windWidth, windHeight;
+	static Texture handPanelTexture;
+	static Texture greyBarOfNumbers = new Texture(Gdx.files.internal("numbersBar.png"));
+	static Texture deck = new Texture(Gdx.files.internal("faceDownCard.png"));
+	static Texture yellow = new Texture(Gdx.files.internal("YellowDiseaseCube.png"));
+	static Texture red = new Texture(Gdx.files.internal("RedDiseaseCube.png"));
+	static Texture blue = new Texture(Gdx.files.internal("BlueDiseaseCube.png"));
+	static Texture black = new Texture(Gdx.files.internal("BlackDiseaseCube.png"));
 	static Texture background;
+	static Texture connectionsTexture;
+	
+	static ScreenViewport screen;
+	
+	static int windWidth, windHeight;
 	static SpriteBatch batch;
 	static Stage buttonStage, pawnStage, diseaseStage;
 	static Stage dialogStage;
@@ -277,9 +278,9 @@ public class GameScreen implements Screen {
 		initGameState();
 		initGeneralTextures();
 
-		diseaseStage = new Stage( new ScreenViewport() ); //TEST
-		dialogStage = new Stage( new ScreenViewport() );
-		pawnStage = new Stage( new ScreenViewport() );
+		diseaseStage = new Stage( parent.screen ); //TEST
+		dialogStage = new Stage( parent.screen );
+		pawnStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 		
 		updateDiseaseStage();
@@ -296,6 +297,8 @@ public class GameScreen implements Screen {
 	{
 		parent 	= _parent;
 		players = _players;
+		
+		screen 	= parent.screen;
 		batch 	= new SpriteBatch();
 		skin 	= new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
 
@@ -305,9 +308,9 @@ public class GameScreen implements Screen {
 		initGameState();
 		initGeneralTextures();
 
-		diseaseStage = new Stage( new ScreenViewport() ); //TEST
-		dialogStage = new Stage( new ScreenViewport() );
-		pawnStage = new Stage( new ScreenViewport() );
+		diseaseStage = new Stage( screen ); //TEST
+		dialogStage = new Stage( screen );
+		pawnStage = new Stage( screen );
 		handPanelGroup = new Group();
 		
 		updateDiseaseStage();
@@ -345,6 +348,8 @@ public class GameScreen implements Screen {
 		}
 		
 		handPanelTexture = new Texture( Gdx.files.internal( "handPanel.png") );
+		
+		createConnectionsTexture();
 	}
 	
 	static void initGameState()
@@ -411,6 +416,68 @@ public class GameScreen implements Screen {
 		}
 	}	
 			
+	static void createWrappingConnection( Pixmap pxMap, CityNode city0, CityNode city1 )
+	{
+		CityNode temp = city0;
+		//Ensure that the line is being drawn with increasing x;
+		city0 = ( city0.x < city1.x ) ? city0 : city1;
+		city1 = ( city0.x < city1.x ) ? city1 : temp;
+		
+		int x0 = (int)city0.getXInWindowCoords( windWidth );
+		int y0 = (int)city0.getYInWindowCoords( windHeight );
+
+		int x1 = (int)city1.getXInWindowCoords( windWidth );
+		int y1 = (int)city1.getYInWindowCoords( windHeight );
+		
+		double grad0 = (double)(y1-y0)/(double)(x1-x0);
+		int draw0X0 = 0;
+		int draw0Y0 = y0 + (int)(x0*grad0);
+		pxMap.drawLine( draw0X0,  (int)(windHeight-draw0Y0 - nodeSize/2),  (int)(x0 + nodeSize/2),  (int)(windHeight-y0 - nodeSize/2));
+
+		int draw1X1 = windWidth;
+		int draw1Y1 = y1 - (int)((windWidth-x1)*grad0);
+		pxMap.drawLine( (int)(x1 + nodeSize/2),  (int)(windHeight-y1 - nodeSize/2), draw1X1,  (int)(windHeight-draw1Y1 - nodeSize/2));
+	}
+	
+	static void createConnectionsTexture()
+	{
+		Pixmap connections = new Pixmap( (int)windWidth, (int)windHeight, Pixmap.Format.RGBA8888 );
+		connections.setColor( Color.WHITE );
+				
+		for( CityNode curr : cityNodes )
+		{
+			int x0 = (int)curr.getXInWindowCoords( windWidth );
+			int y0 = (int)curr.getYInWindowCoords( windHeight );
+			
+			for ( CityNode other : curr.getConnectedCities() )
+			{
+				if( curr.getName().equals("Tokyo") && other.getName().equals( "San Francisco" ) || other.getName().equals("Tokyo") && curr.getName().equals( "San Francisco" ) )
+				{
+					createWrappingConnection( connections, curr, other );
+				} 
+				else if ( curr.getName().equals("Manila") && other.getName().equals( "San Francisco" ) || other.getName().equals("Manila") && curr.getName().equals( "San Francisco" ) )
+				{
+					createWrappingConnection( connections, curr, other );
+				}
+				else if ( curr.getName().equals("Los Angeles") && other.getName().equals( "Sydney" ) || other.getName().equals("Los Angeles") && curr.getName().equals( "Sydney" ) )
+				{
+					createWrappingConnection( connections, curr, other );
+				}
+				else
+				{
+					int x1 = (int)other.getXInWindowCoords( windWidth );
+					int y1 = (int)other.getYInWindowCoords( windHeight );
+
+					connections.drawLine( (int)(x0 + nodeSize/2),  (int)(windHeight-y0 - nodeSize/2),  (int)(x1 + nodeSize/2),  (int)(windHeight-y1 - nodeSize/2));
+					//connections.drawLine( (int)curr.getX(), (int)curr.getY(), (int)other.getX(), (int)other.getY());
+				}
+			}
+		}
+
+		connectionsTexture = new Texture( connections );
+		connections.dispose();
+	}
+	
 	static void updatePawnStage()	
 	{
 		pawnStage.clear();
@@ -533,7 +600,7 @@ public class GameScreen implements Screen {
 		            		}
 		            	};
 	
-		        		//dialogStag/e = new Stage( new ScreenViewport() );//
+		        		//dialogStag/e = new Stage( parent.screen );//
 		        		dialogStage.clear();
 		        		
 		        		confirmFlight.button( "Yes", true );
@@ -567,7 +634,7 @@ public class GameScreen implements Screen {
 	static void initButtonStage()
 	{
 
-		buttonStage = new Stage(new ScreenViewport()); //Set up a stage for the ui
+		buttonStage = new Stage(parent.screen); //Set up a stage for the ui
 		buttonGroup = new Group(); //Set up a stage for the ui
 		
 		createCityButtons();
@@ -904,6 +971,14 @@ public class GameScreen implements Screen {
 
 	}
 
+	public void drawConnections()
+	{	
+		batch.begin();
+			batch.draw(connectionsTexture, 0, 0, windWidth, windHeight);
+		batch.end();
+	}
+	
+	
 	@Override
 	public void render(float delta) {
 		if ( ClientComm.messageQueue != null )
@@ -941,33 +1016,9 @@ public class GameScreen implements Screen {
 		batch.begin();
 			batch.draw(background, 0, 0, windWidth, windHeight);
 		batch.end();
+
+		drawConnections();
 		
-		Pixmap connections = new Pixmap( (int)windWidth, (int)windHeight, Pixmap.Format.RGBA8888 );
-		connections.setColor( Color.WHITE );
-				
-		for( CityNode curr : cityNodes )
-		{
-			int x0 = (int)curr.getXInWindowCoords( windWidth );
-			int y0 = (int)curr.getYInWindowCoords( windHeight );
-			
-			for ( CityNode other : curr.getConnectedCities() )
-			{
-				int x1 = (int)other.getXInWindowCoords( windWidth );
-				int y1 = (int)other.getYInWindowCoords( windHeight );
-
-				connections.drawLine( (int)(x0 + nodeSize/2),  (int)(windHeight-y0 - nodeSize/2),  (int)(x1 + nodeSize/2),  (int)(windHeight-y1 - nodeSize/2));
-				//connections.drawLine( (int)curr.getX(), (int)curr.getY(), (int)other.getX(), (int)other.getY());
-			}
-		}
-
-		Texture connectionsTexture = new Texture( connections );
-		connections.dispose();
-		
-		batch.begin();
-			batch.draw(connectionsTexture, 0, 0, windWidth, windHeight);
-		batch.end();
-		connectionsTexture.dispose();
-
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////
 		cubeOrbitRotation = (float) (( cubeOrbitRotation - delta*cubeOrbitRate ) % (Math.PI * 2));
@@ -1037,10 +1088,7 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		windWidth = width;// Gdx.graphics.getWidth();
-		windHeight= height;//Gdx.graphics.getHeight();
-		// TODO Auto-generated method stub
-
+		parent.screen.update( windWidth, windHeight );
 	}
 
 	@Override

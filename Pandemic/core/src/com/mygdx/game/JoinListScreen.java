@@ -47,7 +47,7 @@ public class JoinListScreen implements Screen {
         						gameHeight / 2 - 1.4f*gameHeight / 4);
         scrollPane.setTransform(true);
         scrollPane.setScale(0.5f);
-        stage = new Stage(new ScreenViewport());
+        stage = new Stage(parent.screen);
         stage.addActor(scrollPane);
         Gdx.input.setInputProcessor(stage);
 	}
