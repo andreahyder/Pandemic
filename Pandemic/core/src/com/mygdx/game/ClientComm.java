@@ -54,10 +54,10 @@ public class ClientComm {
 		}).start();
 		*/
 	}
-	static void send(String message){
+	public static void send(String message){
 		ct.send(message); 
 	}
-	static void addToActionQueue(String pString){
+	public static void addToActionQueue(String pString){
 		String[] temp = pString.split("/");
 		messageQueue.add(temp);
 	}
