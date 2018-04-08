@@ -40,7 +40,6 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
 import com.mygdx.game.Actions.Action;
 
-
 public class GameScreen implements Screen {
 	final static float nodeSize = 17.50f;
 	final static float pawnXSize = 15.0f;
@@ -170,7 +169,7 @@ public class GameScreen implements Screen {
 	
 
 	
-	public static ClientComm clientComm;
+	static ClientComm clientComm;
 	
 	static CityNode[] cityNodes;
 	static PlayerInfo[] players;
@@ -179,12 +178,13 @@ public class GameScreen implements Screen {
 	static int outbreaks = 0;
 	static int currentInfectionRateIdx = 0;
 	static int actionsRemaining = 4;
-	static int remCardsDeck = 53;		// ADDED
+	static int remCardsDeck = 53;		
 	static int remYellowCubes = 24;
 	static int remRedCubes = 24;
 	static int remBlueCubes = 24;
-	static int remBlackCubes = 24;		// ADDED
+	static int remBlackCubes = 24;		
 	static int remResearchStations = 6;
+	static ArrayList<String> researchStationCityNames = new ArrayList<String>();
 	static boolean turnEnded = false;
 	
 	static PandemicGame parent;
@@ -246,7 +246,7 @@ public class GameScreen implements Screen {
     static ArrayList<String> infectionDiscardPile	= new ArrayList<String>();
     static ArrayList<String> playerDiscardPile 		= new ArrayList<String>();
     
-	
+	static float nextActionButtonHeight;
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
     {
@@ -712,11 +712,14 @@ public class GameScreen implements Screen {
 		
 		return hasCard;
 	}
+
 	
 	static void createActionButtons()
 	{
 
         skin.getFont( "font").getData().setScale( actionButtonFontScaleFactor, actionButtonFontScaleFactor);
+        
+        nextActionButtonHeight = windHeight- actionButtonYSize;
         
         TextButton treatDiseaseButton = new TextButton("Treat Disease", skin);
         treatDiseaseButton.addListener( new ClickListener() {
@@ -755,10 +758,11 @@ public class GameScreen implements Screen {
 	        		colourSelect.show( dialogStage );
             	}
         	}
-        } );
-        
-        treatDiseaseButton.setBounds( 0, windHeight-actionButtonYSize, actionButtonXSize, actionButtonYSize);
+} );
+        treatDiseaseButton.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+        nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( treatDiseaseButton );
+        
         
         TextButton shareKnowledgeButton = new TextButton("Share Knowledge", skin);
         shareKnowledgeButton.addListener( new ChangeListener() {
@@ -895,8 +899,8 @@ public class GameScreen implements Screen {
         		}
         	}
         } );
-        
-        shareKnowledgeButton.setBounds( 0, windHeight-actionButtonYSize*2.125f, actionButtonXSize, actionButtonYSize);
+        shareKnowledgeButton.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+        nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( shareKnowledgeButton );
         
         TextButton showInfectionDiscard = new TextButton( "Show Infection Discard", skin );
@@ -928,8 +932,8 @@ public class GameScreen implements Screen {
 	            Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
         	}
         } );
-        
-        showInfectionDiscard.setBounds( 0, windHeight-actionButtonYSize*3.25f, actionButtonXSize, actionButtonYSize);
+        showInfectionDiscard.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+        nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( showInfectionDiscard );
         
         TextButton showPlayerDiscard = new TextButton( "Show Player Discard", skin );
@@ -962,9 +966,77 @@ public class GameScreen implements Screen {
 	            Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
         	}
         } );
-        
-        showPlayerDiscard.setBounds( 0, windHeight-actionButtonYSize*4.375f, actionButtonXSize, actionButtonYSize);
+        showPlayerDiscard.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+        nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( showPlayerDiscard );
+        
+        TextButton createResearchStation = new TextButton( "Build Research Station", skin );
+        createResearchStation.addListener( new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( playerHasCityCard( currentPlayer, currentPlayer.getCity() ) )
+				{
+					if( remResearchStations > 0 )
+					{	
+						ClientComm.send( "BuildResearchStation/"+currentPlayer.getCity() );
+					}
+					else
+					{
+						String[] list = new String[researchStationCityNames.size()];
+						for ( int i = 0; i < researchStationCityNames.size(); i++ )
+	    				{
+	    					list[ i ] = researchStationCityNames.get(i);
+	    				}
+	    				
+	    				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+	        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+	        			
+	        			Dialog rsPrompt = new Dialog("Choose a Research Station to remove",skin){
+	        				protected void result(Object object){
+	        					if( (Boolean)(object) )
+	        					{
+	            					String selected = selectBox.getSelected();
+	            					ClientComm.send( "BuildResearchStation/"+selected );
+	            		            Gdx.input.setInputProcessor(buttonStage);
+	        					}
+	        					else
+	        					{
+	            		            Gdx.input.setInputProcessor(buttonStage);
+	        					}
+	        		        }
+	        			};
+	
+	        			rsPrompt.setSize(250,150);
+	        			rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+						rsPrompt.button("Okay", true);
+						rsPrompt.button("Cancel", false);
+	
+						selectBox.setItems( list );
+	        			rsPrompt.getContentTable().add(selectBox);
+	
+	        			dialogStage.addActor(rsPrompt);
+	        			Gdx.input.setInputProcessor(dialogStage);
+					}
+				}
+				else
+				{
+					Dialog rsPrompt = new Dialog("    Don't have the necessary card to build! ",skin){
+        				protected void result(Object object){
+        		            Gdx.input.setInputProcessor(buttonStage);
+        		        }
+        			};
+
+        			rsPrompt.setSize(375,90);
+        			rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+					rsPrompt.button("Okay", true);
+        			dialogStage.addActor(rsPrompt);
+        			Gdx.input.setInputProcessor(dialogStage);
+				}
+			}
+        });
+        createResearchStation.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+        nextActionButtonHeight -= actionButtonYSize*1.125f;
+        buttonGroup.addActor( createResearchStation );
 	}
 	
 	@Override
@@ -979,8 +1051,7 @@ public class GameScreen implements Screen {
 			batch.draw(connectionsTexture, 0, 0, windWidth, windHeight);
 		batch.end();
 	}
-	
-	
+
 	@Override
 	public void render(float delta) {
 		if ( ClientComm.messageQueue != null )
@@ -1595,6 +1666,27 @@ public class GameScreen implements Screen {
 	public static void ResetActions()
 	{
 		actionsRemaining = 4;
+	}
+	
+	public static void RemoveResearchStation( String CityName )
+	{	
+		remResearchStations++;
+		for( int i = 0; i < researchStationCityNames.size(); i++ )
+		{
+			if( researchStationCityNames.get( i ).equals( CityName ) )
+			{
+				researchStationCityNames.remove( i );
+				break;
+			}
+		}
+		lookupCity( CityName ).removeResearchStation();
+	}
+	
+	public static void AddResearchStation( String CityName )
+	{	
+		remResearchStations--;
+		researchStationCityNames.add(CityName);
+		lookupCity( CityName ).putResearchStation();
 	}
 
 }
