@@ -554,8 +554,8 @@ public class GameScreen implements Screen {
 			float arc = (float)(2*Math.PI / localCubes.size());
 			for( int i = 0; i < localCubes.size(); i++ )
 			{
-				int x = (int)(curr.getXInWindowCoords(windWidth) + nodeSize/2 - cubeSize/2 + ( ( nodeSize/2 + cubeOrbitOffset )*Math.cos( arc*i + cubeOrbitRotation ) ) );
-				int y = (int)(curr.getYInWindowCoords(windHeight) + nodeSize/2 - cubeSize/2 + ( ( nodeSize/2 + cubeOrbitOffset )*Math.sin( arc*i + cubeOrbitRotation ) ) );
+				int x = (int)(curr.getXInWindowCoords(windWidth) + nodeSize/2 - cubeSize/2 + ( ( nodeSize/2 + cubeOrbitOffset )*Math.cos( arc*i + cubeOrbitRotation * localCubes.size() ) ) );
+				int y = (int)(curr.getYInWindowCoords(windHeight) + nodeSize/2 - cubeSize/2 + ( ( nodeSize/2 + cubeOrbitOffset )*Math.sin( arc*i + cubeOrbitRotation * localCubes.size()) ) );
 
 				Image cube = new Image( diseaseCubeTextures[ localCubes.get( i ).getColourIndex() ] );
 				cube.setBounds( x ,y, cubeSize, cubeSize);
