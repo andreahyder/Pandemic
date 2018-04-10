@@ -187,7 +187,11 @@ public class GameScreen implements Screen {
 	static int remBlackCubes = 24;		
 	static int remResearchStations = 6;
 	static ArrayList<String> researchStationCityNames = new ArrayList<String>();
+
 	static boolean turnEnded = false;
+	static boolean useCityButtonStage = false;
+
+	static String charterFlightCard;
 	
 	static PandemicGame parent;
 
@@ -230,24 +234,32 @@ public class GameScreen implements Screen {
 	static ScreenViewport screen;
 	
 	static int windWidth, windHeight;
+
 	static SpriteBatch batch;
+
 	static Stage buttonStage, pawnStage, diseaseStage;
 	static Stage dialogStage;
 	static Stage handPanelStage;
+	static Stage cityButtonStage;	// ADDED
+
 	static Table infectionDiscardTable;
 	static Table playerDiscardTable;
+
 	static Group buttonGroup, handPanelGroup;
+
 	static Skin skin;
 	static Skin altSkin = new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
-    static Button button;
-    static boolean isMyTurn = true;
+
+	static Button button;
+
+	static boolean isMyTurn = true;
     static float cubeOrbitRotation = 0;
 	static PlayerInfo handShownPlayer;
     
     static ArrayList<Button> cityButtons 			= new ArrayList<Button>();
     static ArrayList<String> infectionDiscardPile	= new ArrayList<String>();
     static ArrayList<String> playerDiscardPile 		= new ArrayList<String>();
-    
+
 	static float nextActionButtonHeight;
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
@@ -285,6 +297,7 @@ public class GameScreen implements Screen {
 		diseaseStage = new Stage( parent.screen ); //TEST
 		dialogStage = new Stage( parent.screen );
 		pawnStage = new Stage( parent.screen );
+		cityButtonStage = new Stage( parent.screen );	// ADDED
 		handPanelGroup = new Group();
 		
 		updateDiseaseStage();
@@ -600,26 +613,34 @@ public class GameScreen implements Screen {
 		        button.addListener( new ChangeListener() {
 		            @Override
 					public void changed(ChangeEvent event, Actor actor) {
-		            	Dialog confirmFlight = new Dialog("Fly to "+ card.getName() + "?" , skin ){
-		            		@Override
-		            		protected void result(Object object) {
-		            			if ( (boolean) ( object ) )
-		            			{
-		            				ClientComm.send("DirectFlight/"+card.getName());
-		            			}
-		        	            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-		        	            //dialogStage = null;
-		            		}
-		            	};
-	
-		        		//dialogStag/e = new Stage( parent.screen );//
-		        		dialogStage.clear();
-		        		
-		        		confirmFlight.button( "Yes", true );
-		        		confirmFlight.button( "No", false );
-		        		
-		                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
-		                confirmFlight.show( dialogStage );
+
+		            	if (currentPlayer.getCity().equals(card.getName())){
+							useCityButtonStage = true;
+							charterFlightCard = card.getName();
+							Gdx.input.setInputProcessor( cityButtonStage );
+						}
+
+						else {
+							Dialog confirmFlight = new Dialog("Fly to " + card.getName() + "?", skin) {
+								@Override
+								protected void result(Object object) {
+									if ((boolean) (object)) {
+										ClientComm.send("DirectFlight/" + card.getName());
+									}
+									Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+									//dialogStage = null;
+								}
+							};
+
+							//dialogStag/e = new Stage( parent.screen );//
+							dialogStage.clear();
+
+							confirmFlight.button("Yes", true);
+							confirmFlight.button("No", false);
+
+							Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+							confirmFlight.show(dialogStage);
+						}
 					}
 		        });
 	        }
@@ -636,10 +657,31 @@ public class GameScreen implements Screen {
 	
 	static void updateCityTouchability()
 	{
-		ArrayList<CityNode> adjCities = lookupCity( currentPlayer.getCity() ).getConnectedCities();
-		for ( CityNode curr : adjCities )
-		{
-			cityButtons.get( lookupCityIndex( curr.getName() ) ).setTouchable( Touchable.enabled );
+
+		if(useCityButtonStage){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
+			ArrayList<CityNode> allTheCities = new ArrayList<CityNode>(cityNodes.length - 1);
+
+			int otherIndex = 0;
+
+			for( int i = 0; i < cityNodes.length; i++){		// copy all cities from cityNodes (except for currentPlayer's currentCity) to allTheCities ArrayList
+				if( !(currentPlayer.getCity().equals(cityNodes[i].getName())) ){
+					allTheCities.set(i, cityNodes[i]);
+				}
+				else{
+					otherIndex--;
+				}
+				otherIndex++;
+			}
+			for ( CityNode curr : allTheCities){
+				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
+			}
+		}
+
+		else {
+			ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
+			for (CityNode curr : adjCities) {
+				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+			}
 		}
 	}
 	
@@ -685,15 +727,23 @@ public class GameScreen implements Screen {
 	        cityButton.addListener( new ChangeListener() {
 	            @Override
 				public void changed(ChangeEvent event, Actor actor) {
-	            	if ( actionsRemaining > 0 && clientPlayer == currentPlayer )
-	            	{
-		            	String cityName = curr.getName();
-		            	ClientComm.send( "Drive/"+cityName );
-		            	// IMPLEMENT Call Drive( CityName ) on Server
-	            	}
+	            	if ( actionsRemaining > 0 && clientPlayer == currentPlayer ) {
+
+	            		if( useCityButtonStage ){
+	            			// TODO: Implement highlight all connections between cities
+							String cityName = curr.getName();
+							String cardName = currentPlayer.getCity();
+							ClientComm.send("CharterFlight/" + cityName + "/" + cardName);
+						}
+	            		else {
+							String cityName = curr.getName();
+							ClientComm.send("Drive/" + cityName);
+							// IMPLEMENT Call Drive( CityName ) on Server
+						}
+					}
 				}
 	        });
-	        
+
 			float x = curr.getXInWindowCoords( windWidth );
 			float y = curr.getYInWindowCoords( windHeight );
 			cityButton.setBounds(x, y, nodeSize, nodeSize);
@@ -707,6 +757,8 @@ public class GameScreen implements Screen {
 	        
 	        cityButtons.add( cityButton );
 	        buttonGroup.addActor(cityButton); //Add the button to the stage to perform rendering and take input.
+
+			cityButtonStage.addActor( cityButton );
 
 			cityLabel.getStyle().fontColor = Color.WHITE;
 		}
