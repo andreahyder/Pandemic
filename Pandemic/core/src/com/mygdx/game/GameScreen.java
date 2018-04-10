@@ -618,6 +618,7 @@ public class GameScreen implements Screen {
 							useCityButtonStage = true;
 							charterFlightCard = card.getName();
 							Gdx.input.setInputProcessor( cityButtonStage );
+							System.out.println("TEEEEESTING");
 						}
 
 						else {
@@ -659,18 +660,14 @@ public class GameScreen implements Screen {
 	{
 
 		if(useCityButtonStage){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
-			ArrayList<CityNode> allTheCities = new ArrayList<CityNode>(cityNodes.length - 1);
-
-			int otherIndex = 0;
+			ArrayList<CityNode> allTheCities = new ArrayList<CityNode>();
 
 			for( int i = 0; i < cityNodes.length; i++){		// copy all cities from cityNodes (except for currentPlayer's currentCity) to allTheCities ArrayList
 				if( !(currentPlayer.getCity().equals(cityNodes[i].getName())) ){
-					allTheCities.set(i, cityNodes[i]);
+					System.out.println(i + "before works");
+					allTheCities.add(cityNodes[i]);
+					System.out.println(i + "after works");
 				}
-				else{
-					otherIndex--;
-				}
-				otherIndex++;
 			}
 			for ( CityNode curr : allTheCities){
 				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
@@ -758,7 +755,7 @@ public class GameScreen implements Screen {
 	        cityButtons.add( cityButton );
 	        buttonGroup.addActor(cityButton); //Add the button to the stage to perform rendering and take input.
 
-			cityButtonStage.addActor( cityButton );
+			//cityButtonStage.addActor( cityButton );	// FIX
 
 			cityLabel.getStyle().fontColor = Color.WHITE;
 		}
