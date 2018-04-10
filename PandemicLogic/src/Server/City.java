@@ -52,14 +52,15 @@ public class City {
 		return count;
 	}
 	
-	void addResearchStation(){
+	public void addResearchStation(){
 		ResearchStation t1 = game.research.remove(0);
 		research = t1;
 		t1.location = this;
 	}
 	
-	void removeResearchStation() {
+	public void removeResearchStation() {
 		game.research.add(research);
 		research.location = null;
+		research = null;
 	}
 }

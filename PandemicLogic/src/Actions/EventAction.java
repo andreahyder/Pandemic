@@ -1,16 +1,19 @@
 package Actions;
 import Events.*;
+import Server.GameManager;
+
 import java.util.ArrayList;
 
 public class EventAction implements Action{
-	private static ArrayList<Event> EventQueue = initializeEventQueue();
+	//private static ArrayList<Event> EventQueue = initializeEventQueue();
 	@Override
 	public void execute(String[] args) {
-		for (Event e: EventQueue){
+		/*for (Event e: EventQueue){
 			if (e.getName().equals(args[2])){
 				e.executeEvent(args);
 			}
-		}
+		}*/
+		GameManager.Event(args);
 	}
 
 	@Override
@@ -18,7 +21,7 @@ public class EventAction implements Action{
 		// TODO Auto-generated method stub
 		return "EventAction";
 	}	
-	private static ArrayList<Event> initializeEventQueue(){
+	/*private static ArrayList<Event> initializeEventQueue(){
 		ArrayList<Event> toReturn = new ArrayList<Event>();
 		toReturn.add(new Airlift());
 		toReturn.add(new BorrowedTime());
@@ -35,5 +38,5 @@ public class EventAction implements Action{
 		toReturn.add(new SpecialOrders());
 		return toReturn;
 		
-	}
+	}*/
 }

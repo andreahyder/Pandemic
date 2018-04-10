@@ -16,6 +16,8 @@ public class Game {
 	static int[] infectionRate = new int[] {2,2,2,3,3,4,4};
 	int infectionCount;
 	int outbreakCount;
+	boolean mobileHospitalActive = false;
+	int CommercialTravelBanTurnIndex = -1;
 	
 	//initializes game, initializes alot of things.
 	Game(){
@@ -83,7 +85,7 @@ public class Game {
 	}
 	
 	//return the current player
-	Player getCurrentPlayer() {
+	public Player getCurrentPlayer() {
 		return players.get(turn);
 	}
 	
@@ -112,7 +114,7 @@ public class Game {
 	}
 	
 	//return a city with the specified name in the game
-	City getCity(String s){
+	public City getCity(String s){
 		int i = 0;
 		Boolean found = false;
 		while(i < cities.size() && !found) {
@@ -252,6 +254,9 @@ public class Game {
 			ServerComm.sendMessage(mes, i);
 		}
 	}
+	public void changeMobileHospitalFlag(boolean param){
+		mobileHospitalActive = param;
+	}	
 }
 
 enum Stage{

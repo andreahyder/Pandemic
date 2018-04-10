@@ -1,11 +1,13 @@
 package Events;
 
+import Server.GameManager;
+
 public class MobileHospital implements Event {
 
 	@Override
 	public void executeEvent(String[] args) {
-		// TODO Auto-generated method stub
-
+		GameManager.game.changeMobileHospitalFlag(true);
+		//TODO send flag toggle to client
 	}
 
 	@Override

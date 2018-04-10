@@ -51,6 +51,9 @@ public class Player {
 			return -1;
 		}
 	}
+	public Pawn getPawn(){
+		return pawn;
+	}
 }
 
 enum Status{

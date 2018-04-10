@@ -12,15 +12,29 @@ public class Pawn {
 		c.pawns.add(this);
 	}
 	
-	void move(City c) {
+	void move(City c, Boolean free) {
 		city.pawns.remove(this);
 		city = c;
 		city.pawns.add(this);
-		actions--;
+		if(!free){
+			actions--;
+		}
 	}
 	
-	void treat(Color c) {
+	void treat(Color c, Boolean free) {
 		city.removeDiseaseCube(c);
+		if(!free){
+			actions--;
+		}
+	}
+	/*void mobileHospitalMove(City c, Color d) {
+		city.pawns.remove(this);
+		city = c;
+		city.pawns.add(this);
+		city.removeDiseaseCube(d);
 		actions--;
+	}*/
+	public void incrementAction(int i){
+		actions += i;
 	}
 }

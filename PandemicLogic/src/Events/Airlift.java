@@ -1,4 +1,5 @@
 package Events;
+import Server.*;
 
 public class Airlift implements Event {
 

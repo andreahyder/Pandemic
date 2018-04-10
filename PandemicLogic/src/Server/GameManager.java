@@ -114,10 +114,17 @@ public class GameManager {
 	}*/
 	
 	//drive
-	public static void Drive(String city) {
+	//color is sent by Client when the MobileHospital flag is True. "none" otherwise
+	public static void Drive(String city, String color) {
 		Player t1 = game.getCurrentPlayer();
 		City t2 = game.getCity(city);
-		t1.pawn.move(t2);
+		t1.pawn.move(t2, false);
+		
+		
+		if(game.mobileHospitalActive){
+			Color c = Color.valueOf(color);
+			t1.pawn.treat(c, true);
+		}
 		
 		System.out.println(t1.username + " drived to " + city + ".");
 		
@@ -127,16 +134,23 @@ public class GameManager {
 		}
 		
 		mes = "DecrementActions/";
-		ServerComm.sendMessage(mes, game.turn);
+		for(int i = 0; i < game.players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+		}
 	}
 	
 	//directFlight
-	public static void DirectFlight(String city) {
+	public static void DirectFlight(String city, String color) {
 		Player t1 = game.getCurrentPlayer();
 		City t2 = game.getCity(city); 
-		t1.pawn.move(t2);
+		t1.pawn.move(t2, false);
 		PlayerCard t3 = t1.hand.remove(t1.getCard(city));
 		game.playerDiscardPile.add(t3);
+		
+		if(game.mobileHospitalActive){
+			Color c = Color.valueOf(color);
+			t1.pawn.treat(c, true);
+		}
 		
 		System.out.println(t1.username + " directly flew to " + city + ".");
 		
@@ -148,7 +162,10 @@ public class GameManager {
 		}
 		
 		mes = "DecrementActions/";
-		ServerComm.sendMessage(mes, game.turn);
+		for(int i = 0; i < game.players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+		}
+		//ServerComm.sendMessage(mes, game.turn);
 	}
 	
 	//treatDisease
@@ -156,7 +173,7 @@ public class GameManager {
 		int count = 1;
 		Player t1 = game.getCurrentPlayer();
 		Color c = Color.valueOf(color);
-		t1.pawn.treat(c);
+		t1.pawn.treat(c, false);
 		
 		System.out.println(t1.username + " treated a " + color.toString() + "disease cube in " + t1.pawn.city.name + ".");
 		
@@ -166,7 +183,9 @@ public class GameManager {
 		}
 		
 		mes = "DecrementActions/";
-		ServerComm.sendMessage(mes, game.turn);
+		for(int i = 0; i < game.players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+		}
 	}
 	
 	//shareKnowledge 
@@ -176,7 +195,14 @@ public class GameManager {
 		int index = game.players.indexOf(t2);
 		
 		ServerComm.sendMessage("AskForConsent/",index);
-		while(ServerComm.response == null){}
+		while(ServerComm.response == null) {
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		String ans = ServerComm.response;
 		Boolean consent = ans.matches("true");
 		ServerComm.response = null;
@@ -215,7 +241,9 @@ public class GameManager {
 			}
 			
 			String mes = "DecrementActions/";
-			ServerComm.sendMessage(mes, game.turn);
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 		}
 		else {
 			
@@ -255,8 +283,14 @@ public class GameManager {
 		}
 		
 		game.stage = Stage.Infection;
-		
-		for(int i = 0; i < game.infectionRate[game.infectionCount]; i++) {
+		//Checks for CommercialTravelBan flag
+		if (game.CommercialTravelBanTurnIndex == -1){
+			for(int i = 0; i < Game.infectionRate[game.infectionCount]; i++) {
+				InfectionCard t2 = game.infectionDeck.remove(0);
+				game.infectCity(t2, 1);
+			}
+		} 
+		else{
 			InfectionCard t2 = game.infectionDeck.remove(0);
 			game.infectCity(t2, 1);
 		}
@@ -267,6 +301,10 @@ public class GameManager {
 		}
 		else {
 			game.turn++;
+		}
+		
+		if (game.turn == game.CommercialTravelBanTurnIndex){
+			game.CommercialTravelBanTurnIndex = -1;
 		}
 		
 		String mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
@@ -291,9 +329,10 @@ public class GameManager {
 		}
 	}*/
 	
+
 	
 	//helper function to return a player from a name string
-	public static Player getPlayer(String s) {
+	/*public static Player getPlayer(String s) {
 		int i = 0;
 		Boolean found = false;
 		while(i < playerList.size() && !found) {
@@ -309,6 +348,97 @@ public class GameManager {
 		}
 		else {
 			return null;
+		}
+	}*/
+	public static void Event(String[] args){
+		switch (args[2]){
+		//params PlayerIndex/EventAction/Airlift/targetPlayer/targetCity
+		case "Airlift":
+			Player target = game.getPlayer(args[3]);
+			int index = game.players.indexOf(target);
+			
+			ServerComm.sendMessage("AskForConsentAirlift/",index);
+			while(ServerComm.response == null) {
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			String ans = ServerComm.response;
+			Boolean consent = ans.matches("true");
+			ServerComm.response = null;
+			
+			if(consent){
+				City c = game.getCity(args[4]);
+				target.pawn.move(c,true); 
+				Player temp = game.getPlayer(args[0]);
+				//TODO remove event card from player hand
+				//TODO send messages to client
+			}
+			else{
+				
+			}
+			break;
+			
+		case "BorrowedTime":
+			Player curPlayer = game.getCurrentPlayer();
+			Pawn pawn = curPlayer.getPawn();
+			pawn.incrementAction(2);
+			//TODO send to client
+			break;
+		
+		//params PlayerIndex/EventAction/CommercialTravelBan
+		case "CommercialTravelBan":
+			game.CommercialTravelBanTurnIndex = game.turn;
+			//TODO send to client
+			break;
+		
+		case "Forecast" :
+			break;
+			
+		//params: PlayerIndex/EventAction/GovernmentGrant/TargetCity/CityToRemoveRSFrom
+		case "GovernmentGrant": 
+			City targetCity = game.getCity(args[3]);
+			if (args[4].equals("none")){
+				targetCity.addResearchStation();
+			}
+			else{
+				City cityToRemoveRSFrom = game.getCity(args[4]);
+				cityToRemoveRSFrom.removeResearchStation();
+				targetCity.addResearchStation();
+			}
+			//TODO send info to clients
+			break;
+		
+		case "MobileHospital":
+			game.changeMobileHospitalFlag(true);
+			//TODO send to client, turn on flag in client
+			break;
+		
+		case "NewAssignment":
+			break;
+		
+		case "OneQuietNight":
+			break;
+		
+		case "RapidVaccineDeployment":
+			break;
+		
+		case "ReexaminedResearch":
+			break;
+		
+		case "RemoteTreatment":
+			break;
+		
+		case "ResilientPopulation":
+			break;
+		
+		case "SpecialOrders":
+			break;
+		default:
+			break;
 		}
 	}
 }
