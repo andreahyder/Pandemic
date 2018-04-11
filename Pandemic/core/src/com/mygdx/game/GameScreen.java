@@ -189,7 +189,7 @@ public class GameScreen implements Screen {
 	static ArrayList<String> researchStationCityNames = new ArrayList<String>();
 
 	static boolean turnEnded = false;
-	static boolean useCityButtonStage = false;
+	static boolean useCityButtonStage = true;
 
 	static String charterFlightCard;
 
@@ -312,6 +312,10 @@ public class GameScreen implements Screen {
 		AddDiseaseCubeToCity( "Atlanta", "blue" );
 		AddDiseaseCubeToCity( "Atlanta", "blue" );
 		AddDiseaseCubeToCity( "Atlanta", "blue" );
+
+		currentPlayer.addCardToHand(new PlayerCardInfo("Atlanta"));
+
+		currentPlayer.addCardToHand(new PlayerCardInfo("Santiago"));
 	}
 
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -615,10 +619,30 @@ public class GameScreen implements Screen {
 					public void changed(ChangeEvent event, Actor actor) {
 
 						if (currentPlayer.getCity().equals(card.getName())){
-							useCityButtonStage = true;
-							charterFlightCard = card.getName();
-							Gdx.input.setInputProcessor( cityButtonStage );
-							System.out.println("TEEEEESTING");
+
+							Dialog confirmFlight = new Dialog("Use " + card.getName() + " city card to Charter Flight?", skin) {
+								@Override
+								protected void result(Object object) {
+									if ((boolean) (object)) {
+										useCityButtonStage = true;
+										//charterFlightCard = card.getName();
+										Gdx.input.setInputProcessor( cityButtonStage );
+										//System.out.println("TEEEEESTING");
+									}
+									Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+									//dialogStage = null;
+								}
+							};
+
+							//dialogStag/e = new Stage( parent.screen );//
+							dialogStage.clear();
+
+							confirmFlight.button("Yes", true);
+							confirmFlight.button("No", false);
+
+							Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+							confirmFlight.show(dialogStage);
+
 						}
 
 						else {
@@ -659,14 +683,18 @@ public class GameScreen implements Screen {
 	static void updateCityTouchability()
 	{
 
+		for ( Button currButton : cityButtons ){
+			currButton.setTouchable(Touchable.disabled);
+		}
+
 		if(useCityButtonStage){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
 			ArrayList<CityNode> allTheCities = new ArrayList<CityNode>();
 
 			for( int i = 0; i < cityNodes.length; i++){		// copy all cities from cityNodes (except for currentPlayer's currentCity) to allTheCities ArrayList
 				if( !(currentPlayer.getCity().equals(cityNodes[i].getName())) ){
-					System.out.println(i + "before works");
+					//System.out.println(i + "before works");
 					allTheCities.add(cityNodes[i]);
-					System.out.println(i + "after works");
+					//System.out.println(i + "after works");
 				}
 			}
 			for ( CityNode curr : allTheCities){
@@ -730,7 +758,9 @@ public class GameScreen implements Screen {
 							// TODO: Implement highlight all connections between cities
 							String cityName = curr.getName();
 							String cardName = currentPlayer.getCity();
-							ClientComm.send("CharterFlight/" + cityName + "/" + cardName);
+							ClientComm.send("CharterFlight/" + cityName);
+							useCityButtonStage = false;
+							Gdx.input.setInputProcessor( buttonStage );
 						}
 						else {
 							String cityName = curr.getName();

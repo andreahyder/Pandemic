@@ -9,6 +9,7 @@ public class PlayerInfo {
 	int slotNum = -1;
 	String name;
 	String currCity = "Atlanta";
+	String role;
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
 	
