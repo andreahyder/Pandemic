@@ -240,7 +240,7 @@ public class GameScreen implements Screen {
 	static Stage buttonStage, pawnStage, diseaseStage;
 	static Stage dialogStage;
 	static Stage handPanelStage;
-	static Stage cityButtonStage;	// ADDED
+	static Stage cityButtonStage;
 
 	static Table infectionDiscardTable;
 	static Table playerDiscardTable;
@@ -267,19 +267,19 @@ public class GameScreen implements Screen {
 		parent = _parent;
 
 		players = new PlayerInfo[5];
-		players[0] = new PlayerInfo( "Barry", true );
+		players[0] = new PlayerInfo( "Barry", true, "Contingency Planner" );	// ADDED
 		players[0].colour = PawnColour.values()[0];
 
-		players[1] = new PlayerInfo( "Larry", false );
+		players[1] = new PlayerInfo( "Larry", false, "Researcher" );	// ADDED
 		players[1].colour = PawnColour.values()[1];
 
-		players[2] = new PlayerInfo( "Carrie", false );
+		players[2] = new PlayerInfo( "Carrie", false, "Dispatcher" );	// ADDED
 		players[2].colour = PawnColour.values()[2];
 
-		players[3] = new PlayerInfo( "Jarry", false );
+		players[3] = new PlayerInfo( "Jarry", false, "Operations Manager" );	// ADDED
 		players[3].colour = PawnColour.values()[3];
 
-		players[4] = new PlayerInfo( "Agarry", false );
+		players[4] = new PlayerInfo( "Agarry", false, "Medic" );	// ADDED
 		players[4].colour = PawnColour.values()[4];
 
 		currentPlayer = players[0];
@@ -297,7 +297,7 @@ public class GameScreen implements Screen {
 		diseaseStage = new Stage( parent.screen ); //TEST
 		dialogStage = new Stage( parent.screen );
 		pawnStage = new Stage( parent.screen );
-		cityButtonStage = new Stage( parent.screen );	// ADDED
+		cityButtonStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
@@ -309,6 +309,8 @@ public class GameScreen implements Screen {
 
 		IncInfectionRate();
 
+
+
 		AddDiseaseCubeToCity( "Atlanta", "blue" );
 		AddDiseaseCubeToCity( "Atlanta", "blue" );
 		AddDiseaseCubeToCity( "Atlanta", "blue" );
@@ -316,6 +318,12 @@ public class GameScreen implements Screen {
 		currentPlayer.addCardToHand(new PlayerCardInfo("Atlanta"));
 
 		currentPlayer.addCardToHand(new PlayerCardInfo("Santiago"));
+
+		//playerDiscardPile.add("Forecast");
+		//playerDiscardPile.add("Airlift");
+		playerDiscardPile.add("Santiago");
+		//playerDiscardPile.add("Resilient Population");
+		playerDiscardPile.add("Shanghai");
 	}
 
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -1141,6 +1149,82 @@ public class GameScreen implements Screen {
 		createResearchStation.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
 		nextActionButtonHeight -= actionButtonYSize*1.125f;
 		buttonGroup.addActor( createResearchStation );
+
+
+		if( currentPlayer.getRole().equals("Contingency Planner")){		//	/* ADDED
+
+			//System.out.println("Teeeeeeeeeeeeeeeeeeeeest");
+
+			TextButton retrieveEventCard = new TextButton( "Retrieve Event Card", skin );
+			retrieveEventCard.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if (currentPlayer == clientPlayer && actionsRemaining > 0) {
+						dialogStage.clear();
+
+						String cityName = currentPlayer.getCity();
+						boolean hasCard = playerHasCityCard(currentPlayer, cityName);
+
+						ArrayList<PlayerCardInfo> eventCardList = new ArrayList<PlayerCardInfo>();
+						for (String eventCardName : playerDiscardPile) {
+							if ( playerDiscardPile != null && ( eventCardName.matches("Forecast|Airlift|One Quiet Night|Resilient Population|Government Grant") ) ) {
+
+								eventCardList.add(new PlayerCardInfo( eventCardName ));
+
+							}
+						}
+
+						String[] list = new String[eventCardList.size()];
+						if (eventCardList.size() != 0) {
+							for (int i = 0; i < eventCardList.size(); i++) {
+								list[i] = eventCardList.get(i).getName();
+							}
+
+							Skin tempSkin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+							final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+
+							Dialog skPrompt = new Dialog(" Choose an Event Card to retrieve ", skin) {
+									protected void result(Object object) {
+										String selected = selectBox.getSelected();
+										Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+										//dialogStage = null;
+										// TODO : Add a retrieve event card "message"
+										ClientComm.send("RetrieveEventCard/" + selected + "/" + currentPlayer.getName());
+									}
+								};
+
+							skPrompt.setSize(315, 150);
+							skPrompt.setPosition(windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2);
+							skPrompt.button("Select");
+							selectBox.setItems(list);
+							skPrompt.getContentTable().add(selectBox);
+
+							dialogStage.addActor(skPrompt);
+							Gdx.input.setInputProcessor(dialogStage);
+							} else {
+								Dialog skPrompt = new Dialog("No Event Cards in Player Discard Pile", skin) {
+									protected void result(Object object) {
+										Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+										//dialogStage = null;
+									}
+								};
+
+								skPrompt.button("Okay");
+								dialogStage.clear();
+								;
+								skPrompt.show(dialogStage);
+								Gdx.input.setInputProcessor(dialogStage);
+							}
+
+					}
+				}
+			});
+
+			retrieveEventCard.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+			nextActionButtonHeight -= actionButtonYSize*1.125f;
+			buttonGroup.addActor( retrieveEventCard );
+
+		}	//	*/	ADDED
 	}
 
 	@Override
@@ -1258,7 +1342,7 @@ public class GameScreen implements Screen {
 		displayCurrPlayer();
 		displayInfectionRate( currentInfectionRateIdx );
 		displayOutbreakCounter( outbreaks );
-		displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remResearchStations);	// ADDED
+		displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remResearchStations);
 		//displayNumbers( 23, 23, 23, 23, 23 );
 		displayNumberOfActionsLeft( actionsRemaining );
 		displayPlayerColours();

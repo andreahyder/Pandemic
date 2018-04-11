@@ -9,14 +9,15 @@ public class PlayerInfo {
 	int slotNum = -1;
 	String name;
 	String currCity = "Atlanta";
-	String role;
+	String role;	// ADDED
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
 	
-	PlayerInfo( String _name, boolean _isClintPlayer )
+	PlayerInfo( String _name, boolean _isClintPlayer, String _role )
 	{
 		name 	= _name;
 		isClientPlayer = _isClintPlayer;
+		role = _role;
 	}
 	
 	public PlayerInfo(String _name, PawnColour _colour, boolean _isClintPlayer ) 
@@ -109,5 +110,10 @@ public class PlayerInfo {
 	{
 		return hand;
 	}
+
+	public String getRole()
+	{
+		return role;
+	}	//	ADDED
 	
 }

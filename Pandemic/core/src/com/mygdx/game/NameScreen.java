@@ -97,7 +97,7 @@ public class NameScreen implements Screen {
 		stage.draw();
 		if ( !name.equals( "" ) )
 		{
-			PlayerInfo newPlayer = new PlayerInfo( name, true );
+			PlayerInfo newPlayer = new PlayerInfo( name, true, "Researcher");	// ADDED
 			newPlayer.setColour(PawnColour.values()[5]);
 			parent.setCurrentPlayer( newPlayer );
 			parent.addPlayer( newPlayer );
