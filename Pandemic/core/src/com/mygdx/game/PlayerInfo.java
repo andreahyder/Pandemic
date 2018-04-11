@@ -10,6 +10,7 @@ public class PlayerInfo {
 	String name;
 	String currCity = "Atlanta";
 	public int cardsToCure = 5;
+	String role;
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
 	
