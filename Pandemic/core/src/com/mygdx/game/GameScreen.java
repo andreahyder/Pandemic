@@ -389,7 +389,7 @@ public class GameScreen implements Screen {
 		updatePawnStage();
 		
 
-    	players[0].addCardToHand( new PlayerCardInfo("GovernmentGrant" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("ResilientPopulation" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("London" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
@@ -729,7 +729,6 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	
 	static void updateHandPanelStage()
 	{
 		handPanelGroup.clear();
@@ -1281,6 +1280,49 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		button.addListener( new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( infectionDiscardPile.size() > 0 )
+				{
+					String[] data = new String[ infectionDiscardPile.size() ];
+					for( int i = 0; i < data.length; i++ )
+						data[i] = infectionDiscardPile.get( i );
+					
+					final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json") );
+					final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+					selector.setItems( data );
+					
+					Dialog rpDiag = new Dialog( "Pick a card to remove from infection Discard", skin ) {
+						@Override
+						protected void result(Object object) {
+							if( (boolean)object )
+							{
+								ClientComm.send("ResilientPopulation/" + selector.getSelected() +'/');
+							}
+							Gdx.input.setInputProcessor( buttonStage );
+						};
+					};
+					rpDiag.getContentTable().add( selector );
+					rpDiag.button("Select", true );
+					rpDiag.button("Cancel", false );
+					rpDiag.show( dialogStage );
+					Gdx.input.setInputProcessor( dialogStage );
+				}
+				else
+				{
+					Dialog rpDiag = new Dialog( "No cards in infection discard", skin ) {
+						@Override
+						protected void result(Object object) {
+							Gdx.input.setInputProcessor( buttonStage );
+						};
+					};
+					rpDiag.button("Okay");
+					rpDiag.show( dialogStage );
+					Gdx.input.setInputProcessor( dialogStage );
+				}
+			}
+		});
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -1357,6 +1399,7 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
