@@ -6,6 +6,8 @@ public class UpdatePlayerLocation implements Action{
 
 	@Override
 	public void execute(String[] args) {
+		System.out.println( args[ 1 ] );
+		System.out.println( args[ 2 ] );
 		GameScreen.UpdatePlayerLocation( args[1], args[2] );
 	}
 

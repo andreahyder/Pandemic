@@ -97,9 +97,10 @@ public class NameScreen implements Screen {
 		stage.draw();
 		if ( !name.equals( "" ) )
 		{
-			PlayerInfo newPlayer = new PlayerInfo( name, PawnColour.PINK, true );
-			parent.addPlayer(newPlayer);
-			parent.setCurrentPlayer(newPlayer);
+			PlayerInfo newPlayer = new PlayerInfo( name, true );
+			newPlayer.setColour(PawnColour.values()[5]);
+			parent.setCurrentPlayer( newPlayer );
+			parent.addPlayer( newPlayer );
 			parent.changeScreen( Screens.MENU );
 		}
 	}
