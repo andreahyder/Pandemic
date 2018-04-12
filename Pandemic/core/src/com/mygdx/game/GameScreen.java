@@ -31,6 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
+import com.badlogic.gdx.scenes.scene2d.ui.List.ListStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -282,6 +283,8 @@ public class GameScreen implements Screen {
 
 	static Skin skin;
 	static Skin altSkin = new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
+	
+	static BitmapFont troubleshooterFont = new BitmapFont();
 
 	static Button button;
 
@@ -299,6 +302,7 @@ public class GameScreen implements Screen {
 	static boolean opExpertFly = false;
 	static String opExpertFlyCard;
 	
+	
     GameScreen( PandemicGame _parent ) //Debug Constructor
     {
     	parent = _parent;
@@ -306,8 +310,7 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].role = "operationsexpert";
-    	players[0].setCity("Tokyo");
+    	players[0].role = "Epidemiologist";
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -355,6 +358,18 @@ public class GameScreen implements Screen {
     	players[0].addCardToHand( new PlayerCardInfo("Toronto" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Madrid" ) );
     	
+
+    	players[1].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[1].addCardToHand( new PlayerCardInfo("London" ) );
+    	players[1].addCardToHand( new PlayerCardInfo("Essen" ) );
+    	players[1].addCardToHand( new PlayerCardInfo("Toronto" ) );
+    	players[1].addCardToHand( new PlayerCardInfo("Madrid" ) );
+    	
+    	players[2].addCardToHand( new PlayerCardInfo("Ho Chi Min City" ) );
+    	players[2].addCardToHand( new PlayerCardInfo("London" ) );
+    	players[2].addCardToHand( new PlayerCardInfo("Essen" ) );
+    	players[2].addCardToHand( new PlayerCardInfo("Toronto" ) );
+    	players[2].addCardToHand( new PlayerCardInfo("Madrid" ) );
     	
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
@@ -370,7 +385,9 @@ public class GameScreen implements Screen {
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
+    	playerDiscardPile.add( "Tokyo" );
 		handShownPlayer = clientPlayer;
+		
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -466,6 +483,10 @@ public class GameScreen implements Screen {
 					clientPlayer = players[i];
 					//currentPlayer = clientPlayer; // TEST CURRENT PLAYER
 				}
+				
+				if( players[i].role != null )
+					if( players[i].role.equalsIgnoreCase("Scientist") )
+						players[i].cardsToCure = 4;
 			}
 		}
 
@@ -488,6 +509,9 @@ public class GameScreen implements Screen {
 		diseaseStatuses.put( "yellow", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "black", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "red", DiseaseStatus.ACTIVE );
+		
+		if ( currentPlayer.role.equalsIgnoreCase( "Generalist" ) )
+			actionsRemaining = 5;
 	}
 
 	static void initHandButtonStage()
@@ -850,7 +874,8 @@ public class GameScreen implements Screen {
 								if( opExpertFly )
 								{
 									String cityName = curr.getName();
-									ClientComm.send("OperationsExpert/Move/" + cityName + '/' + opExpertFlyCard );
+									ClientComm.send("OperationsExpertAction/Move/" + cityName + '/' + opExpertFlyCard );
+									clientPlayer.roleActionUsed = true;
 									useCityButtonStage = false;
 									opExpertFly = false;
 									opExpertFlyCard = null;
@@ -988,7 +1013,6 @@ public class GameScreen implements Screen {
 	        		if ( currentPlayer == clientPlayer && actionsRemaining > 0)
 	        		{
 	        			dialogStage.clear();
-	        			
 	        			String cityName = currentPlayer.getCity();
 	        			boolean hasCard = playerHasCityCard( currentPlayer, cityName );
 	        			if( hasCard )
@@ -1465,6 +1489,10 @@ public class GameScreen implements Screen {
         buttonGroup.addActor( endTurn );
         
         createOperationExpertButton();
+        
+        createArchivistButton();
+        
+        createEpidemiologistButton();
 	}
 	
 	static void createOperationExpertButton()
@@ -1475,7 +1503,7 @@ public class GameScreen implements Screen {
 	        endTurn.addListener( new ChangeListener() {
 	            @Override
 				public void changed(ChangeEvent event, Actor actor) {
-	            	if( !waitForButton )
+	            	if( !waitForButton && !clientPlayer.roleActionUsed )
 	            	{
 	            		waitForButton = true;
 	            		if( currentPlayer == clientPlayer )
@@ -1506,7 +1534,8 @@ public class GameScreen implements Screen {
 			            				}
 			            				else if( remResearchStations > 0 )
 			            				{
-											ClientComm.send( "OperationsExpert/Build/" );
+											ClientComm.send( "OperationsExpertAction/Build/" );
+											clientPlayer.roleActionUsed = true;
 			            				}
 			            				else
 			            				{
@@ -1629,6 +1658,184 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	static void createArchivistButton()
+	{
+		if( clientPlayer.role != null )
+		{
+			if( clientPlayer.role.equalsIgnoreCase( "Archivist" ) )
+			{
+				TextButton archivistBtn = new TextButton( "Archivist Role Action", skin );
+		        archivistBtn.addListener( new ChangeListener() {
+		            @Override
+					public void changed(ChangeEvent event, Actor actor) {
+		            	if( !waitForButton && !clientPlayer.roleActionUsed )
+		            	{
+		            		waitForButton = true;
+		            		boolean cardInDiscard = false;
+		    				for( String card : playerDiscardPile )
+		    				{
+		    					if( card.equalsIgnoreCase( clientPlayer.getCity() ) )
+		    						cardInDiscard = true;
+		    				}
+		    				
+		    				if( cardInDiscard )
+		    				{
+		    					dialogStage.clear();
+		    					Dialog archivistDialog = new Dialog( "Draw Current CityCard from Discard", skin ) {
+		    						@Override
+		    						protected void result(Object object) {
+		    							if( (Boolean) object )
+		    							{
+		    								ClientComm.send("ArchivistAction/");
+		    								clientPlayer.roleActionUsed = true;
+		    							}
+		    							Gdx.input.setInputProcessor( buttonStage );
+		    						}
+		    					};
+		    					archivistDialog.button( "Okay", true );
+		    					archivistDialog.button( "Cancel", false );
+		    					archivistDialog.show( dialogStage );
+		    					Gdx.input.setInputProcessor( dialogStage );
+		    				}
+		    				else
+		    				{
+		    					dialogStage.clear();
+		    					Dialog archivistDialog = new Dialog( "Current City Card not in Discard", skin ) {
+		    						@Override
+		    						protected void result(Object object) {
+		    							Gdx.input.setInputProcessor( buttonStage );
+		    						}
+		    					};
+		    					archivistDialog.button( "Okay" );
+		    					archivistDialog.show( dialogStage );
+		    					Gdx.input.setInputProcessor( dialogStage );
+		    				}
+
+		            		waitForButton = false;
+		            	}
+					}
+		        });
+		        archivistBtn.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+		        nextActionButtonHeight -= actionButtonYSize*1.125f;
+		        buttonGroup.addActor( archivistBtn );
+			}
+		}
+	}
+	
+	static void createEpidemiologistButton()
+	{
+		if ( clientPlayer.role != null )
+		{
+			if( clientPlayer.role.equalsIgnoreCase( "Epidemiologist" ) )
+			{
+				TextButton epidemiologistBtn = new TextButton( "Epidemiologist Action", skin );
+		        epidemiologistBtn.addListener( new ChangeListener() {
+		            @Override
+					public void changed(ChangeEvent event, Actor actor) {
+		            	if( !waitForButton && !clientPlayer.roleActionUsed )
+		            	{
+		            		waitForButton = true;
+		            		if( clientPlayer == currentPlayer )
+		            		{
+		            			ArrayList<String> list = new ArrayList<String>();
+			            		for( int i = 0; i < players.length; i++ )
+			            		{
+			            			if( currentPlayer != players[i] )
+			            			{
+			            				if( players[i] != null )
+			            				{
+			            					if( players[i].getCity().equalsIgnoreCase(currentPlayer.getCity()))
+			            						if( players[i].hand.size() > 0 )
+			            							list.add( players[i].getName() );
+			            				}
+			            			}
+			            		}
+			            		
+			            		if( list.size() > 0 )
+			            		{
+			            			String[] data = new String[list.size()];
+			            			for( int i = 0; i < list.size(); i++ )
+			            			{
+			            				data[i] = list.get(i);
+			            			}
+			            			
+
+			            			final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+			            			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+			            			selectBox.setItems( data );
+			            			dialogStage.clear();
+			    					Dialog epiDialog = new Dialog( "Select player to card take from", skin ) {
+			    						@Override
+			    						protected void result(Object object) {
+			    							if( (Boolean)object )
+			    							{
+				    							dialogStage.clear();
+				    							final String selection = selectBox.getSelected();
+				    							PlayerInfo selected = null;
+				    							for( PlayerInfo curr : players )
+				    								if( selection.equalsIgnoreCase( curr.getName() ) )
+				    									selected = curr;
+				    							
+				    							
+				    							String[] handData = new String[ selected.getHandSize() ];
+				    							for( int i = 0; i < handData.length; i++ )
+				    								handData[i] = selected.getHand().get(i).name;
+				    							
+				    							final SelectBox<String> handSelectBox=new SelectBox<String>(tempSkin);
+				    							handSelectBox.setItems( handData );
+						    					Dialog epiDialog = new Dialog( "Select card to take", skin ) {
+						    						@Override
+						    						protected void result(Object object) {
+						    							if( (Boolean)object )
+						    							{
+							    							String cardSelected = handSelectBox.getSelected();
+							    							ClientComm.send("EpidemiologistAction/" + selection + '/' + cardSelected );
+							    							currentPlayer.roleActionUsed = true;
+						    							}
+						    							Gdx.input.setInputProcessor( buttonStage );
+						    						}
+						    					};
+						    					epiDialog.getContentTable().add( handSelectBox );
+						    					epiDialog.button( "Select", true );
+						    					epiDialog.button( "Cancel", false );
+						    					epiDialog.show( dialogStage );
+			    							}
+					    					Gdx.input.setInputProcessor( dialogStage );
+			    						}
+			    					};
+			    					epiDialog.getContentTable().add( selectBox );
+			    					epiDialog.button( "Select", true );
+			    					epiDialog.button( "Cancel", false );
+			    					epiDialog.show( dialogStage );
+			    					Gdx.input.setInputProcessor( dialogStage );
+			            			
+			            		}
+			            		else
+			            		{
+			            			dialogStage.clear();
+			    					Dialog epiDialog = new Dialog( "No Other Players in City with cards", skin ) {
+			    						@Override
+			    						protected void result(Object object) {
+			    							Gdx.input.setInputProcessor( buttonStage );
+			    						}
+			    					};
+			    					epiDialog.button( "Okay" );
+			    					epiDialog.show( dialogStage );
+			    					Gdx.input.setInputProcessor( dialogStage );
+			            		}
+		            		
+		            		}
+		            		waitForButton = false;
+		            	}
+					}
+		        });
+		        epidemiologistBtn.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+		        nextActionButtonHeight -= actionButtonYSize*1.125f;
+		        buttonGroup.addActor( epidemiologistBtn );
+			}
+		}
+	}
+	
 	@Override
 	public void show() {
 		// TODO Auto-generated method stub
@@ -2320,10 +2527,62 @@ public class GameScreen implements Screen {
 				currentPlayer = player;
 				if( clientPlayer == currentPlayer )
 				{
+					clientPlayer.roleActionUsed = false;
 					Dialog notifyTurnDialog = new Dialog( "It's now your turn", skin ){
 						protected void result(Object object)
 						{
 							Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+							//dialogStage = null;
+						}
+					};
+
+					notifyTurnDialog.button("Okay");
+					dialogStage.clear();;
+					notifyTurnDialog.show( dialogStage );
+					Gdx.input.setInputProcessor(dialogStage);
+					turnEnded = false;
+				}
+			}
+		}
+	}
+	public static void NotifyTurnTroubleshoorter( String PlayerName, final String[] InfectionCards )
+	{
+		PlayerInfo player = lookupPlayer( PlayerName );
+
+		if ( player != null )
+		{
+			if ( currentPlayer != null )
+			{
+
+				actionsRemaining = 4;
+				currentPlayer = player;
+				if( clientPlayer == currentPlayer )
+				{
+					clientPlayer.roleActionUsed = false;
+					Dialog notifyTurnDialog = new Dialog( "It's now your turn", skin ){
+						protected void result(Object object)
+						{
+							Dialog showInfectDialog = new Dialog( "The next infect cards are", skin ){
+								protected void result(Object object)
+								{
+									
+									
+									Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+									//dialogStage = null;
+								}
+							};
+							
+							showInfectDialog.setColor( Color.GRAY );
+							List<String> items = new List<String>(skin);
+							items.setItems( InfectionCards );
+							ScrollPane panel = new ScrollPane( items );
+							showInfectDialog.getContentTable().add(panel);
+							
+							showInfectDialog.button("Okay");
+							dialogStage.clear();;
+							showInfectDialog.show( dialogStage );
+							Gdx.input.setInputProcessor(dialogStage);
+							turnEnded = false;
 							//dialogStage = null;
 						}
 					};
@@ -2350,7 +2609,10 @@ public class GameScreen implements Screen {
 
 	public static void ResetActions()
 	{
-		actionsRemaining = 4;
+		if( currentPlayer.role.equalsIgnoreCase( "Generalist ") )
+			actionsRemaining = 5;
+		else
+			actionsRemaining = 4;
 	}
 
 	public static void RemoveResearchStation( String CityName )
