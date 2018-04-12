@@ -2673,7 +2673,7 @@ public class GameScreen implements Screen {
 
 		for(int i = 0; i < amountOfOutbreaks; i++){
 			if(amountOfOutbreaks >= 0 && amountOfOutbreaks <= 8){
-				outbreakRateCircles[i] = outbrokenMarkerTexture;
+				outbreakRateCircles[i] = new Texture(Gdx.files.internal("outBreakLogo.png"));
 			}
 			else{
 				System.out.println("Invalid position");
@@ -2731,8 +2731,8 @@ public class GameScreen implements Screen {
 		BitmapFont font = new BitmapFont();
 
 		batch.begin();
-		numActionsFont.setColor(Color.RED);
-		numActionsFont.draw(batch, "Remaining Actions: " + Integer.toString(remActions), windWidth*0.87f, windHeight*0.95f);
+		font.setColor(Color.RED);
+		font.draw(batch, "Remaining Actions: " + Integer.toString(remActions), windWidth*0.87f, windHeight*0.95f);
 		batch.end();
 
 		font.dispose();
