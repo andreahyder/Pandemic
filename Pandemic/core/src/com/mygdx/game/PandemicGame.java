@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class PandemicGame extends Game {
 
@@ -26,6 +27,8 @@ public class PandemicGame extends Game {
 	private int numPlayers;
 	private PlayerInfo currentPlayer;
 	public static String clientPlayerName = "";
+	
+	public ScreenViewport screen = new ScreenViewport();
 	
 	public void changeScreen( Screens screen )
 	{
@@ -85,8 +88,6 @@ public class PandemicGame extends Game {
 		numPlayers = 0;
 		players = new PlayerInfo[5];
 
-		
-		
 		nameScreen = new NameScreen( this );
 		setScreen( nameScreen );
 		

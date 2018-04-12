@@ -9,6 +9,9 @@ public class PlayerInfo {
 	int slotNum = -1;
 	String name;
 	String currCity = "Atlanta";
+	public int cardsToCure = 5;
+	String role;
+	boolean roleActionUsed = false;
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
 	

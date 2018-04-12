@@ -28,15 +28,15 @@ public class SetupScreen implements Screen {
 	SetupScreen( PandemicGame _parent )
 	{
 		parent = _parent;
-		stage = new Stage(new ScreenViewport());
+		stage = new Stage(parent.screen);
 		skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 		Gdx.gl.glClearColor(0f, 0f, 0f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		Gdx.input.setInputProcessor(stage);
 		
 		// Create a table that fills the screen. Everything else will go inside this table.
-		int numPlayers = parent.getNumPlayers();
-		PlayerInfo[] players = parent.getPlayers();
+		final int numPlayers = parent.getNumPlayers();
+		final PlayerInfo[] players = parent.getPlayers();
 		Table table = new Table();
 	    table.clear();
 		table.setFillParent(true);

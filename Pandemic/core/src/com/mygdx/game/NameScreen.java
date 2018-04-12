@@ -31,7 +31,7 @@ public class NameScreen implements Screen {
 		Gdx.input.getTextInput(listener, "Please enter your name", "", "Name");
 		
 		parent = _parent;
-		stage = new Stage(new ScreenViewport());
+		stage = new Stage(parent.screen);
 		skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 		
 		Gdx.input.setInputProcessor(stage);

@@ -28,7 +28,7 @@ public class MenuScreen implements Screen
 	MenuScreen( PandemicGame _parent )
 	{
 		parent = _parent;
-		stage = new Stage(new ScreenViewport());
+		stage = new Stage(parent.screen);
 		Gdx.input.setInputProcessor(stage);
 		
 		// Create a table that fills the screen. Everything else will go inside this table.

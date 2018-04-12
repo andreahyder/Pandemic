@@ -9,6 +9,7 @@ public class CityNode {
 	String colour;
 	String name;
 	float x, y;
+	boolean hasResearchStation;
 	
 	CityNode( String[] nameData, float[] position )
 	{
@@ -100,5 +101,15 @@ public class CityNode {
 				return;
 			}
 		}
+	}
+	
+	public void putResearchStation() 
+	{
+		hasResearchStation = true;
+	}
+	
+	public void removeResearchStation() 
+	{
+		hasResearchStation = false;
 	}
 }
