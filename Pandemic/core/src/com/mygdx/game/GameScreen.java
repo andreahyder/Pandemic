@@ -314,17 +314,21 @@ public class GameScreen implements Screen {
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
+    	players[1].role = "Medic";
     	
     	players[2] = new PlayerInfo( "Carrie", false );
     	players[2].colour = PawnColour.values()[2];
+    	players[0].role = "Operations Expert";
     	
     	players[3] = new PlayerInfo( "Jarry", false );
     	players[3].colour = PawnColour.values()[3];
+    	players[0].role = "Containment Specialist";
     	
     	players[4] = new PlayerInfo( "Agarry", false );
     	players[4].colour = PawnColour.values()[4];
+    	players[0].role = "Generalist";
     	
-    	currentPlayer = players[0];
+    	currentPlayer = players[1];
     	clientPlayer = players[0];
     	
     	batch 	= new SpriteBatch();
@@ -365,7 +369,7 @@ public class GameScreen implements Screen {
     	players[1].addCardToHand( new PlayerCardInfo("Toronto" ) );
     	players[1].addCardToHand( new PlayerCardInfo("Madrid" ) );
     	
-    	players[2].addCardToHand( new PlayerCardInfo("Ho Chi Min City" ) );
+    	players[2].addCardToHand( new PlayerCardInfo("Ho Chi Minh City" ) );
     	players[2].addCardToHand( new PlayerCardInfo("London" ) );
     	players[2].addCardToHand( new PlayerCardInfo("Essen" ) );
     	players[2].addCardToHand( new PlayerCardInfo("Toronto" ) );
@@ -699,99 +703,217 @@ public class GameScreen implements Screen {
 		int handIdx = 0;
 		for( final PlayerCardInfo card : playerHand )
 		{
-			Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
-			TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
-			final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
-
-			ButtonStyle cityButtonStyle = new ButtonStyle();
-			cityButtonStyle.up			= Draw_cardTexture;
-			cityButtonStyle.down		= Draw_cardTexture;
-
-			button = new Button( cityButtonStyle );
-			button.addCaptureListener( new InputListener() {
-				@Override
-				public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-				}
-
-				@Override
-				public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-				}
-			});
-
-			if( handShownPlayer == clientPlayer && actionsRemaining > 0 && !turnEnded && clientPlayer == currentPlayer)
+			if( card != null )
 			{
-				button.addListener( new ChangeListener() {
-					@Override
-					public void changed(ChangeEvent event, Actor actor) {
-
-		            	if( !waitForButton )
-		            	{
-		            		waitForButton = true;
-		            		if (currentPlayer.getCity().equals(card.getName())){
-
-								Dialog confirmFlight = new Dialog("Use " + card.getName() + " city card to Charter Flight?", skin) {
-									@Override
-									protected void result(Object object) {
-										if ((boolean) (object)) {
-											useCityButtonStage = true;
-											//charterFlightCard = card.getName();
-											Gdx.input.setInputProcessor( cityButtonStage );
-											//System.out.println("TEEEEESTING");
-										}
-										Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-										//dialogStage = null;
+				int index = lookupCityIndex( card.getName() );
+				if( index > -1 ) //Player Cards
+				{
+					Texture cardTexture	 							= cityCardTextures[ index ];
+					TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+					final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+		
+					ButtonStyle cityButtonStyle = new ButtonStyle();
+					cityButtonStyle.up			= Draw_cardTexture;
+					cityButtonStyle.down		= Draw_cardTexture;
+		
+					button = new Button( cityButtonStyle );
+					button.addCaptureListener( new InputListener() {
+						@Override
+						public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+						}
+		
+						@Override
+						public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+						}
+					});
+		
+					if( handShownPlayer == clientPlayer && actionsRemaining > 0 && !turnEnded && clientPlayer == currentPlayer)
+					{
+						button.addListener( new ChangeListener() {
+							@Override
+							public void changed(ChangeEvent event, Actor actor) {
+		
+				            	if( !waitForButton )
+				            	{
+				            		waitForButton = true;
+				            		if (currentPlayer.getCity().equals(card.getName())){
+		
+										Dialog confirmFlight = new Dialog("Use " + card.getName() + " city card to Charter Flight?", skin) {
+											@Override
+											protected void result(Object object) {
+												if ((boolean) (object)) {
+													useCityButtonStage = true;
+													//charterFlightCard = card.getName();
+													Gdx.input.setInputProcessor( cityButtonStage );
+													//System.out.println("TEEEEESTING");
+												}
+												Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+												//dialogStage = null;
+											}
+										};
+		
+										//dialogStag/e = new Stage( parent.screen );//
+										dialogStage.clear();
+		
+										confirmFlight.button("Yes", true);
+										confirmFlight.button("No", false);
+		
+										Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+										confirmFlight.show(dialogStage);
+		
 									}
-								};
-
-								//dialogStag/e = new Stage( parent.screen );//
-								dialogStage.clear();
-
-								confirmFlight.button("Yes", true);
-								confirmFlight.button("No", false);
-
-								Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
-								confirmFlight.show(dialogStage);
-
-							}
-
-							else {
-								Dialog confirmFlight = new Dialog("Fly to " + card.getName() + "?", skin) {
-									@Override
-									protected void result(Object object) {
-										if ((boolean) (object)) {
-											ClientComm.send("DirectFlight/" + card.getName());
-										}
-										Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-										//dialogStage = null;
+		
+									else {
+										Dialog confirmFlight = new Dialog("Fly to " + card.getName() + "?", skin) {
+											@Override
+											protected void result(Object object) {
+												if ((boolean) (object)) {
+													ClientComm.send("DirectFlight/" + card.getName());
+												}
+												Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+												//dialogStage = null;
+											}
+										};
+		
+										//dialogStag/e = new Stage( parent.screen );//
+										dialogStage.clear();
+		
+										confirmFlight.button("Yes", true);
+										confirmFlight.button("No", false);
+		
+										Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+										confirmFlight.show(dialogStage);
 									}
-								};
-
-								//dialogStag/e = new Stage( parent.screen );//
-								dialogStage.clear();
-
-								confirmFlight.button("Yes", true);
-								confirmFlight.button("No", false);
-
-								Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
-								confirmFlight.show(dialogStage);
+					                waitForButton = false;
+				            	}
+		
 							}
-			                waitForButton = false;
-		            	}
-
+						});
 					}
-				});
+		
+					float x = playerCardXOffset + playerCardGap + (handIdx*(playerCardXSize+ playerCardGap) );
+					float y = playerCardYOffset/2;
+					button.setBounds(x, y, playerCardXSize, playerCardYSize);
+					handPanelGroup.addActor(button); //Add the button to the stage to perform rendering and take input.
+					handIdx++;
+				}
+				else //Event Cards
+				{
+					String name = card.getName();
+					
+					switch( name )
+					{
+						case "BorrowedTime":
+						{
+							createBorrowedTime( handIdx );
+						} break;
+						
+						case "MobileHospital":
+						{
+							createMobileHospital( handIdx );
+						} break;
+						
+						case "NewAssignment":
+						{
+							createNewAssignment( handIdx );
+						} break;
+						
+						case "RapidVaccine":
+						{
+							createRapidVaccine( handIdx );
+						} break;
+						
+						case "SpecialOrders":
+						{
+							createSpecialOrders( handIdx );
+						} break;
+						
+						case "Airlift":
+						{
+							createAirlift( handIdx );
+						} break;
+						
+						case "OneQueitNight":
+						{
+							createOneQuietNight( handIdx );
+						} break;
+						
+						case "ResilientPopulation":
+						{
+							createResilientPopulation( handIdx );
+						} break;
+						
+						case "GovernmentGrant":
+						{
+							createGovernmentGrant( handIdx );
+						} break;
+						
+						case "Forecast":
+						{
+							createForecast( handIdx );
+						} break;
+						
+						default:
+						{} break;
+					}
+				}
 			}
-
-			float x = playerCardXOffset + playerCardGap + (handIdx*(playerCardXSize+ playerCardGap) );
-			float y = playerCardYOffset/2;
-			button.setBounds(x, y, playerCardXSize, playerCardYSize);
-			handPanelGroup.addActor(button); //Add the button to the stage to perform rendering and take input.
-			handIdx++;
 		}
 		buttonStage.addActor( handPanelGroup );
 
 	}
 
+	static void createBorrowedTime( int idx )
+	{
+		
+	}
+	
+	static void createMobileHospital( int idx )
+	{
+		
+	}
+	
+	static void createNewAssignment( int idx )
+	{
+		
+	}
+	
+	static void createRapidVaccine( int idx )
+	{
+		
+	}
+	
+	static void createSpecialOrders( int idx )
+	{
+		
+	}
+	
+	static void createAirlift( int idx )
+	{
+		
+	}
+	
+	static void createOneQuietNight( int idx )
+	{
+		
+	}
+	
+	static void createResilientPopulation( int idx )
+	{
+		
+	}
+	
+	static void createGovernmentGrant( int idx )
+	{
+		
+	}
+	
+	static void createForecast( int idx )
+	{
+		
+	}
+	
+	
 	static void updateCityTouchability()
 	{
 
@@ -1460,26 +1582,29 @@ public class GameScreen implements Screen {
             	if( !waitForButton )
             	{
             		waitForButton = true;
-	            	Dialog confirmFlight = new Dialog("End Turn?" , skin ){
-	            		@Override
-	            		protected void result(Object object) {
-	            			if ( (boolean) ( object ) )
-	            			{
-	            				ClientComm.send("EndTurn/");
-	            				turnEnded = true;
-	            			}
-	        				Gdx.input.setInputProcessor( buttonStage );
-	            		}
-	            	};
-	
-	        		//dialogStag/e = new Stage( parent.screen );//
-	        		dialogStage.clear();
-	        		
-	        		confirmFlight.button( "Yes", true );
-	        		confirmFlight.button( "No", false );
-	        		
-	                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
-	                confirmFlight.show( dialogStage );
+            		if( clientPlayer == currentPlayer )
+            		{
+		            	Dialog endTurnDiag = new Dialog("End Turn?" , skin ){
+		            		@Override
+		            		protected void result(Object object) {
+		            			if ( (boolean) ( object ) )
+		            			{
+		            				ClientComm.send("EndTurn/");
+		            				turnEnded = true;
+		            			}
+		        				Gdx.input.setInputProcessor( buttonStage );
+		            		}
+		            	};
+		
+		        		//dialogStag/e = new Stage( parent.screen );//
+		        		dialogStage.clear();
+		        		
+		        		endTurnDiag.button( "Yes", true );
+		        		endTurnDiag.button( "No", false );
+		        		
+		                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+		                endTurnDiag.show( dialogStage );
+            		}
 	                waitForButton = false;
             	}
 			}
@@ -1948,9 +2073,8 @@ public class GameScreen implements Screen {
 
 		updateHandPanelStage();
 
-		if ( currentPlayer == clientPlayer && actionsRemaining > 0 )
-			buttonStage.act();
-		else if ( currentPlayer == clientPlayer && actionsRemaining <= 0 )
+		
+		if ( currentPlayer == clientPlayer && actionsRemaining <= 0 )
 		{
 			if ( !turnEnded )
 			{
@@ -1974,7 +2098,8 @@ public class GameScreen implements Screen {
 				*/
 			}
 		}
-
+		
+		buttonStage.act();
 		buttonStage.draw();
 
 		updatePawnStage();
