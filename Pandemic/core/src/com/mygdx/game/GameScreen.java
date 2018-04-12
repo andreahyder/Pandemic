@@ -332,6 +332,7 @@ public class GameScreen implements Screen {
 	static float nextActionButtonHeight;
 	
 	static boolean waitForButton = false;
+	static boolean govtGrant = false;
 	static boolean opExpertFly = false;
 	static String opExpertFlyCard;
 	
@@ -388,7 +389,7 @@ public class GameScreen implements Screen {
 		updatePawnStage();
 		
 
-    	players[0].addCardToHand( new PlayerCardInfo("Airlift" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("GovernmentGrant" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("London" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
@@ -425,6 +426,9 @@ public class GameScreen implements Screen {
     	playerDiscardPile.add( "Tokyo" );
 		handShownPlayer = clientPlayer;
 		
+		researchStationCityNames.add( "Tokyo" );
+		lookupCity( "Tokyo" ).putResearchStation();
+		remResearchStations--;
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -540,7 +544,7 @@ public class GameScreen implements Screen {
 
 		researchStationCityNames.add( "Atlanta" );
 		lookupCity( "Atlanta" ).putResearchStation();
-		remResearchStations--;
+		
 		
 		diseaseStatuses.put( "blue", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "yellow", DiseaseStatus.ACTIVE );
@@ -1296,6 +1300,44 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		button.addListener( new ChangeListener(){
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( !waitForButton )
+				{
+					waitForButton = true;
+					
+					dialogStage.clear();
+					Dialog borrowedTimeDiag = new Dialog( "Do you want to play Government Grant?", skin )
+					{
+						@Override
+						protected void result(Object object) {
+							if( (Boolean)object )
+							{
+								Dialog ggInfo = new Dialog( "Please select a city to build a research station in", skin ) {
+									@Override
+									protected void result(Object object) {
+										useCityButtonStage = true;
+										govtGrant = true;
+										Gdx.input.setInputProcessor( buttonStage );
+									};
+								};
+								ggInfo.button("Okay");
+								ggInfo.show( dialogStage );
+								
+							}
+							else
+								Gdx.input.setInputProcessor( buttonStage );
+						};
+					};
+					borrowedTimeDiag.button("Yes", true );
+					borrowedTimeDiag.button("No", false);
+					borrowedTimeDiag.show( dialogStage );
+					Gdx.input.setInputProcessor( dialogStage );
+					waitForButton = false;
+				}
+			}
+		} );
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -1430,6 +1472,60 @@ public class GameScreen implements Screen {
 									cityButtonsToAirlift = false;
 									airliftedPlayer = null;
 									Gdx.input.setInputProcessor( buttonStage );
+								}
+								else if( govtGrant )
+								{
+									final String cityName = curr.getName();
+									if( lookupCity(cityName).hasResearchStation )
+									{
+										Dialog notValid = new Dialog("City already has research station", skin) {
+											@Override
+											protected void result(Object object) {
+												Gdx.input.setInputProcessor( buttonStage);
+											};
+										
+										};
+										notValid.button("Okay");
+										notValid.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
+									else
+									{
+										if( remResearchStations > 0 )
+										{
+											ClientComm.send("GovernmentGrant/"+cityName);	
+										}
+										else
+										{
+											final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+											final SelectBox<String> selectbox = new SelectBox<String>( tempSkin );
+											
+											String[] data = new String[ researchStationCityNames.size() ];
+											for( int i = 0; i < data.length; i++ )
+											{
+												data[i] = researchStationCityNames.get( i );
+											}
+											selectbox.setItems( data );
+											
+											Dialog rmRS = new Dialog( "Select Research Station to remove", skin ) {
+												@Override
+												protected void result(Object object) {
+													if( (boolean) true )
+													{
+														ClientComm.send("GovernmentGrant/" + cityName + '/' + selectbox.getSelected() + '/');
+													}
+													Gdx.input.setInputProcessor( buttonStage );
+												};
+											};
+											rmRS.getContentTable().add( selectbox );
+											rmRS.button( "Select", true );
+											rmRS.button( "Cancel", false );
+											rmRS.show( dialogStage );
+											Gdx.input.setInputProcessor( dialogStage );
+										}
+									}
+									useCityButtonStage = false;
+									govtGrant = false;
 								}
 								else
 								{
