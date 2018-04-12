@@ -197,7 +197,6 @@ public class GameScreen implements Screen {
 	static ArrayList<String> researchStationCityNames = new ArrayList<String>();
 
 	static boolean turnEnded = false;
-
 	
 	static boolean showCardSelectStage = false;
 	static ArrayList<PlayerCardInfo> possibleSelections;
@@ -205,7 +204,7 @@ public class GameScreen implements Screen {
 	static String showCardSelectAction;
 	static int cardsToSelect;
 
-	static boolean useCityButtonStage = true;
+	static boolean useCityButtonStage = false;
 
 	static String charterFlightCard;
 
@@ -297,6 +296,8 @@ public class GameScreen implements Screen {
 	static float nextActionButtonHeight;
 	
 	static boolean waitForButton = false;
+	static boolean opExpertFly = false;
+	static String opExpertFlyCard;
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
     {
@@ -305,6 +306,8 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
+    	players[0].role = "operationsexpert";
+    	players[0].setCity("Tokyo");
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -351,6 +354,7 @@ public class GameScreen implements Screen {
     	players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Toronto" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Madrid" ) );
+    	
     	
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
@@ -836,29 +840,31 @@ public class GameScreen implements Screen {
 			cityButton.addListener( new ChangeListener() {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
-	            	if( !waitForButton )
-	            	{
-	            		waitForButton = true;
-		            	if ( actionsRemaining > 0 && clientPlayer == currentPlayer )
-		            	{
-			            	String cityName = curr.getName();
-			            	ClientComm.send( "Drive/"+cityName );
-			            	// IMPLEMENT Call Drive( CityName ) on Server
-		            	}
-		            	waitForButton = false;
-	            	}
+	            	
 					if( !waitForButton )
 					{
 						waitForButton = true;
 						if ( actionsRemaining > 0 && clientPlayer == currentPlayer ) {
 							
 							if( useCityButtonStage ){
-								// TODO: Implement highlight all connections between cities
-								String cityName = curr.getName();
-								String cardName = currentPlayer.getCity();
-								ClientComm.send("CharterFlight/" + cityName);
-								useCityButtonStage = false;
-								Gdx.input.setInputProcessor( buttonStage );
+								if( opExpertFly )
+								{
+									String cityName = curr.getName();
+									ClientComm.send("OperationsExpert/Move/" + cityName + '/' + opExpertFlyCard );
+									useCityButtonStage = false;
+									opExpertFly = false;
+									opExpertFlyCard = null;
+									Gdx.input.setInputProcessor( buttonStage );
+								}
+								else
+								{
+									// TODO: Implement highlight all connections between cities
+									String cityName = curr.getName();
+									String cardName = currentPlayer.getCity();
+									ClientComm.send("CharterFlight/" + cityName);
+									useCityButtonStage = false;
+									Gdx.input.setInputProcessor( buttonStage );
+								}
 							}
 							else {
 								String cityName = curr.getName();
@@ -1210,61 +1216,68 @@ public class GameScreen implements Screen {
 					{
 						if( playerHasCityCard( currentPlayer, currentPlayer.getCity() ) )
 						{
-							if( remResearchStations > 0 )
-							{	
-								ClientComm.send( "BuildResearchStation/"+currentPlayer.getCity() );
+							if( !lookupCity( currentPlayer.getCity() ).hasResearchStation )
+							{
+								if( remResearchStations > 0 )
+								{	
+									ClientComm.send( "BuildResearchStation/" );
+								}
+								else
+								{
+									String[] list = new String[researchStationCityNames.size()];
+									for ( int i = 0; i < researchStationCityNames.size(); i++ )
+				    				{
+				    					list[ i ] = researchStationCityNames.get(i);
+				    				}
+				    				
+				    				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+				        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+				        			
+				        			Dialog rsPrompt = new Dialog("Choose a Research Station to remove",skin){
+				        				protected void result(Object object){
+				        					if( (Boolean)(object) )
+				        					{
+				            					String selected = selectBox.getSelected();
+				            					ClientComm.send( "BuildResearchStation/"+selected );
+				            		            Gdx.input.setInputProcessor(buttonStage);
+				        					}
+				        					else
+				        					{
+				            		            Gdx.input.setInputProcessor(buttonStage);
+				        					}
+				        		        }
+				        			};
+				
+				        			rsPrompt.setSize(250,150);
+				        			rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+									rsPrompt.button("Okay", true);
+									rsPrompt.button("Cancel", false);
+				
+									selectBox.setItems( list );
+				        			rsPrompt.getContentTable().add(selectBox);
+				
+				        			dialogStage.addActor(rsPrompt);
+				        			Gdx.input.setInputProcessor(dialogStage);
+								}
 							}
 							else
 							{
-								String[] list = new String[researchStationCityNames.size()];
-								for ( int i = 0; i < researchStationCityNames.size(); i++ )
-			    				{
-			    					list[ i ] = researchStationCityNames.get(i);
-			    				}
-			    				
-			    				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
-			        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
-			        			
-			        			Dialog rsPrompt = new Dialog("Choose a Research Station to remove",skin){
+								Dialog rsPrompt = new Dialog("    Don't have the necessary card to build! ",skin){
 			        				protected void result(Object object){
-			        					if( (Boolean)(object) )
-			        					{
-			            					String selected = selectBox.getSelected();
-			            					ClientComm.send( "BuildResearchStation/"+selected );
-			            		            Gdx.input.setInputProcessor(buttonStage);
-			        					}
-			        					else
-			        					{
-			            		            Gdx.input.setInputProcessor(buttonStage);
-			        					}
+			        		            Gdx.input.setInputProcessor(buttonStage);
 			        		        }
 			        			};
 			
-			        			rsPrompt.setSize(250,150);
+			        			rsPrompt.setSize(375,90);
 			        			rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
 								rsPrompt.button("Okay", true);
-								rsPrompt.button("Cancel", false);
-			
-								selectBox.setItems( list );
-			        			rsPrompt.getContentTable().add(selectBox);
-			
 			        			dialogStage.addActor(rsPrompt);
 			        			Gdx.input.setInputProcessor(dialogStage);
 							}
 						}
 						else
 						{
-							Dialog rsPrompt = new Dialog("    Don't have the necessary card to build! ",skin){
-		        				protected void result(Object object){
-		        		            Gdx.input.setInputProcessor(buttonStage);
-		        		        }
-		        			};
-		
-		        			rsPrompt.setSize(375,90);
-		        			rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
-							rsPrompt.button("Okay", true);
-		        			dialogStage.addActor(rsPrompt);
-		        			Gdx.input.setInputProcessor(dialogStage);
+							
 						}
 					}
 					waitForButton = false;
@@ -1450,6 +1463,170 @@ public class GameScreen implements Screen {
         endTurn.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( endTurn );
+        
+        createOperationExpertButton();
+	}
+	
+	static void createOperationExpertButton()
+	{
+		if( clientPlayer.role.equalsIgnoreCase("operationsexpert") )
+		{
+			TextButton endTurn = new TextButton( "Select ", skin );
+	        endTurn.addListener( new ChangeListener() {
+	            @Override
+				public void changed(ChangeEvent event, Actor actor) {
+	            	if( !waitForButton )
+	            	{
+	            		waitForButton = true;
+	            		if( currentPlayer == clientPlayer )
+	            		{	
+			            	Dialog opExpDiag = new Dialog("Which Role Action do you want to use?" , skin ){
+			            		@Override
+			            		protected void result(Object object) {
+			            			waitForButton = true;
+			            			if ( ( (String)  object ).equals( "build") )
+			            			{
+			            				if( lookupCity( currentPlayer.getCity() ).hasResearchStation )
+			            				{
+			            	            	Dialog confirmFlight = new Dialog("City already has Research Station?" , skin ){
+			            	            		@Override
+			            	            		protected void result(Object object) {
+
+			            	        				Gdx.input.setInputProcessor( buttonStage );
+			            	            		}
+			            	            	};
+			            	
+			            	        		//dialogStag/e = new Stage( parent.screen );//
+			            	        		dialogStage.clear();
+			            	        		
+			            	        		confirmFlight.button("OK");
+			            	        		
+			            	                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+			            	                confirmFlight.show( dialogStage );
+			            				}
+			            				else if( remResearchStations > 0 )
+			            				{
+											ClientComm.send( "OperationsExpert/Build/" );
+			            				}
+			            				else
+			            				{
+			            					String[] list = new String[researchStationCityNames.size()];
+											for ( int i = 0; i < researchStationCityNames.size(); i++ )
+						    				{
+						    					list[ i ] = researchStationCityNames.get(i);
+						    				}
+						    				
+						    				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+						        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+						        			
+						        			Dialog rsPrompt = new Dialog("Choose a Research Station to remove",skin){
+						        				protected void result(Object object){
+						        					if( (Boolean)(object) )
+						        					{
+						            					String selected = selectBox.getSelected();
+						            					ClientComm.send( "BuildResearchStation/"+selected );
+						            		            Gdx.input.setInputProcessor(buttonStage);
+						        					}
+						        					else
+						        					{
+						            		            Gdx.input.setInputProcessor(buttonStage);
+						        					}
+						        		        }
+						        			};
+						
+						        			rsPrompt.setSize(250,150);
+						        			rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+											rsPrompt.button("Okay", true);
+											rsPrompt.button("Cancel", false);
+						
+											selectBox.setItems( list );
+						        			rsPrompt.getContentTable().add(selectBox);
+						
+						        			dialogStage.addActor(rsPrompt);
+						        			Gdx.input.setInputProcessor(dialogStage);
+			            				}
+			            			}
+			            			else if ( ( (String)  object ).equals( "move") )
+			            			{
+			            				dialogStage.clear();;
+			            				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+			            				final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+
+			            				Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
+			            					protected void result(Object object){
+			            						final String selected = selectBox.getSelected();
+			            						
+		        								Dialog confirmFlight = new Dialog("Use " + selected + " city card to fly anywhere?", skin) {
+		        									@Override
+		        									protected void result(Object object) {
+		        										if ((boolean) (object)) {
+		        											useCityButtonStage = true;
+		        											opExpertFly = true;
+		        											opExpertFlyCard = selected;
+		        											//charterFlightCard = card.getName();
+		        											Gdx.input.setInputProcessor( cityButtonStage );
+		        											//System.out.println("TEEEEESTING");
+		        										}
+		        										Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+		        										//dialogStage = null;
+		        									}
+		        								};
+
+		        								//dialogStag/e = new Stage( parent.screen );//
+		        								dialogStage.clear();
+
+		        								confirmFlight.button("Yes", true);
+		        								confirmFlight.button("No", false);
+
+		        								Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+		        								confirmFlight.show(dialogStage);
+
+			        							
+			            						//dialogStage = null;
+			            					}
+			            				};
+
+			            				String[] items = new String[ currentPlayer.getHandSize() ] ;
+
+			            				for ( int i = 0; i < currentPlayer.getHandSize(); i++ )
+			            				{
+			            					PlayerCardInfo card = currentPlayer.getHand().get( i );
+			            					items[i] = card.getName();
+			            				}
+
+			            				discardPrompt.setSize(250,150);
+			            				discardPrompt.setPosition( windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2 );
+			            				discardPrompt.button( "Select" );
+			            				selectBox.setItems( items );
+			            				discardPrompt.getContentTable().add(selectBox);
+
+			            				dialogStage.addActor(discardPrompt);
+			            				Gdx.input.setInputProcessor(dialogStage);
+			            			}
+			        				Gdx.input.setInputProcessor( dialogStage );
+			            			waitForButton = false;
+			            		}
+			            	};
+			            	//dialogStag/e = new Stage( parent.screen );//
+			        		dialogStage.clear();
+			        		
+			        		opExpDiag.button( "Build", "build" );
+			        		opExpDiag.button( "Move", "move" );
+			        		opExpDiag.button( "Cancel", "cancel" );
+			        		
+			                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+			                opExpDiag.show( dialogStage );
+	            		}
+		
+		        		
+		                waitForButton = false;
+	            	}
+				}
+	        });
+	        endTurn.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+	        nextActionButtonHeight -= actionButtonYSize*1.125f;
+	        buttonGroup.addActor( endTurn );
+		}
 	}
 
 	@Override
