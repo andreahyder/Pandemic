@@ -340,6 +340,7 @@ public class GameScreen implements Screen {
 	static boolean govtGrant = false;
 	static boolean opExpertFly = false;
 	static boolean remoteTreat = false;
+	static boolean specialOrders = false;
 	static String[] remoteTreatCities;
 	static String[] remoteTreatDiseases;
 	static int remoteTreated;
@@ -349,6 +350,7 @@ public class GameScreen implements Screen {
 	static String rvColour;
 	static String rvFirstCity;
 	static String opExpertFlyCard;
+	static String specialOrderPlayer;
 	
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
@@ -359,6 +361,7 @@ public class GameScreen implements Screen {
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
     	players[0].role = "operationsexpert";
+    	players[0].setCity( "Tokyo" );
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -403,7 +406,7 @@ public class GameScreen implements Screen {
 		
 		
 
-    	players[0].addCardToHand( new PlayerCardInfo("RemoteTreatment" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("SpecialOrders" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -1143,6 +1146,72 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		button.addListener( new ChangeListener(){
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( !waitForButton )
+				{
+					waitForButton = true;
+					
+					if( currentPlayer == clientPlayer )
+					{
+						dialogStage.clear();
+						Dialog specialOrdersDiag = new Dialog( "Do you want to play Special Orders?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									int numViable = 0;
+									for( PlayerInfo curr : players )
+										if( curr != null && curr != currentPlayer )
+											numViable++;
+											
+									
+									String[] viablePlayers = new String[ numViable ];
+									int i = 0;
+									for( PlayerInfo curr : players )
+									{
+										if( curr != null && curr != currentPlayer )
+										{
+											viablePlayers[i] = curr.getName();
+											i++;
+										}
+									}
+									
+									final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+									selector.setItems( viablePlayers );
+									
+									Dialog soDiag = new Dialog("Select player to request control of", skin) {
+										@Override
+										protected void result(Object object) {
+											if( (boolean)object )
+												ClientComm.send( "SpecialOrdersRequest/" + selector.getSelected() + '/' );
+											tempSkin.dispose();
+											Gdx.input.setInputProcessor( buttonStage );
+										}
+									};
+									soDiag.getContentTable().add( selector );
+									soDiag.button("Select", true );
+									soDiag.button( "Cancel", false );
+									soDiag.show( dialogStage );
+									Gdx.input.setInputProcessor( dialogStage );
+								}
+								else
+									Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						specialOrdersDiag.button("Yes", true );
+						specialOrdersDiag.button("No", false);
+						specialOrdersDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
+				}
+			}
+		} );
+		
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -1660,9 +1729,24 @@ public class GameScreen implements Screen {
 			}
 		}
 		else {
-			ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
-			for (CityNode curr : adjCities) {
-				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+			if( !specialOrders )
+			{
+				ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
+				for (CityNode curr : adjCities) {
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+				}
+			}
+			else
+			{
+				ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
+				for (CityNode curr : adjCities) {
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+				}
+				
+				adjCities = lookupCity(lookupPlayer(specialOrderPlayer).getCity()).getConnectedCities();
+				for (CityNode curr : adjCities) {
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+				}
 			}
 		}
 	}
@@ -1913,9 +1997,77 @@ public class GameScreen implements Screen {
 								}
 							}
 							else {
-								String cityName = curr.getName();
-								ClientComm.send("Drive/" + cityName);
-								// IMPLEMENT Call Drive( CityName ) on Server
+								if( !specialOrders )
+								{
+									String cityName = curr.getName();
+									ClientComm.send("Drive/" + cityName);
+									// IMPLEMENT Call Drive( CityName ) on Server
+								}
+								else
+								{
+									int numViable = 0;
+									for( CityNode adj : curr.connectedCities )
+									{
+										if( adj.getName().equals( currentPlayer.getCity() ) )
+										{
+											numViable++;
+										}
+										
+										if( adj.getName().equals( lookupPlayer( specialOrderPlayer ).getCity() ) )
+										{
+											numViable++;
+										}
+									}
+									
+									String[] viablePlayers = new String[ numViable ];
+									int j = 0;
+									for( CityNode adj : curr.connectedCities )
+									{
+										if( adj.getName().equals( currentPlayer.getCity() ) )
+										{
+											viablePlayers[j] = currentPlayer.getName();
+											j++;
+										}
+										
+										if( adj.getName().equals( lookupPlayer( specialOrderPlayer ).getCity() ) )
+										{
+											viablePlayers[j] = specialOrderPlayer;
+											j++;
+										}
+									}
+									
+									final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+									selector.setItems( viablePlayers );
+									
+									Dialog soDiag = new Dialog( "Pick player to move to " + curr.getName(), skin ) {
+										@Override
+										protected void result(Object object) {
+											if( (boolean)object )
+											{
+												String selected = selector.getSelected();
+												tempSkin.dispose();
+												
+												if( currentPlayer.getName().equals( selected ) )
+												{
+													String cityName = curr.getName();
+													ClientComm.send("Drive/" + cityName);
+												}
+												else
+												{
+													String cityName = curr.getName();
+													ClientComm.send("SpecialOrdersMove/" + selected + '/' + cityName + '/' );
+												}
+											}
+											Gdx.input.setInputProcessor( buttonStage );
+										};
+									};
+									soDiag.getContentTable().add( selector );
+									soDiag.button( "Select", true );
+									soDiag.button( "Cancel", false );
+									soDiag.show( dialogStage );
+									Gdx.input.setInputProcessor( dialogStage );
+								}
 							}
 						}
 						waitForButton = false;
@@ -2664,7 +2816,10 @@ public class GameScreen implements Screen {
 			            				dialogStage.addActor(discardPrompt);
 			            				Gdx.input.setInputProcessor(dialogStage);
 			            			}
-			        				Gdx.input.setInputProcessor( dialogStage );
+			            			else
+			            			{
+				        				Gdx.input.setInputProcessor( buttonStage );
+			            			}
 			            			waitForButton = false;
 			            		}
 			            	};
@@ -3330,6 +3485,7 @@ public class GameScreen implements Screen {
 			batch.end();
 		}
 	}
+	
 	public static int getNumPlayers()
 	{
 		int num = 0;
@@ -3431,6 +3587,7 @@ public class GameScreen implements Screen {
 		
 		return remCubes;
 	}
+	
 	public static int getMaxCubesByColour( String name )
 	{
 		int maxCubes = 0;
@@ -3448,6 +3605,7 @@ public class GameScreen implements Screen {
 		
 		return maxCubes;	
 	}
+	
 	public static void requestConsent( String message )
 	{
 		Dialog consentRequest = new Dialog( message, skin ){
@@ -3695,6 +3853,9 @@ public class GameScreen implements Screen {
 				}
 			}
 		}
+		
+		specialOrders = false;
+		specialOrderPlayer = null;
 	}
 	
 	public static void NotifyTurnTroubleshoorter( String PlayerName, final String[] InfectionCards )
@@ -3747,6 +3908,9 @@ public class GameScreen implements Screen {
 				}
 			}
 		}
+
+		specialOrders = false;
+		specialOrderPlayer = null;
 	}
 
 	public static void StartGame()
@@ -3946,6 +4110,44 @@ public class GameScreen implements Screen {
 		rrDiag.button( "Select" );
 		rrDiag.show( dialogStage );
 		Gdx.input.setInputProcessor( dialogStage );
+	}
+
+	public static void SpecialOrders( String PlayerName )
+	{
+		if( PlayerName != null )
+		{
+			dialogStage.clear();
+			specialOrderPlayer = PlayerName;
+			specialOrders = true;
+			
+			Dialog soDiag = new Dialog("You now have control of " + PlayerName, skin ){
+				@Override
+				protected void result(Object object) {
+					Gdx.input.setInputProcessor( buttonStage );
+				}
+			};
+			
+			soDiag.button("Okay");
+			soDiag.show( dialogStage );
+			Gdx.input.setInputProcessor( dialogStage );
+		}
+		else
+		{
+			dialogStage.clear();
+			specialOrderPlayer = null;
+			specialOrders = false;
+			
+			Dialog soDiag = new Dialog("Consent not given", skin ){
+				@Override
+				protected void result(Object object) {
+					Gdx.input.setInputProcessor( buttonStage );
+				}
+			};
+			
+			soDiag.button("Okay");
+			soDiag.show( dialogStage );
+			Gdx.input.setInputProcessor( dialogStage );
+		}
 	}
 }
 
