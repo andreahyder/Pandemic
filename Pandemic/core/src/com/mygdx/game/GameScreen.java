@@ -399,7 +399,7 @@ public class GameScreen implements Screen {
 		
 		
 
-    	players[0].addCardToHand( new PlayerCardInfo("RapidVaccine" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("ReexaminedResearch" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -437,8 +437,11 @@ public class GameScreen implements Screen {
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
-    	playerDiscardPile.add( "Tokyo" );
 		handShownPlayer = clientPlayer;
+
+    	playerDiscardPile.add( "Atlanta" );
+    	playerDiscardPile.add( "Tokyo" );
+    	playerDiscardPile.add( "London" );
 		
 		researchStationCityNames.add( "Tokyo" );
 		lookupCity( "Tokyo" ).putResearchStation();
@@ -452,7 +455,8 @@ public class GameScreen implements Screen {
 		AddDiseaseCubeToCity( "Miami" , "blue" );
 		AddDiseaseCubeToCity( "Bogota" , "blue" );
 		AddDiseaseCubeToCity( "Tokyo" , "blue" );
-		CureDisease("blue");
+
+		ReexaminedResearch();
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -1155,6 +1159,84 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		button.addListener( new ChangeListener(){
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( !waitForButton )
+				{
+					waitForButton = true;
+					if( playerDiscardPile.size() > 0 )
+					{
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play Re-examined Research?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									int j = 0;
+									for ( PlayerInfo curr : players )
+										if( curr != null )
+											j++;
+									
+									String[] playerNames = new String[j];
+									
+									for( int i = 0; i < players.length; i++ )
+									{
+										if( players[i] != null )
+										{
+											playerNames[j-1] = players[i].getName();
+											j--;
+										}
+									}
+									
+									final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+									selector.setItems( playerNames );
+									
+									Dialog btDiag = new Dialog( "Select a player", skin ) {
+										@Override
+										protected void result(Object object) {
+											if( (boolean)object )
+											{
+												ClientComm.send( "ReexaminedReseatch/" + selector.getSelected() + '/' );
+												tempSkin.dispose();
+											}
+											Gdx.input.setInputProcessor( buttonStage );
+										};
+									};
+									btDiag.button( "Select", true );
+									btDiag.button( "Cancel", false );
+									btDiag.getContentTable().add( selector );
+									btDiag.show( dialogStage );
+									Gdx.input.setInputProcessor( dialogStage );
+								}
+								else
+									Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+					}
+					else
+					{
+						dialogStage.clear();
+						Dialog btDiag = new Dialog( "No cards in player discardpile", skin ) {
+							@Override
+							protected void result(Object object) {
+								Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						btDiag.button("Okay");
+						btDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+					}
+					waitForButton = false;
+				}
+			}
+		} );
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -3717,6 +3799,30 @@ public class GameScreen implements Screen {
 		Gdx.input.setInputProcessor( cardSelectStage );
 		cardsToSelect = InfectionCards.length;
 		showCardSelectAction = "Forecast";
+	}
+
+	public static void ReexaminedResearch()
+	{
+		String[] cards = new String[ playerDiscardPile.size() ];
+		for( int i = 0; i < cards.length; i++ )
+			cards[i] = playerDiscardPile.get( i );
+		
+		final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json") );
+		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+		selector.setItems( cards );
+		
+		Dialog rrDiag = new Dialog("Select card to draw from discard", skin ){
+			@Override
+			protected void result(Object object) {
+				ClientComm.send( "ReexaminedResearchResponse/" + selector.getSelected() );
+				Gdx.input.setInputProcessor( buttonStage );
+				tempSkin.dispose();
+			}
+		};
+		rrDiag.getContentTable().add( selector );
+		rrDiag.button( "Select" );
+		rrDiag.show( dialogStage );
+		Gdx.input.setInputProcessor( dialogStage );
 	}
 }
 
