@@ -1,8 +1,8 @@
 package com.mygdx.game;
 
 public enum DiseaseColour {
-	BLUE, YELLOW, BLACK, RED;
-	private static String[] names = { "Blue", "Yellow", "Black", "Red" };
+	BLUE, YELLOW, BLACK, RED, PURPLE;
+	private static String[] names = { "Blue", "Yellow", "Black", "Red", "Purple" };
 	
 	public static String getDiseaseName( DiseaseColour disease )
 	{

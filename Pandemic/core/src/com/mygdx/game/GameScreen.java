@@ -194,6 +194,7 @@ public class GameScreen implements Screen {
 	static int remRedCubes = 24;
 	static int remBlueCubes = 24;
 	static int remBlackCubes = 24;
+	static int remPurpleCubes = 12;
 	static int remResearchStations = 6;
 	static ArrayList<String> researchStationCityNames = new ArrayList<String>();
 
@@ -351,6 +352,11 @@ public class GameScreen implements Screen {
 	static String opExpertFlyCard;
 	static String specialOrderPlayer;
 	
+	static HashMap<String, Boolean> virulentStrainStatuses;
+	static String virulentStrainDisease;
+	static boolean hasTreatedVSOnCity = true;
+	
+	
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
     {
@@ -394,6 +400,7 @@ public class GameScreen implements Screen {
 		diseaseStage = new Stage( parent.screen ); //TEST
 		dialogStage = new Stage( parent.screen );
 		pawnStage = new Stage( parent.screen );
+		cardSelectStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
@@ -407,6 +414,7 @@ public class GameScreen implements Screen {
 
     	players[0].addCardToHand( new PlayerCardInfo("SpecialOrders" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Tokyo" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -461,9 +469,11 @@ public class GameScreen implements Screen {
 		AddDiseaseCubeToCity( "Miami" , "blue" );
 		AddDiseaseCubeToCity( "Bogota" , "blue" );
 		AddDiseaseCubeToCity( "Tokyo" , "blue" );
-		
-		NewAssignment( new String[] { "Archivist", "Generalist", "Scientist" } );
 
+		hasTreatedVSOnCity = false;
+		virulentStrainDisease = "blue";
+		UnacceptableLoss("4");
+		virulentStrainStatuses.put( "GovernmentInterference", true );
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -549,7 +559,17 @@ public class GameScreen implements Screen {
 
 	static void initGameState()
 	{
-
+		virulentStrainStatuses = new HashMap<String,Boolean>();
+		virulentStrainStatuses.put( "ChronicEffect", false );
+		virulentStrainStatuses.put( "ComplexMolecularStructure", false );
+		virulentStrainStatuses.put( "GovernmentInterference", false );
+		virulentStrainStatuses.put( "HiddenPocket", false );
+		virulentStrainStatuses.put( "RateEffect", false );
+		virulentStrainStatuses.put( "SlipperySlope", false );
+		virulentStrainStatuses.put( "UnacceptableLoss", false );
+		virulentStrainStatuses.put( "UncountedPopulations", false );
+		
+		
 		for( int i = 0; i < players.length; i++ )
 		{
 			if( players[i] != null )
@@ -839,9 +859,26 @@ public class GameScreen implements Screen {
 											@Override
 											protected void result(Object object) {
 												if ((boolean) (object)) {
-													ClientComm.send("DirectFlight/" + card.getName());
+													if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) )
+													{
+														ClientComm.send("DirectFlight/" + card.getName());
+														Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+														// IMPLEMENT Call Drive( CityName ) on Server
+													}
+													else
+													{
+														Dialog giDiag = new Dialog( "You must treat a "+ virulentStrainDisease +" cube before you can move", skin ) {
+															protected void result(Object object) {
+																Gdx.input.setInputProcessor( buttonStage );
+															};
+														};
+														giDiag.button("Okay");
+														giDiag.show( dialogStage );
+														Gdx.input.setInputProcessor( dialogStage );
+													}
 												}
-												Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+												else
+													Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 												//dialogStage = null;
 											}
 										};
@@ -2059,20 +2096,49 @@ public class GameScreen implements Screen {
 								}
 								else
 								{
-									// TODO: Implement highlight all connections between cities
-									String cityName = curr.getName();
-									String cardName = currentPlayer.getCity();
-									ClientComm.send("CharterFlight/" + cityName);
-									useCityButtonStage = false;
-									Gdx.input.setInputProcessor( buttonStage );
+									if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) )
+									{
+										// TODO: Implement highlight all connections between cities
+										String cityName = curr.getName();
+										String cardName = currentPlayer.getCity();
+										ClientComm.send("CharterFlight/" + cityName);
+										useCityButtonStage = false;
+										Gdx.input.setInputProcessor( buttonStage );
+									}
+									else
+									{
+										Dialog giDiag = new Dialog( "You must treat a "+ virulentStrainDisease +" cube before you can move", skin ) {
+											protected void result(Object object) {
+												Gdx.input.setInputProcessor( buttonStage );
+											};
+										};
+										giDiag.button("Okay");
+										giDiag.show( dialogStage );
+										useCityButtonStage = false;
+										Gdx.input.setInputProcessor( dialogStage );
+									}
 								}
 							}
 							else {
 								if( !specialOrders )
 								{
-									String cityName = curr.getName();
-									ClientComm.send("Drive/" + cityName);
-									// IMPLEMENT Call Drive( CityName ) on Server
+									if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) )
+									{
+										String cityName = curr.getName();
+										ClientComm.send("Drive/" + cityName);
+										// IMPLEMENT Call Drive( CityName ) on Server
+									}
+									else
+									{
+										Dialog giDiag = new Dialog( "You must treat a "+ virulentStrainDisease +" cube before you can move", skin ) {
+											protected void result(Object object) {
+												Gdx.input.setInputProcessor( buttonStage );
+											};
+										};
+										giDiag.button("Okay");
+										giDiag.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
 								}
 								else
 								{
@@ -2581,15 +2647,20 @@ public class GameScreen implements Screen {
 									continue;
 								
 								String colourName = city.getColour();
-								if( colourName != null && colourName.equals("") )
-									cardNumByColor[ DiseaseColour.lookupColourByName( colourName  ).ordinal() ]++;
+								cardNumByColor[ DiseaseColour.lookupColourByName( colourName  ).ordinal() ]++;
 							}
 							
 							String diseaseName = "";
 							ArrayList<String> diseases;
 							for( int i = 0; i < 5; i++ )
 							{
-								if( cardNumByColor[i] >= currentPlayer.cardsToCure )
+								int cureMod = 0;
+								
+								Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
+								if( cmsStatus != null & cmsStatus != false )
+									cureMod = ( (DiseaseColour.getDiseaseName( DiseaseColour.values()[i])).equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
+								
+								if( cardNumByColor[i] >= currentPlayer.cardsToCure + cureMod )
 									diseaseName = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
 		 					}
 							
@@ -2610,9 +2681,15 @@ public class GameScreen implements Screen {
 							}
 							else
 							{
+								int cureMod = 0;
+								
+								Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
+								if( cmsStatus != null & cmsStatus != false )
+									cureMod = ( diseaseName.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
+								
 								possibleSelections = new ArrayList<PlayerCardInfo>();
 								selections = new ArrayList<PlayerCardInfo>();
-								int handIdx = 0;
+
 								for( final PlayerCardInfo card : hand )
 								{
 									if ( lookupCity(card.getName()) == null )
@@ -2680,7 +2757,7 @@ public class GameScreen implements Screen {
 								}
 								showCardSelectStage = true;
 								Gdx.input.setInputProcessor( cardSelectStage );
-								cardsToSelect = 5;
+								cardsToSelect = currentPlayer.cardsToCure + cureMod;
 								showCardSelectAction = "DiscardForCure";
 							}
 						}
@@ -3422,9 +3499,6 @@ public class GameScreen implements Screen {
 		}
 
 		batch.end();
-		if( amountOfOutbreaks > 0){
-			outbreakRateCircles[amountOfOutbreaks-1].dispose();
-		}
 	}
 
 	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int researchNo){
@@ -3712,6 +3786,10 @@ public class GameScreen implements Screen {
 
 		if ( player != null )
 			player.setCity( CityName );
+		
+		ArrayList<DiseaseCubeInfo> vsCubes = lookupCity( CityName ).getCubesByColor( virulentStrainDisease );
+		if( vsCubes.size() > 0 )
+			hasTreatedVSOnCity = false;
 	}
 
 	public static void RemoveCube(String CityName, String DiseaseColor, String Number)
@@ -4315,6 +4393,22 @@ public class GameScreen implements Screen {
 		buttonGroup.clear();
 		createActionButtons();
 		initHandButtonStage();
+	}
+
+	public static void UnacceptableLoss( String numCubes )
+	{
+		int numToRem = Integer.valueOf( numCubes );
+		
+		if( virulentStrainDisease.equalsIgnoreCase( "blue" ) )
+			remBlueCubes -=  numToRem;
+		else if( virulentStrainDisease.equalsIgnoreCase( "black" ) )
+			remBlackCubes -=  numToRem;
+		else if( virulentStrainDisease.equalsIgnoreCase( "red" ) )
+			remRedCubes -=  numToRem;
+		else if( virulentStrainDisease.equalsIgnoreCase( "yellow" ) )
+			remYellowCubes -=  numToRem;
+		else if( virulentStrainDisease.equalsIgnoreCase( "purple" ) )
+			remPurpleCubes -=  numToRem;
 	}
 }
 
