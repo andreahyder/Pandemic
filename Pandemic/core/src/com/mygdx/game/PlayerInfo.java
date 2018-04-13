@@ -11,6 +11,7 @@ public class PlayerInfo {
 	String currCity = "Atlanta";
 	public int cardsToCure = 5;
 	String role;
+	public PlayerCardInfo onRoleCard;
 	boolean roleActionUsed = false;
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
@@ -111,5 +112,15 @@ public class PlayerInfo {
 	{
 		return hand;
 	}
-	
+
+	public String[] getHandOfStrings(){
+
+		String[] handStrings = new String[hand.size()];
+		for(int i = 0; i < handStrings.length; i++){
+			handStrings[i] = hand.get(i).getName();
+		}
+
+		return handStrings;
+	}
+
 }
