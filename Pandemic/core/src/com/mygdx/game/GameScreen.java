@@ -1081,6 +1081,21 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		button.addListener( new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				Dialog rvDiag = new Dialog( "Cannot play now", skin ) {
+					@Override
+					protected void result(Object object) {
+						Gdx.input.setInputProcessor( dialogStage );
+					}
+				};
+				rvDiag.button("Okay");
+				rvDiag.show( dialogStage );
+				Gdx.input.setInputProcessor( dialogStage );
+				
+			}
+		});
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
