@@ -3,6 +3,7 @@ package com.mygdx.game;
 import java.security.DigestInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -204,6 +205,8 @@ public class GameScreen implements Screen {
 	static ArrayList<PlayerCardInfo> selections;
 	static String showCardSelectAction;
 	static int cardsToSelect;
+	static ArrayList<String> possibleForecastSelections;
+	static ArrayList<String> forecastSelections;
 
 	static boolean useCityButtonStage = false;
 
@@ -298,6 +301,8 @@ public class GameScreen implements Screen {
 	static ScreenViewport screen;
 	
 	static BitmapFont handPlayerFont = new BitmapFont();
+	static BitmapFont rvFontFront = new BitmapFont();
+	static BitmapFont rvFontBack = new BitmapFont();
 	
 	static ScrollPane discardPane; 
 	static int windWidth, windHeight;
@@ -334,6 +339,11 @@ public class GameScreen implements Screen {
 	static boolean waitForButton = false;
 	static boolean govtGrant = false;
 	static boolean opExpertFly = false;
+	
+	static boolean rapidVaccine = false;
+	static HashMap<String, Integer> rvCubesToRemove;
+	static String rvColour;
+	static String rvFirstCity;
 	static String opExpertFlyCard;
 	
 	
@@ -378,7 +388,6 @@ public class GameScreen implements Screen {
 		diseaseStage = new Stage( parent.screen ); //TEST
 		dialogStage = new Stage( parent.screen );
 		pawnStage = new Stage( parent.screen );
-		cardSelectStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
@@ -388,8 +397,13 @@ public class GameScreen implements Screen {
 
 		updatePawnStage();
 		
+		
 
-    	players[0].addCardToHand( new PlayerCardInfo("ResilientPopulation" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("RapidVaccine" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("London" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
@@ -429,6 +443,16 @@ public class GameScreen implements Screen {
 		researchStationCityNames.add( "Tokyo" );
 		lookupCity( "Tokyo" ).putResearchStation();
 		remResearchStations--;
+
+		AddDiseaseCubeToCity( "Atlanta" , "blue" );
+		AddDiseaseCubeToCity( "Atlanta" , "blue" );
+		AddDiseaseCubeToCity( "Atlanta" , "blue" );
+		AddDiseaseCubeToCity( "Chicago" , "blue" );
+		AddDiseaseCubeToCity( "Washington" , "blue" );
+		AddDiseaseCubeToCity( "Miami" , "blue" );
+		AddDiseaseCubeToCity( "Bogota" , "blue" );
+		AddDiseaseCubeToCity( "Tokyo" , "blue" );
+		CureDisease("blue");
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -1399,6 +1423,42 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		button.addListener( new ChangeListener(){
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( !waitForButton )
+				{
+					waitForButton = true;
+					
+					dialogStage.clear();
+					Dialog borrowedTimeDiag = new Dialog( "Do you want to play Forecast?", skin )
+					{
+						@Override
+						protected void result(Object object) {
+							if( (Boolean)object )
+							{
+								Dialog info = new Dialog( "Select cards in order to be drawn", skin ) {
+									@Override
+									protected void result(Object object) {
+										//ClientComm.send("ForecastRequest/"); TODO: Remove
+										Forecast( new String[] { "Atlanta", "Tokyo", "Manila", "Toronto", "London", "Johannesburg" } );
+									};
+								};
+								info.button("Okay");
+								info.show( dialogStage );
+							}
+							else
+								Gdx.input.setInputProcessor( buttonStage );
+						};
+					};
+					borrowedTimeDiag.button("Yes", true );
+					borrowedTimeDiag.button("No", false);
+					borrowedTimeDiag.show( dialogStage );
+					Gdx.input.setInputProcessor( dialogStage );
+					waitForButton = false;
+				}
+			}
+		} );
 		
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
@@ -1423,7 +1483,7 @@ public class GameScreen implements Screen {
 			currButton.setTouchable(Touchable.disabled);
 		}
 
-		if(useCityButtonStage){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
+		if(useCityButtonStage && !rapidVaccine){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
 			ArrayList<CityNode> allTheCities = new ArrayList<CityNode>();
 
 			for( int i = 0; i < cityNodes.length; i++){		// copy all cities from cityNodes (except for currentPlayer's currentCity) to allTheCities ArrayList
@@ -1437,7 +1497,26 @@ public class GameScreen implements Screen {
 				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
 			}
 		}
-
+		else if( rapidVaccine )
+		{
+			if( rvFirstCity == null || rvFirstCity.equals("") )
+			{
+				for ( CityNode curr : cityNodes){
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
+				}
+			}
+			else
+			{
+				for( String coreCity : rvCubesToRemove.keySet() )
+				{
+					cityButtons.get(lookupCityIndex( coreCity )).setTouchable( Touchable.enabled );
+					for( CityNode city : lookupCity( coreCity ).connectedCities )
+					{
+						cityButtons.get(lookupCityIndex(city.getName())).setTouchable( Touchable.enabled );
+					}
+				}
+			}
+		}
 		else {
 			ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
 			for (CityNode curr : adjCities) {
@@ -1569,6 +1648,55 @@ public class GameScreen implements Screen {
 									}
 									useCityButtonStage = false;
 									govtGrant = false;
+								}
+								else if( rapidVaccine )
+								{
+									String currName = curr.getName();
+									ArrayList<DiseaseCubeInfo> cubes = lookupCity( currName ).getCubesByColor( rvColour );
+									if( cubes.size() > 0 )
+									{
+										if(  ( rvFirstCity == null || rvFirstCity.equals( "" ) ) )
+										{
+											rvFirstCity = currName;
+										}
+										Integer currVal = rvCubesToRemove.get( currName );
+										if( currVal != null && currVal < cubes.size() )
+										{
+											rvCubesToRemove.put( currName, rvCubesToRemove.get( currName)+1 );
+										}
+										else if ( currVal == null )
+										{
+											rvCubesToRemove.put( currName, 1 );
+										}
+											
+										
+										int sum = 0;
+										for( Integer numRem : rvCubesToRemove.values() )
+											sum += numRem;
+										
+										String[] reachableCities = new String[ rvCubesToRemove.size() ];
+										int j = 0;
+										for( String city : rvCubesToRemove.keySet() )
+										{
+											reachableCities[j] = city;
+											j++;
+										}
+											
+										int reachableCubes = getNumCubesOfColourInAdjCities( reachableCities, rvColour );
+										
+										if( sum > 4  || sum >= reachableCubes )
+										{
+											rapidVaccine = false;
+											useCityButtonStage = true;
+											for( String key : rvCubesToRemove.keySet() )
+											{
+												String message = "RapidVaccine/";
+												for( int i = 0; i < rvCubesToRemove.get( key ); i++ )
+													message += key + '/';
+												ClientComm.send( message ); 
+											}
+										}
+									}	
 								}
 								else
 								{
@@ -2020,7 +2148,13 @@ public class GameScreen implements Screen {
 							
 							for( PlayerCardInfo card : hand )
 							{
-								cardNumByColor[ DiseaseColour.lookupColourByName( lookupCity(card.getName()).getColour() ).ordinal() ]++;
+								CityNode city = lookupCity(card.getName());
+								if( city == null)
+									continue;
+								
+								String colourName = city.getColour();
+								if( colourName != null && colourName.equals("") )
+									cardNumByColor[ DiseaseColour.lookupColourByName( colourName  ).ordinal() ]++;
 							}
 							
 							String diseaseName = "";
@@ -2053,6 +2187,9 @@ public class GameScreen implements Screen {
 								int handIdx = 0;
 								for( final PlayerCardInfo card : hand )
 								{
+									if ( lookupCity(card.getName()) == null )
+										continue;
+									
 									if( lookupCity(card.getName()).getColour().equalsIgnoreCase( diseaseName ) )
 									{
 										possibleSelections.add( card );
@@ -2087,10 +2224,10 @@ public class GameScreen implements Screen {
 							        button.addListener( new ChangeListener() {
 										@Override
 										public void changed(ChangeEvent event, Actor actor) {
-											if( waitForButton )
+											if( !waitForButton )
 											{	
 												waitForButton = true;
-												if( ((Button)actor).isChecked() )
+												if( !((Button)actor).isChecked() )
 												{
 													for( int i = 0; i < selections.size(); i++ )
 													{
@@ -2100,7 +2237,7 @@ public class GameScreen implements Screen {
 															break;
 														}
 													}
-													cardsToSelect--;
+													cardsToSelect++;
 												}
 												else
 												{
@@ -2552,7 +2689,25 @@ public class GameScreen implements Screen {
 					selections.clear();
 					possibleSelections.clear();
 					ClientComm.send( message );
+					showCardSelectAction = "";
 				}
+			} break;
+			
+			case( "Forecast" ):
+			{
+				if( cardsToSelect < 1 )
+				{
+					showCardSelectStage = false;
+					Gdx.input.setInputProcessor( buttonStage );
+					String message = "ForecastResponse/";
+					for( String card : forecastSelections )
+						message += card;
+					
+					forecastSelections.clear();
+					possibleForecastSelections.clear();
+					ClientComm.send( message );
+					showCardSelectAction = "";
+					}
 			} break;
 		}
 	}
@@ -2703,6 +2858,8 @@ public class GameScreen implements Screen {
 			cardSelectStage.draw();
 			cardSelectStage.act();
 		}
+		
+		displayRapidVaccineNumbers();
 	}
 
 	@Override
@@ -2939,6 +3096,35 @@ public class GameScreen implements Screen {
 		colourToBeDrawn.dispose();
 	}
 
+	
+	void displayRapidVaccineNumbers()
+	{
+		if( !rapidVaccine )
+			return;
+		
+		if( rvCubesToRemove == null )
+			return;
+		
+		if( rvCubesToRemove.size() == 0 )
+			return;
+
+		rvFontBack.setColor( Color.WHITE );
+		rvFontBack.getData().setScale( 2.3f );
+		
+		rvFontFront.setColor( Color.BLACK );
+		rvFontFront.getData().setScale( 2.0f );
+		for( String key : rvCubesToRemove.keySet() )
+		{
+			CityNode city = lookupCity( key );
+			float x = city.getXInWindowCoords( windWidth ) + nodeSize / 2 -10f;
+			float y = city.getYInWindowCoords( windHeight ) + nodeSize / 2 + 15f;
+			
+			batch.begin();
+			rvFontBack.draw( batch, String.valueOf( rvCubesToRemove.get( key ) ), x, y );
+			rvFontFront.draw( batch, String.valueOf( rvCubesToRemove.get( key ) ), x, y );
+			batch.end();
+		}
+	}
 	public static int getNumPlayers()
 	{
 		int num = 0;
@@ -2968,6 +3154,28 @@ public class GameScreen implements Screen {
 		return -1;
 	}
 
+	public static int getNumCubesOfColourInAdjCities( String[] cities, String colour )
+	{
+		int numCubes = 0;
+		
+		HashSet<String> reachableCities = new HashSet<String>();
+		for( String cityName : cities )
+		{
+			if( cityName != null )
+			{
+				reachableCities.add( cityName );
+				for( CityNode adjCity : lookupCity( cityName ).connectedCities )
+					reachableCities.add( adjCity.getName() );
+			}
+		}
+		
+		for( String city : reachableCities )
+			numCubes += lookupCity( city ).getCubesByColor( colour ).size();
+		
+		return numCubes;
+	}
+	
+	
 	public static PlayerInfo lookupPlayer( String name )
 	{
 		for ( PlayerInfo player : players )
@@ -2981,6 +3189,7 @@ public class GameScreen implements Screen {
 		return null;
 	}
 
+	
 	public static DiseaseColour lookupDisease( String name )
 	{
 		switch( name )
@@ -3002,6 +3211,38 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	public static int getRemCubesByName( String name )
+	{
+		int remCubes = 0;
+		
+		if( name.equalsIgnoreCase( "blue" ) )
+			remCubes = remBlueCubes;
+		else if( name.equalsIgnoreCase( "black" ) )
+			remCubes = remBlackCubes;
+		else if( name.equalsIgnoreCase( "yellow" ) )
+			remCubes = remYellowCubes;
+		else if( name.equalsIgnoreCase( "red" ) )
+			remCubes = remRedCubes;
+		
+		return remCubes;
+	}
+	public static int getMaxCubesByColour( String name )
+	{
+		int maxCubes = 0;
+		
+		if( name.equalsIgnoreCase( "blue" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "black" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "yellow" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "red" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "purple" ) )
+			maxCubes = 12;
+		
+		return maxCubes;	
+	}
 	public static void requestConsent( String message )
 	{
 		Dialog consentRequest = new Dialog( message, skin ){
@@ -3342,10 +3583,38 @@ public class GameScreen implements Screen {
 		lookupCity( CityName ).putResearchStation();
 	}
 	
-	public static void CureDisease( String DiseaseColor )
+	public static void CureDisease( final String DiseaseColor )
 	{
 		diseaseStatuses.remove( DiseaseColor );
+		
 		diseaseStatuses.put( DiseaseColor, DiseaseStatus.CURED );
+		
+		for( PlayerCardInfo card : clientPlayer.hand )
+		{
+			if( card.getName().equalsIgnoreCase( "RapidVaccine") && getRemCubesByName( DiseaseColor) < getMaxCubesByColour( DiseaseColor ) )
+			{
+				Dialog rvPrompt = new Dialog("Do you want to play Rapid Vaccine?", skin ) {
+					@Override
+					protected void result(Object object) {
+						if( (boolean)object )
+						{
+							rapidVaccine = true;
+							rvColour = DiseaseColor;
+							useCityButtonStage = true;
+							rvCubesToRemove = new HashMap<String,Integer>();
+						}
+						
+						
+						Gdx.input.setInputProcessor( buttonStage );
+					};
+				};
+				rvPrompt.button( "Okay", true );
+				rvPrompt.button( "No", false );
+				rvPrompt.show( dialogStage );
+				Gdx.input.setInputProcessor( dialogStage );
+				break;
+			}
+		}
 	}
 	
 	public static void EradicateDisease( String DiseaseColor )
@@ -3382,4 +3651,93 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
         gameEnd.show( dialogStage );
 	}
+
+	public static void Forecast( String[] InfectionCards )
+	{
+		possibleForecastSelections = new ArrayList<String>();
+		forecastSelections = new ArrayList<String>();
+		for( final String infectionCard : InfectionCards )
+			possibleForecastSelections.add( infectionCard );
+		
+		float cardSizeX = playerCardXSize*1.5f;
+		float cardSizeY = playerCardYSize*1.5f;
+		float cardOffset = playerCardXOffset*1.5f;
+		float cardPosX = windWidth / 2 - possibleForecastSelections.size()*( cardSizeX + cardOffset ) / 2; 
+		float cardPosY = windHeight / 2 - cardSizeY / 2;
+		for( final String card : possibleForecastSelections )
+		{
+			Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card ) ];
+			TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+			final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+			
+			Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card ) ];
+			TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
+			final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
+			
+			ButtonStyle cityButtonStyle = new ButtonStyle();
+			cityButtonStyle.up			= Draw_cardTexture;
+			cityButtonStyle.down		= Draw_cardTexture;
+			cityButtonStyle.checked		= Draw_selectedCardTexture;
+			
+	        button = new Button( cityButtonStyle );
+	        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
+	        
+	        cardSelectStage.addActor( button );
+	        
+	        button.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{	
+						waitForButton = true;
+						if( !((Button)actor).isChecked() )
+						{
+							for( int i = 0; i < selections.size(); i++ )
+							{
+								if( selections.get(i).getName().equals( card ) )
+								{
+									selections.remove( i );
+									break;
+								}
+							}
+							cardsToSelect++;
+						}
+						else
+						{
+							forecastSelections.add(card);
+							cardsToSelect--;
+						}
+						waitForButton = false;
+					}
+				}
+			});
+	        cardPosX += cardSizeX + cardOffset;
+		}
+		showCardSelectStage = true;
+		Gdx.input.setInputProcessor( cardSelectStage );
+		cardsToSelect = InfectionCards.length;
+		showCardSelectAction = "Forecast";
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
