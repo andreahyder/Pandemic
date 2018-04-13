@@ -4,6 +4,7 @@ import java.util.Collections;
 
 public class Game {
 	ArrayList<Player> players;
+	ArrayList<Pawn> pawns;
 	ArrayList<City> cities;
 	ArrayList<Disease> diseases;
 	ArrayList<ResearchStation> research;
@@ -11,6 +12,17 @@ public class Game {
 	ArrayList<PlayerCard> playerDiscardPile;
 	ArrayList<InfectionCard> infectionDeck;
 	ArrayList<InfectionCard> infectionDiscardPile;
+	int quarantines;
+	
+	int difficulty;
+	int numPlayer;
+	Boolean OTB;
+	Boolean Vir;
+	Boolean Mut;
+	Boolean Bio;
+	
+	boolean loaded;
+	int maxPlayer;
 	int turn;
 	Stage stage;
 	static int[] infectionRate = new int[] {2,2,2,3,3,4,4};
@@ -21,11 +33,14 @@ public class Game {
 	
 	//initializes game, initializes alot of things.
 	Game(){
+		maxPlayer = 5;
+		loaded = false;
 		turn = 0;
 		stage = Stage.PreGame;
 		infectionCount = 0;
 		outbreakCount = 0;
 		players = new ArrayList<Player>();
+		pawns = new ArrayList<Pawn>();
 		cities = new ArrayList<City>();
 		diseases = new ArrayList<Disease>();
 		diseases.add(new Disease("black"));
@@ -58,20 +73,17 @@ public class Game {
 		}
 		getCity("Atlanta").addResearchStation();
 		
+		quarantines = 6;
+		
 		playerDeck = new ArrayList<PlayerCard>();
 		playerDiscardPile = new ArrayList<PlayerCard>();
 		infectionDeck = new ArrayList<InfectionCard>();
 		infectionDiscardPile = new ArrayList<InfectionCard>();
 		for(int i = 0; i < 48; i++) {
-			playerDeck.add(new PlayerCard(cities.get(i)));
+			playerDeck.add(new PlayerCard(cities.get(i), Type.City, null));
 			infectionDeck.add(new InfectionCard(cities.get(i)));
 		}
 		Collections.shuffle(playerDeck);
-		int epi = 4;
-		for(int i = 0; i < epi; i++) {
-			playerDeck.add(new PlayerCard(null));
-		}
-		Collections.shuffle(infectionDeck);
 	}
 	
 	Boolean allReady() {
@@ -82,6 +94,26 @@ public class Game {
 			}
 		}
 		return y;
+	}
+	
+	void start() {
+		int epi = difficulty + 4;
+		if(Vir) {
+			for(int i = 0; i < epi; i++) {
+				playerDeck.add(new PlayerCard(null, Type.Virulent, null));
+			}
+			Collections.shuffle(infectionDeck);
+		}
+		else {
+			for(int i = 0; i < epi; i++) {
+				playerDeck.add(new PlayerCard(null, Type.Epidemic, null));
+			}
+			Collections.shuffle(infectionDeck);
+		}
+		for(int i = 0; i < epi; i++) {
+			playerDeck.add(new PlayerCard(null, Type.Epidemic, null));
+		}
+		Collections.shuffle(infectionDeck);
 	}
 	
 	//return the current player
@@ -110,7 +142,12 @@ public class Game {
 	}
 	
 	Player getPlayer(int i) {
-		return players.get(i);
+		for(Player p:players) {
+			if(p.ID == i) {
+				return p;
+			}
+		}
+		return null;
 	}
 	
 	//return a city with the specified name in the game
@@ -192,58 +229,80 @@ public class Game {
 	void infectCity(InfectionCard c, int count) {
 		Color color = c.city.disease.color;
 		for(int i = 0; i < count; i++) {
-			if(c.city.countDiseaseCube(color) != 3) {
-				c.city.addDiseaseCube(color);
+			if(c.city.QS) {
 				
-				System.out.println("Infected " + c.city.name + " with a " + color.toString() + " disease cube!");
-				
-				String mes = "AddDiseaseCubeToCity/" + c.city.name + "/" + color.toString() + "/";	
-				for(int j = 0; j < players.size(); j++) {
-					ServerComm.sendMessage(mes, j);
+			}
+			else if(c.city.quarantine != 0) {
+				c.city.quarantine--;
+				if(c.city.quarantine == 0) {
+					quarantines++;
 				}
 			}
 			else {
-				System.out.println("OUTBREAK IN " + c + "!");
-				
-				String mes2 = "IncOutbreakCounter/";	
-				for(int j = 0; j < players.size(); j++) {
-					ServerComm.sendMessage(mes2, j);
+				if(c.city.countDiseaseCube(color) != 3) {
+					c.city.addDiseaseCube(color);
+					
+					System.out.println("Infected " + c.city.name + " with a " + color.toString() + " disease cube!");
+					
+					String mes = "AddDiseaseCubeToCity/" + c.city.name + "/" + color.toString() + "/";	
+					for(int j = 0; j < players.size(); j++) {
+						ServerComm.sendMessage(mes, j);
+					}
 				}
-				
-				ArrayList<City> outbreakList = new ArrayList<City>();
-				outbreakList.add(c.city);
-				c.city.outbroken = true;
-				while(!outbreakList.isEmpty()) {
-					outbreakCount++;
-					for(City link: outbreakList.get(0).connected) {
-						if(!link.outbroken) {
-							if(link.countDiseaseCube(color) != 3) {
-								System.out.println("Infected " + link.name + " with a " + color.toString() + " disease cube!");
+				else {
+					System.out.println("OUTBREAK IN " + c + "!");
+					
+					String mes2 = "IncOutbreakCounter/";	
+					for(int j = 0; j < players.size(); j++) {
+						ServerComm.sendMessage(mes2, j);
+					}
+					
+					ArrayList<City> outbreakList = new ArrayList<City>();
+					outbreakList.add(c.city);
+					c.city.outbroken = true;
+					while(!outbreakList.isEmpty()) {
+						outbreakCount++;
+						for(City link: outbreakList.get(0).connected) {
+							if(link.QS) {
 								
-								link.addDiseaseCube(color);
-								
-								String mes = "AddDiseaseCubeToCity/" + link.name + "/" + color.toString() + "/";	
-								for(int j = 0; j < players.size(); j++) {
-									ServerComm.sendMessage(mes, j);
+							}
+							else if(link.quarantine != 0) {
+								link.quarantine--;
+								if(link.quarantine == 0) {
+									quarantines++;
 								}
 							}
 							else {
-								System.out.println("CHAIN OUTBREAK IN " + link + "!");
-								
-								String mes = "IncOutbreakCounter/";	
-								for(int j = 0; j < players.size(); j++) {
-									ServerComm.sendMessage(mes, j);
+								if(!link.outbroken) {
+									if(link.countDiseaseCube(color) != 3) {
+										System.out.println("Infected " + link.name + " with a " + color.toString() + " disease cube!");
+										
+										link.addDiseaseCube(color);
+										
+										String mes = "AddDiseaseCubeToCity/" + link.name + "/" + color.toString() + "/";	
+										for(int j = 0; j < players.size(); j++) {
+											ServerComm.sendMessage(mes, j);
+										}
+									}
+									else {
+										System.out.println("CHAIN OUTBREAK IN " + link + "!");
+										
+										String mes = "IncOutbreakCounter/";	
+										for(int j = 0; j < players.size(); j++) {
+											ServerComm.sendMessage(mes, j);
+										}
+										
+										outbreakList.add(link);
+										link.outbroken = true;
+									}
 								}
-								
-								outbreakList.add(link);
-								link.outbroken = true;
 							}
 						}
+						outbreakList.remove(0);
 					}
-					outbreakList.remove(0);
-				}
-				for(City cit: cities) {
-					cit.outbroken = false;
+					for(City cit: cities) {
+						cit.outbroken = false;
+					}
 				}
 			}
 		}
@@ -264,6 +323,30 @@ enum Stage{
 }
 
 class Vars{
+	static String[] eventnames = new String[]
+	{
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+	}
+	
+	static String[] virnames = new String[]
+	{
+		"Chronic Effect",
+		"Complex Molecular Structure",
+		"Government Interference",
+		"Hidden Pocket",
+		"Rate Effect",
+		"Slippery Slope",
+		"Unacceptable Loss",
+		"Unacounted Populations"
+	};
+	
 	static String[][] names = new String[][]
 	{
 		new String[] {"Atlanta","blue","Chicago","Washington","Miami"},	

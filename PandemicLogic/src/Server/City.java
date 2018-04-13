@@ -4,6 +4,8 @@ import java.util.ArrayList;
 public class City {
 	Game game;
 	String name;
+	int quarantine;
+	boolean QS;
 	ArrayList<Pawn> pawns;
 	ArrayList<City> connected;
 	Disease disease;
@@ -12,6 +14,8 @@ public class City {
 	Boolean outbroken;
 	
 	City(String n,Disease d,Game g){
+		quarantine = 0;
+		QS = false;
 		game = g;
 		name = n;
 		disease = d;

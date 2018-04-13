@@ -2,6 +2,8 @@ package Server;
 import java.util.ArrayList;
 
 public class Player {
+	static int IDcount = 0;
+	int ID;
 	String username;
 	String password;
 	Status status;
@@ -10,6 +12,8 @@ public class Player {
 	ArrayList<PlayerCard> hand;
 	
 	Player(String n){
+		ID = IDcount;
+		IDcount++;
 		username = n;
 		status = Status.InGame;
 		ready = false;
@@ -28,7 +32,7 @@ public class Player {
 	}
 	
 	void givePawn(City c){
-		pawn = new Pawn(this, c);
+		pawn = new PawnQuarantineSpecialist(this, c);
 	}
 	
 	

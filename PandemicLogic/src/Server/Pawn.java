@@ -1,11 +1,13 @@
 package Server;
 
 public class Pawn {
+	Role role;
 	int actions;
 	Player player;
 	City city;
 	
-	Pawn(Player p, City c){
+	Pawn(Player p, City c, Role r){
+		role = r;
 		actions = 4;
 		player = p;
 		city = c;
@@ -13,11 +15,26 @@ public class Pawn {
 	}
 	
 	void move(City c, Boolean free) {
+		boolean Q = (role.compareTo(role.Qua) == 0);
+		if(Q) {
+			city.QS = false;
+			for(City t: city.connected) {
+				t.QS = false;
+			}
+		}
+		
 		city.pawns.remove(this);
 		city = c;
 		city.pawns.add(this);
 		if(!free){
 			actions--;
+		}
+		
+		if(Q) {
+			city.QS = true;
+			for(City t: city.connected) {
+				t.QS = true;
+			}
 		}
 	}
 	
@@ -37,4 +54,8 @@ public class Pawn {
 	public void incrementAction(int i){
 		actions += i;
 	}
+}
+
+enum Role{
+	Arch, Bio, Col, ContS, ContP, Disp, Epi, Field, Gen, Med, Op, Qua, Res, Sci, Troub
 }

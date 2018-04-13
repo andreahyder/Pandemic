@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class GameManager {
-	//ArrayList<Game> games;
-	public static Game game = new Game();
+	public static ArrayList<Game> games = new ArrayList<Game>();
+	//public static Game game = new Game();
 	public static ArrayList<Player> playerList = new ArrayList<Player>();
 	
 	GameManager(){
@@ -22,19 +22,42 @@ public class GameManager {
 	public static void AddPlayer(String name) {
 		Player t1 = new Player(name);
 		playerList.add(t1);
-		game.players.add(t1);
-		t1.givePawn(game.getCity("Atlanta"));
 		
-		System.out.println("New player joined: " + t1.username);
+		//TODO send list of games to player
+		
+		System.out.println("New player connected: " + t1.username);
+	
 	}
 	
 	public static void ChangeName(String indexs, String newname) {
 		int index = Integer.parseInt(indexs);
-		Player t1 = game.getPlayer(index);
+		Player t1 = games.get(0).getPlayer(index);
 		
 		System.out.println(t1.username + "changed their name to " + newname);
 		
 		t1.username = newname;
+	}
+	
+	public static void CreateGame(String indexs) {
+		int index = Integer.parseInt(indexs);
+		Player t1 = playerList.get(index);
+		
+		games.add(new Game());
+		games.get(0).players.add(t1);
+		t1.givePawn(games.get(0).getCity("Atlanta"));
+		
+		//TODO send lobby to this guy
+		//TODO send list of games to all players except this guy
+	}
+	
+	public static void JoinGame(String indexs, String indexg) {
+		int index = Integer.parseInt(indexs);
+		int gindex = Integer.parseInt(indexg);
+		Player t1 = playerList.get(index);
+		games.get(gindex).players.add(t1);
+		t1.givePawn(games.get(0).getCity("Atlanta"));
+		
+		//TODO send lobby to this guy
 	}
 	
 	//when a player is ready to start the game
@@ -47,6 +70,8 @@ public class GameManager {
 		
 		if(game.allReady()) {
 			System.out.println("All players ready. Game started.");
+			
+			games.get(0).start();
 			
 			game.stage = Stage.Action;
 			
