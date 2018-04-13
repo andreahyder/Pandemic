@@ -339,6 +339,10 @@ public class GameScreen implements Screen {
 	static boolean waitForButton = false;
 	static boolean govtGrant = false;
 	static boolean opExpertFly = false;
+	static boolean remoteTreat = false;
+	static String[] remoteTreatCities;
+	static String[] remoteTreatDiseases;
+	static int remoteTreated;
 	
 	static boolean rapidVaccine = false;
 	static HashMap<String, Integer> rvCubesToRemove;
@@ -399,7 +403,7 @@ public class GameScreen implements Screen {
 		
 		
 
-    	players[0].addCardToHand( new PlayerCardInfo("ReexaminedResearch" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("RemoteTreatment" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -456,7 +460,6 @@ public class GameScreen implements Screen {
 		AddDiseaseCubeToCity( "Bogota" , "blue" );
 		AddDiseaseCubeToCity( "Tokyo" , "blue" );
 
-		ReexaminedResearch();
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -1256,6 +1259,49 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		button.addListener( new ChangeListener(){
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( !waitForButton )
+				{
+					waitForButton = true;
+					
+					dialogStage.clear();
+					Dialog remoteTreatDiag = new Dialog( "Do you want to play Remote Treatment?", skin )
+					{
+						@Override
+						protected void result(Object object) {
+							if( (Boolean)object )
+							{
+								Dialog rtDiag = new Dialog("Pick disease cubes to remove", skin ) {
+									@Override
+									protected void result(Object object) {
+										Gdx.input.setInputProcessor( buttonStage );
+										remoteTreat = true;
+										useCityButtonStage = true;
+										remoteTreated = 0;
+										remoteTreatCities = new String[2];
+										remoteTreatDiseases = new String[2];
+									};
+								};
+
+								rtDiag.button("Okay");
+								rtDiag.show(dialogStage);
+								Gdx.input.setInputProcessor( dialogStage );
+							}
+							else
+								Gdx.input.setInputProcessor( buttonStage );
+						};
+					};
+					remoteTreatDiag.button("Yes", true );
+					remoteTreatDiag.button("No", false);
+					remoteTreatDiag.show( dialogStage );
+					Gdx.input.setInputProcessor( dialogStage );
+					waitForButton = false;
+				}
+			}
+		} );
+		
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -1565,7 +1611,7 @@ public class GameScreen implements Screen {
 			currButton.setTouchable(Touchable.disabled);
 		}
 
-		if(useCityButtonStage && !rapidVaccine){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
+		if(useCityButtonStage && !rapidVaccine && !remoteTreat ){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
 			ArrayList<CityNode> allTheCities = new ArrayList<CityNode>();
 
 			for( int i = 0; i < cityNodes.length; i++){		// copy all cities from cityNodes (except for currentPlayer's currentCity) to allTheCities ArrayList
@@ -1597,6 +1643,20 @@ public class GameScreen implements Screen {
 						cityButtons.get(lookupCityIndex(city.getName())).setTouchable( Touchable.enabled );
 					}
 				}
+			}
+		}
+		else if ( remoteTreat )
+		{
+			for ( CityNode curr : cityNodes)
+			{
+				if( ( curr.cubes.size() > 0 ) )
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
+				
+				if( remoteTreatCities[0] == null )
+					continue;
+				
+				if( curr.getName().equalsIgnoreCase( remoteTreatCities[0] ) && curr.cubes.size() <= 1 )
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.disabled );
 			}
 		}
 		else {
@@ -1780,6 +1840,68 @@ public class GameScreen implements Screen {
 										}
 									}	
 								}
+								else if ( remoteTreat )
+								{
+									if( remoteTreated < 2 )
+									{
+										boolean[] diseasesPresent = new boolean[5];
+										
+										int numDiseasesPresent = 0;
+										for( DiseaseCubeInfo cube : curr.cubes )
+										{
+											if( !diseasesPresent[cube.getColourIndex() ] )
+											{
+												numDiseasesPresent++;
+												diseasesPresent[ cube.getColourIndex() ] = true;
+											}
+										}
+										
+										String[] diseases = new String[numDiseasesPresent];
+										
+										int j = 0;
+										for( int i = 0; i < diseasesPresent.length; i++ )
+										{
+											if( diseasesPresent[i] )
+											{
+												diseases[j] = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
+												j++;
+											}
+										}
+										
+										final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+										
+										Dialog rtDiag = new Dialog("Pick Disease Colour of cube to remove", skin ) {
+											@Override
+											protected void result(Object object) {
+												if( (boolean)object )
+												{
+													tempSkin.dispose();
+													remoteTreatCities[remoteTreated] = curr.getName();
+													remoteTreatDiseases[remoteTreated] = selector.getSelected();
+													remoteTreated++;
+													Gdx.input.setInputProcessor( buttonStage );
+													if( remoteTreated > 1 )
+													{
+														ClientComm.send("RemoteTreatment/" + remoteTreatCities[0] + '/' + remoteTreatDiseases[0] + '/' + remoteTreatCities[1] + '/' + remoteTreatDiseases[1] + '/' );
+														remoteTreated = 0;
+														remoteTreatCities = null;
+														remoteTreatDiseases = null;
+														remoteTreat = false;
+														useCityButtonStage = false;
+													}
+												}
+												Gdx.input.setInputProcessor( buttonStage );
+											}
+										};
+										selector.setItems( diseases );
+										rtDiag.getContentTable().add( selector );
+										rtDiag.button( "Select", true );
+										rtDiag.button( "Cancel", false );
+										rtDiag.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
+								}
 								else
 								{
 									// TODO: Implement highlight all connections between cities
@@ -1820,6 +1942,7 @@ public class GameScreen implements Screen {
 			cityLabel.getStyle().fontColor = Color.WHITE;
 		}
 	}
+	
 
 	static boolean playerHasCityCard( PlayerInfo player, String CardName )
 	{
