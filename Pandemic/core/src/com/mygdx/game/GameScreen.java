@@ -3,6 +3,7 @@ package com.mygdx.game;
 import java.security.DigestInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -177,7 +178,6 @@ public class GameScreen implements Screen {
 			};
 
 
-
 	static ClientComm clientComm;
 	
 	static HashMap<String,DiseaseStatus> diseaseStatuses = new HashMap<String, DiseaseStatus>();
@@ -204,6 +204,8 @@ public class GameScreen implements Screen {
 	static ArrayList<PlayerCardInfo> selections;
 	static String showCardSelectAction;
 	static int cardsToSelect;
+	static ArrayList<String> possibleForecastSelections;
+	static ArrayList<String> forecastSelections;
 
 	static boolean useCityButtonStage = false;
 
@@ -298,6 +300,8 @@ public class GameScreen implements Screen {
 	static ScreenViewport screen;
 	
 	static BitmapFont handPlayerFont = new BitmapFont();
+	static BitmapFont rvFontFront = new BitmapFont();
+	static BitmapFont rvFontBack = new BitmapFont();
 	
 	static ScrollPane discardPane; 
 	static int windWidth, windHeight;
@@ -332,8 +336,20 @@ public class GameScreen implements Screen {
 	static float nextActionButtonHeight;
 	
 	static boolean waitForButton = false;
+	static boolean govtGrant = false;
 	static boolean opExpertFly = false;
+	static boolean remoteTreat = false;
+	static boolean specialOrders = false;
+	static String[] remoteTreatCities;
+	static String[] remoteTreatDiseases;
+	static int remoteTreated;
+	
+	static boolean rapidVaccine = false;
+	static HashMap<String, Integer> rvCubesToRemove;
+	static String rvColour;
+	static String rvFirstCity;
 	static String opExpertFlyCard;
+	static String specialOrderPlayer;
 	
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
@@ -343,7 +359,8 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].role = "operationsexpert";
+    	players[0].role = "Epidemiologist";
+    	//players[0].setCity( "Tokyo" );
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -377,7 +394,6 @@ public class GameScreen implements Screen {
 		diseaseStage = new Stage( parent.screen ); //TEST
 		dialogStage = new Stage( parent.screen );
 		pawnStage = new Stage( parent.screen );
-		cardSelectStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
@@ -387,8 +403,13 @@ public class GameScreen implements Screen {
 
 		updatePawnStage();
 		
+		
 
-    	players[0].addCardToHand( new PlayerCardInfo("Airlift" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("SpecialOrders" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("London" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
@@ -397,13 +418,13 @@ public class GameScreen implements Screen {
     	
 
     	players[1].addCardToHand( new PlayerCardInfo("BorrowedTime" ) );
-    	//players[1].addCardToHand( new PlayerCardInfo("London" ) );
+    	players[1].addCardToHand( new PlayerCardInfo("London" ) );
     	//players[1].addCardToHand( new PlayerCardInfo("Essen" ) );
     	//players[1].addCardToHand( new PlayerCardInfo("Toronto" ) );
     	//players[1].addCardToHand( new PlayerCardInfo("Madrid" ) );
     	
     	players[2].addCardToHand( new PlayerCardInfo("RapidVaccine" ) );
-    	//players[2].addCardToHand( new PlayerCardInfo("London" ) );
+    	players[2].addCardToHand( new PlayerCardInfo("London" ) );
     	//players[2].addCardToHand( new PlayerCardInfo("Essen" ) );
     	//players[2].addCardToHand( new PlayerCardInfo("Toronto" ) );
     	//players[2].addCardToHand( new PlayerCardInfo("Madrid" ) );
@@ -422,9 +443,27 @@ public class GameScreen implements Screen {
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
     	infectionDiscardPile.add( "Atalnta" );
-    	playerDiscardPile.add( "Tokyo" );
 		handShownPlayer = clientPlayer;
+
+    	playerDiscardPile.add( "Atlanta" );
+    	playerDiscardPile.add( "Tokyo" );
+    	playerDiscardPile.add( "London" );
 		
+		researchStationCityNames.add( "Tokyo" );
+		lookupCity( "Tokyo" ).putResearchStation();
+		remResearchStations--;
+
+		AddDiseaseCubeToCity( "Atlanta" , "blue" );
+		AddDiseaseCubeToCity( "Atlanta" , "blue" );
+		AddDiseaseCubeToCity( "Atlanta" , "blue" );
+		AddDiseaseCubeToCity( "Chicago" , "blue" );
+		AddDiseaseCubeToCity( "Washington" , "blue" );
+		AddDiseaseCubeToCity( "Miami" , "blue" );
+		AddDiseaseCubeToCity( "Bogota" , "blue" );
+		AddDiseaseCubeToCity( "Tokyo" , "blue" );
+		
+		NewAssignment( new String[] { "Archivist", "Generalist", "Scientist" } );
+
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -540,7 +579,7 @@ public class GameScreen implements Screen {
 
 		researchStationCityNames.add( "Atlanta" );
 		lookupCity( "Atlanta" ).putResearchStation();
-		remResearchStations--;
+		
 		
 		diseaseStatuses.put( "blue", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "yellow", DiseaseStatus.ACTIVE );
@@ -725,7 +764,6 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	
 	static void updateHandPanelStage()
 	{
 		handPanelGroup.clear();
@@ -935,34 +973,36 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		button.addListener( new ChangeListener(){
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				if( !waitForButton )
-				{
-					waitForButton = true;
-					
-					dialogStage.clear();
-					Dialog borrowedTimeDiag = new Dialog( "Do you want to play Borrowed Time?", skin )
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
 					{
-						@Override
-						protected void result(Object object) {
-							if( (Boolean)object )
-							{
-								ClientComm.send("BorrowedTime/");
-							}
-							Gdx.input.setInputProcessor( buttonStage );
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play Borrowed Time?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									ClientComm.send("BorrowedTime/");
+								}
+								Gdx.input.setInputProcessor( buttonStage );
+							};
 						};
-					};
-					borrowedTimeDiag.button("Yes", true );
-					borrowedTimeDiag.button("No", false);
-					borrowedTimeDiag.show( dialogStage );
-					Gdx.input.setInputProcessor( dialogStage );
-					waitForButton = false;
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
 				}
-			}
-		} );
-		
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -980,34 +1020,36 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		button.addListener( new ChangeListener(){
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				if( !waitForButton )
-				{
-					waitForButton = true;
-					
-					dialogStage.clear();
-					Dialog borrowedTimeDiag = new Dialog( "Do you want to play Mobile Hospital?", skin )
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
 					{
-						@Override
-						protected void result(Object object) {
-							if( (Boolean)object )
-							{
-								ClientComm.send("MobileHospital/");
-							}
-							Gdx.input.setInputProcessor( buttonStage );
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play Mobile Hospital?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									ClientComm.send("MobileHospital/");
+								}
+								Gdx.input.setInputProcessor( buttonStage );
+							};
 						};
-					};
-					borrowedTimeDiag.button("Yes", true );
-					borrowedTimeDiag.button("No", false);
-					borrowedTimeDiag.show( dialogStage );
-					Gdx.input.setInputProcessor( dialogStage );
-					waitForButton = false;
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
 				}
-			}
-		} );
-		
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1026,6 +1068,36 @@ public class GameScreen implements Screen {
 
 		button = new Button( cityButtonStyle );
 		
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play New Assigment??", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									ClientComm.send("NewAssingmentRequest/");
+								}
+								Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
+				}
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1045,6 +1117,24 @@ public class GameScreen implements Screen {
 
 		button = new Button( cityButtonStyle );
 		
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					Dialog rvDiag = new Dialog( "Cannot play now", skin ) {
+						@Override
+						protected void result(Object object) {
+							Gdx.input.setInputProcessor( dialogStage );
+						}
+					};
+				rvDiag.button("Okay");
+				rvDiag.show( dialogStage );
+				Gdx.input.setInputProcessor( dialogStage );
+				
+			}
+		});
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1063,34 +1153,36 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		button.addListener( new ChangeListener(){
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				if( !waitForButton )
-				{
-					waitForButton = true;
-					
-					dialogStage.clear();
-					Dialog borrowedTimeDiag = new Dialog( "Do you want to play Commercial Travel Ban?", skin )
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
 					{
-						@Override
-						protected void result(Object object) {
-							if( (Boolean)object )
-							{
-								ClientComm.send("CommercialTravelBan/");
-							}
-							Gdx.input.setInputProcessor( buttonStage );
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play Commercial Travel Ban?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									ClientComm.send("CommercialTravelBan/");
+								}
+								Gdx.input.setInputProcessor( buttonStage );
+							};
 						};
-					};
-					borrowedTimeDiag.button("Yes", true );
-					borrowedTimeDiag.button("No", false);
-					borrowedTimeDiag.show( dialogStage );
-					Gdx.input.setInputProcessor( dialogStage );
-					waitForButton = false;
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
 				}
-			}
-		} );
-		
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1109,6 +1201,74 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{
+						waitForButton = true;
+						
+						if( currentPlayer == clientPlayer )
+						{
+							dialogStage.clear();
+							Dialog specialOrdersDiag = new Dialog( "Do you want to play Special Orders?", skin )
+							{
+								@Override
+								protected void result(Object object) {
+									if( (Boolean)object )
+									{
+										int numViable = 0;
+										for( PlayerInfo curr : players )
+											if( curr != null && curr != currentPlayer )
+												numViable++;
+												
+										
+										String[] viablePlayers = new String[ numViable ];
+										int i = 0;
+										for( PlayerInfo curr : players )
+										{
+											if( curr != null && curr != currentPlayer )
+											{
+												viablePlayers[i] = curr.getName();
+												i++;
+											}
+										}
+										
+										final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+										selector.setItems( viablePlayers );
+										
+										Dialog soDiag = new Dialog("Select player to request control of", skin) {
+											@Override
+											protected void result(Object object) {
+												if( (boolean)object )
+													ClientComm.send( "SpecialOrdersRequest/" + selector.getSelected() + '/' );
+												tempSkin.dispose();
+												Gdx.input.setInputProcessor( buttonStage );
+											}
+										};
+										soDiag.getContentTable().add( selector );
+										soDiag.button("Select", true );
+										soDiag.button( "Cancel", false );
+										soDiag.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
+									else
+										Gdx.input.setInputProcessor( buttonStage );
+								};
+							};
+							specialOrdersDiag.button("Yes", true );
+							specialOrdersDiag.button("No", false);
+							specialOrdersDiag.show( dialogStage );
+							Gdx.input.setInputProcessor( dialogStage );
+							waitForButton = false;
+						}
+					}
+				}
+			} );
+		}
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -1128,7 +1288,87 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{
+						waitForButton = true;
+						if( playerDiscardPile.size() > 0 )
+						{
+							dialogStage.clear();
+							Dialog borrowedTimeDiag = new Dialog( "Do you want to play Re-examined Research?", skin )
+							{
+								@Override
+								protected void result(Object object) {
+									if( (Boolean)object )
+									{
+										int j = 0;
+										for ( PlayerInfo curr : players )
+											if( curr != null )
+												j++;
+										
+										String[] playerNames = new String[j];
+										
+										for( int i = 0; i < players.length; i++ )
+										{
+											if( players[i] != null )
+											{
+												playerNames[j-1] = players[i].getName();
+												j--;
+											}
+										}
+										
+										final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+										selector.setItems( playerNames );
+										
+										Dialog btDiag = new Dialog( "Select a player", skin ) {
+											@Override
+											protected void result(Object object) {
+												if( (boolean)object )
+												{
+													ClientComm.send( "ReexaminedReseatch/" + selector.getSelected() + '/' );
+													tempSkin.dispose();
+												}
+												Gdx.input.setInputProcessor( buttonStage );
+											};
+										};
+										btDiag.button( "Select", true );
+										btDiag.button( "Cancel", false );
+										btDiag.getContentTable().add( selector );
+										btDiag.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
+									else
+										Gdx.input.setInputProcessor( buttonStage );
+								};
+							};
+							borrowedTimeDiag.button("Yes", true );
+							borrowedTimeDiag.button("No", false);
+							borrowedTimeDiag.show( dialogStage );
+							Gdx.input.setInputProcessor( dialogStage );
+						}
+						else
+						{
+							dialogStage.clear();
+							Dialog btDiag = new Dialog( "No cards in player discardpile", skin ) {
+								@Override
+								protected void result(Object object) {
+									Gdx.input.setInputProcessor( buttonStage );
+								};
+							};
+							btDiag.button("Okay");
+							btDiag.show( dialogStage );
+							Gdx.input.setInputProcessor( dialogStage );
+						}
+						waitForButton = false;
+					}
+				}
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1147,6 +1387,51 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog remoteTreatDiag = new Dialog( "Do you want to play Remote Treatment?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									Dialog rtDiag = new Dialog("Pick disease cubes to remove", skin ) {
+										@Override
+										protected void result(Object object) {
+											Gdx.input.setInputProcessor( buttonStage );
+											remoteTreat = true;
+											useCityButtonStage = true;
+											remoteTreated = 0;
+											remoteTreatCities = new String[2];
+											remoteTreatDiseases = new String[2];
+										};
+									};
+	
+									rtDiag.button("Okay");
+									rtDiag.show(dialogStage);
+									Gdx.input.setInputProcessor( dialogStage );
+								}
+								else
+									Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						remoteTreatDiag.button("Yes", true );
+						remoteTreatDiag.button("No", false);
+						remoteTreatDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
+				}
+			} );
+		}
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -1166,53 +1451,55 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		button.addListener( new ChangeListener(){
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				if( !waitForButton )
-				{
-					waitForButton = true;
-
-					dialogStage.clear();
-					final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
-					final SelectBox<String> selectBox = new SelectBox<String>( tempSkin );
-					Dialog airliftDiag = new Dialog( "Select a player to airlift.", skin )
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
 					{
-						@Override
-						protected void result(Object object) {
-							if( (boolean)object )
-							{
-								String selected = selectBox.getSelected();
-								useCityButtonStage = true;
-								cityButtonsToAirlift = true;
-								airliftedPlayer = selected;
-								//charterFlightCard = card.getName();
-							}
-							Gdx.input.setInputProcessor( buttonStage );
-						};
-					};
-					String[] names = new String[getNumPlayers()];
-					int j = 0;
-					for( int i = 0; i < players.length; i++)
-					{
-						if( players[i] != null )
+						waitForButton = true;
+	
+						dialogStage.clear();
+						final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+						final SelectBox<String> selectBox = new SelectBox<String>( tempSkin );
+						Dialog airliftDiag = new Dialog( "Select a player to airlift.", skin )
 						{
-							names[j] = players[i].getName();
-							j++;
+							@Override
+							protected void result(Object object) {
+								if( (boolean)object )
+								{
+									String selected = selectBox.getSelected();
+									useCityButtonStage = true;
+									cityButtonsToAirlift = true;
+									airliftedPlayer = selected;
+									//charterFlightCard = card.getName();
+								}
+								Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						String[] names = new String[getNumPlayers()];
+						int j = 0;
+						for( int i = 0; i < players.length; i++)
+						{
+							if( players[i] != null )
+							{
+								names[j] = players[i].getName();
+								j++;
+							}
 						}
+						selectBox.setItems( names );
+						
+						airliftDiag.getContentTable().add( selectBox );
+						airliftDiag.button("Select", true );
+						airliftDiag.button("Cancel", false);
+						airliftDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
 					}
-					selectBox.setItems( names );
-					
-					airliftDiag.getContentTable().add( selectBox );
-					airliftDiag.button("Select", true );
-					airliftDiag.button("Cancel", false);
-					airliftDiag.show( dialogStage );
-					Gdx.input.setInputProcessor( dialogStage );
-					waitForButton = false;
 				}
-			}
-		} );
-		
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1231,34 +1518,36 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		button.addListener( new ChangeListener(){
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				if( !waitForButton )
-				{
-					waitForButton = true;
-					
-					dialogStage.clear();
-					Dialog borrowedTimeDiag = new Dialog( "Do you want to play One Quiet Night?", skin )
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
 					{
-						@Override
-						protected void result(Object object) {
-							if( (Boolean)object )
-							{
-								ClientComm.send("OneQuietNight/");
-							}
-							Gdx.input.setInputProcessor( buttonStage );
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play One Quiet Night?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									ClientComm.send("OneQuietNight/");
+								}
+								Gdx.input.setInputProcessor( buttonStage );
+							};
 						};
-					};
-					borrowedTimeDiag.button("Yes", true );
-					borrowedTimeDiag.button("No", false);
-					borrowedTimeDiag.show( dialogStage );
-					Gdx.input.setInputProcessor( dialogStage );
-					waitForButton = false;
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
 				}
-			}
-		} );
-		
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1277,7 +1566,52 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( infectionDiscardPile.size() > 0 )
+					{
+						String[] data = new String[ infectionDiscardPile.size() ];
+						for( int i = 0; i < data.length; i++ )
+							data[i] = infectionDiscardPile.get( i );
+						
+						final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json") );
+						final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+						selector.setItems( data );
+						
+						Dialog rpDiag = new Dialog( "Pick a card to remove from infection Discard", skin ) {
+							@Override
+							protected void result(Object object) {
+								if( (boolean)object )
+								{
+									ClientComm.send("ResilientPopulation/" + selector.getSelected() +'/');
+								}
+								Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						rpDiag.getContentTable().add( selector );
+						rpDiag.button("Select", true );
+						rpDiag.button("Cancel", false );
+						rpDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+					}
+					else
+					{
+						Dialog rpDiag = new Dialog( "No cards in infection discard", skin ) {
+							@Override
+							protected void result(Object object) {
+								Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						rpDiag.button("Okay");
+						rpDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+					}
+				}
+			});
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1296,7 +1630,47 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
-		
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play Government Grant?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									Dialog ggInfo = new Dialog( "Please select a city to build a research station in", skin ) {
+										@Override
+										protected void result(Object object) {
+											useCityButtonStage = true;
+											govtGrant = true;
+											Gdx.input.setInputProcessor( buttonStage );
+										};
+									};
+									ggInfo.button("Okay");
+									ggInfo.show( dialogStage );
+									
+								}
+								else
+									Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
+				}
+			} );
+		}
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
 		button.setBounds(x, y, playerCardXSize, playerCardYSize);
@@ -1315,6 +1689,45 @@ public class GameScreen implements Screen {
 		cityButtonStyle.down		= Draw_cardTexture;
 
 		button = new Button( cityButtonStyle );
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{
+						waitForButton = true;
+						
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play Forecast?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									Dialog info = new Dialog( "Select cards in order to be drawn", skin ) {
+										@Override
+										protected void result(Object object) {
+											//ClientComm.send("ForecastRequest/"); TODO: Remove
+											Forecast( new String[] { "Atlanta", "Tokyo", "Manila", "Toronto", "London", "Johannesburg" } );
+										};
+									};
+									info.button("Okay");
+									info.show( dialogStage );
+								}
+								else
+									Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
+				}
+			} );
+		}
 		
 		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
 		float y = playerCardYOffset/2;
@@ -1338,7 +1751,7 @@ public class GameScreen implements Screen {
 			currButton.setTouchable(Touchable.disabled);
 		}
 
-		if(useCityButtonStage){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
+		if(useCityButtonStage && !rapidVaccine && !remoteTreat ){	// if boolean is true then make all cities touchable (except for currentPlayer's currentCity
 			ArrayList<CityNode> allTheCities = new ArrayList<CityNode>();
 
 			for( int i = 0; i < cityNodes.length; i++){		// copy all cities from cityNodes (except for currentPlayer's currentCity) to allTheCities ArrayList
@@ -1352,11 +1765,59 @@ public class GameScreen implements Screen {
 				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
 			}
 		}
-
+		else if( rapidVaccine )
+		{
+			if( rvFirstCity == null || rvFirstCity.equals("") )
+			{
+				for ( CityNode curr : cityNodes){
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
+				}
+			}
+			else
+			{
+				for( String coreCity : rvCubesToRemove.keySet() )
+				{
+					cityButtons.get(lookupCityIndex( coreCity )).setTouchable( Touchable.enabled );
+					for( CityNode city : lookupCity( coreCity ).connectedCities )
+					{
+						cityButtons.get(lookupCityIndex(city.getName())).setTouchable( Touchable.enabled );
+					}
+				}
+			}
+		}
+		else if ( remoteTreat )
+		{
+			for ( CityNode curr : cityNodes)
+			{
+				if( ( curr.cubes.size() > 0 ) )
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
+				
+				if( remoteTreatCities[0] == null )
+					continue;
+				
+				if( curr.getName().equalsIgnoreCase( remoteTreatCities[0] ) && curr.cubes.size() <= 1 )
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.disabled );
+			}
+		}
 		else {
-			ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
-			for (CityNode curr : adjCities) {
-				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+			if( !specialOrders )
+			{
+				ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
+				for (CityNode curr : adjCities) {
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+				}
+			}
+			else
+			{
+				ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
+				for (CityNode curr : adjCities) {
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+				}
+				
+				adjCities = lookupCity(lookupPlayer(specialOrderPlayer).getCity()).getConnectedCities();
+				for (CityNode curr : adjCities) {
+					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+				}
 			}
 		}
 	}
@@ -1431,6 +1892,171 @@ public class GameScreen implements Screen {
 									airliftedPlayer = null;
 									Gdx.input.setInputProcessor( buttonStage );
 								}
+								else if( govtGrant )
+								{
+									final String cityName = curr.getName();
+									if( lookupCity(cityName).hasResearchStation )
+									{
+										Dialog notValid = new Dialog("City already has research station", skin) {
+											@Override
+											protected void result(Object object) {
+												Gdx.input.setInputProcessor( buttonStage);
+											};
+										
+										};
+										notValid.button("Okay");
+										notValid.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
+									else
+									{
+										if( remResearchStations > 0 )
+										{
+											ClientComm.send("GovernmentGrant/"+cityName);	
+										}
+										else
+										{
+											final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+											final SelectBox<String> selectbox = new SelectBox<String>( tempSkin );
+											
+											String[] data = new String[ researchStationCityNames.size() ];
+											for( int i = 0; i < data.length; i++ )
+											{
+												data[i] = researchStationCityNames.get( i );
+											}
+											selectbox.setItems( data );
+											
+											Dialog rmRS = new Dialog( "Select Research Station to remove", skin ) {
+												@Override
+												protected void result(Object object) {
+													if( (boolean) true )
+													{
+														ClientComm.send("GovernmentGrant/" + cityName + '/' + selectbox.getSelected() + '/');
+													}
+													Gdx.input.setInputProcessor( buttonStage );
+												};
+											};
+											rmRS.getContentTable().add( selectbox );
+											rmRS.button( "Select", true );
+											rmRS.button( "Cancel", false );
+											rmRS.show( dialogStage );
+											Gdx.input.setInputProcessor( dialogStage );
+										}
+									}
+									useCityButtonStage = false;
+									govtGrant = false;
+								}
+								else if( rapidVaccine )
+								{
+									String currName = curr.getName();
+									ArrayList<DiseaseCubeInfo> cubes = lookupCity( currName ).getCubesByColor( rvColour );
+									if( cubes.size() > 0 )
+									{
+										if(  ( rvFirstCity == null || rvFirstCity.equals( "" ) ) )
+										{
+											rvFirstCity = currName;
+										}
+										Integer currVal = rvCubesToRemove.get( currName );
+										if( currVal != null && currVal < cubes.size() )
+										{
+											rvCubesToRemove.put( currName, rvCubesToRemove.get( currName)+1 );
+										}
+										else if ( currVal == null )
+										{
+											rvCubesToRemove.put( currName, 1 );
+										}
+											
+										
+										int sum = 0;
+										for( Integer numRem : rvCubesToRemove.values() )
+											sum += numRem;
+										
+										String[] reachableCities = new String[ rvCubesToRemove.size() ];
+										int j = 0;
+										for( String city : rvCubesToRemove.keySet() )
+										{
+											reachableCities[j] = city;
+											j++;
+										}
+											
+										int reachableCubes = getNumCubesOfColourInAdjCities( reachableCities, rvColour );
+										
+										if( sum > 4  || sum >= reachableCubes )
+										{
+											rapidVaccine = false;
+											useCityButtonStage = true;
+											for( String key : rvCubesToRemove.keySet() )
+											{
+												String message = "RapidVaccine/";
+												for( int i = 0; i < rvCubesToRemove.get( key ); i++ )
+													message += key + '/';
+												ClientComm.send( message ); 
+											}
+										}
+									}	
+								}
+								else if ( remoteTreat )
+								{
+									if( remoteTreated < 2 )
+									{
+										boolean[] diseasesPresent = new boolean[5];
+										
+										int numDiseasesPresent = 0;
+										for( DiseaseCubeInfo cube : curr.cubes )
+										{
+											if( !diseasesPresent[cube.getColourIndex() ] )
+											{
+												numDiseasesPresent++;
+												diseasesPresent[ cube.getColourIndex() ] = true;
+											}
+										}
+										
+										String[] diseases = new String[numDiseasesPresent];
+										
+										int j = 0;
+										for( int i = 0; i < diseasesPresent.length; i++ )
+										{
+											if( diseasesPresent[i] )
+											{
+												diseases[j] = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
+												j++;
+											}
+										}
+										
+										final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+										
+										Dialog rtDiag = new Dialog("Pick Disease Colour of cube to remove", skin ) {
+											@Override
+											protected void result(Object object) {
+												if( (boolean)object )
+												{
+													tempSkin.dispose();
+													remoteTreatCities[remoteTreated] = curr.getName();
+													remoteTreatDiseases[remoteTreated] = selector.getSelected();
+													remoteTreated++;
+													Gdx.input.setInputProcessor( buttonStage );
+													if( remoteTreated > 1 )
+													{
+														ClientComm.send("RemoteTreatment/" + remoteTreatCities[0] + '/' + remoteTreatDiseases[0] + '/' + remoteTreatCities[1] + '/' + remoteTreatDiseases[1] + '/' );
+														remoteTreated = 0;
+														remoteTreatCities = null;
+														remoteTreatDiseases = null;
+														remoteTreat = false;
+														useCityButtonStage = false;
+													}
+												}
+												Gdx.input.setInputProcessor( buttonStage );
+											}
+										};
+										selector.setItems( diseases );
+										rtDiag.getContentTable().add( selector );
+										rtDiag.button( "Select", true );
+										rtDiag.button( "Cancel", false );
+										rtDiag.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
+								}
 								else
 								{
 									// TODO: Implement highlight all connections between cities
@@ -1442,9 +2068,77 @@ public class GameScreen implements Screen {
 								}
 							}
 							else {
-								String cityName = curr.getName();
-								ClientComm.send("Drive/" + cityName);
-								// IMPLEMENT Call Drive( CityName ) on Server
+								if( !specialOrders )
+								{
+									String cityName = curr.getName();
+									ClientComm.send("Drive/" + cityName);
+									// IMPLEMENT Call Drive( CityName ) on Server
+								}
+								else
+								{
+									int numViable = 0;
+									for( CityNode adj : curr.connectedCities )
+									{
+										if( adj.getName().equals( currentPlayer.getCity() ) )
+										{
+											numViable++;
+										}
+										
+										if( adj.getName().equals( lookupPlayer( specialOrderPlayer ).getCity() ) )
+										{
+											numViable++;
+										}
+									}
+									
+									String[] viablePlayers = new String[ numViable ];
+									int j = 0;
+									for( CityNode adj : curr.connectedCities )
+									{
+										if( adj.getName().equals( currentPlayer.getCity() ) )
+										{
+											viablePlayers[j] = currentPlayer.getName();
+											j++;
+										}
+										
+										if( adj.getName().equals( lookupPlayer( specialOrderPlayer ).getCity() ) )
+										{
+											viablePlayers[j] = specialOrderPlayer;
+											j++;
+										}
+									}
+									
+									final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+									selector.setItems( viablePlayers );
+									
+									Dialog soDiag = new Dialog( "Pick player to move to " + curr.getName(), skin ) {
+										@Override
+										protected void result(Object object) {
+											if( (boolean)object )
+											{
+												String selected = selector.getSelected();
+												tempSkin.dispose();
+												
+												if( currentPlayer.getName().equals( selected ) )
+												{
+													String cityName = curr.getName();
+													ClientComm.send("Drive/" + cityName);
+												}
+												else
+												{
+													String cityName = curr.getName();
+													ClientComm.send("SpecialOrdersMove/" + selected + '/' + cityName + '/' );
+												}
+											}
+											Gdx.input.setInputProcessor( buttonStage );
+										};
+									};
+									soDiag.getContentTable().add( selector );
+									soDiag.button( "Select", true );
+									soDiag.button( "Cancel", false );
+									soDiag.show( dialogStage );
+									Gdx.input.setInputProcessor( dialogStage );
+								}
 							}
 						}
 						waitForButton = false;
@@ -1471,6 +2165,7 @@ public class GameScreen implements Screen {
 			cityLabel.getStyle().fontColor = Color.WHITE;
 		}
 	}
+	
 
 	static boolean playerHasCityCard( PlayerInfo player, String CardName )
 	{
@@ -1881,7 +2576,13 @@ public class GameScreen implements Screen {
 							
 							for( PlayerCardInfo card : hand )
 							{
-								cardNumByColor[ DiseaseColour.lookupColourByName( lookupCity(card.getName()).getColour() ).ordinal() ]++;
+								CityNode city = lookupCity(card.getName());
+								if( city == null)
+									continue;
+								
+								String colourName = city.getColour();
+								if( colourName != null && colourName.equals("") )
+									cardNumByColor[ DiseaseColour.lookupColourByName( colourName  ).ordinal() ]++;
 							}
 							
 							String diseaseName = "";
@@ -1914,6 +2615,9 @@ public class GameScreen implements Screen {
 								int handIdx = 0;
 								for( final PlayerCardInfo card : hand )
 								{
+									if ( lookupCity(card.getName()) == null )
+										continue;
+									
 									if( lookupCity(card.getName()).getColour().equalsIgnoreCase( diseaseName ) )
 									{
 										possibleSelections.add( card );
@@ -1948,10 +2652,10 @@ public class GameScreen implements Screen {
 							        button.addListener( new ChangeListener() {
 										@Override
 										public void changed(ChangeEvent event, Actor actor) {
-											if( waitForButton )
+											if( !waitForButton )
 											{	
 												waitForButton = true;
-												if( ((Button)actor).isChecked() )
+												if( !((Button)actor).isChecked() )
 												{
 													for( int i = 0; i < selections.size(); i++ )
 													{
@@ -1961,7 +2665,7 @@ public class GameScreen implements Screen {
 															break;
 														}
 													}
-													cardsToSelect--;
+													cardsToSelect++;
 												}
 												else
 												{
@@ -2183,7 +2887,10 @@ public class GameScreen implements Screen {
 			            				dialogStage.addActor(discardPrompt);
 			            				Gdx.input.setInputProcessor(dialogStage);
 			            			}
-			        				Gdx.input.setInputProcessor( dialogStage );
+			            			else
+			            			{
+				        				Gdx.input.setInputProcessor( buttonStage );
+			            			}
 			            			waitForButton = false;
 			            		}
 			            	};
@@ -2351,7 +3058,8 @@ public class GameScreen implements Screen {
 						    					epiDialog.button( "Cancel", false );
 						    					epiDialog.show( dialogStage );
 			    							}
-					    					Gdx.input.setInputProcessor( dialogStage );
+			    							else
+			    								Gdx.input.setInputProcessor( buttonStage );
 			    						}
 			    					};
 			    					epiDialog.getContentTable().add( selectBox );
@@ -2413,7 +3121,25 @@ public class GameScreen implements Screen {
 					selections.clear();
 					possibleSelections.clear();
 					ClientComm.send( message );
+					showCardSelectAction = "";
 				}
+			} break;
+			
+			case( "Forecast" ):
+			{
+				if( cardsToSelect < 1 )
+				{
+					showCardSelectStage = false;
+					Gdx.input.setInputProcessor( buttonStage );
+					String message = "ForecastResponse/";
+					for( String card : forecastSelections )
+						message += card;
+					
+					forecastSelections.clear();
+					possibleForecastSelections.clear();
+					ClientComm.send( message );
+					showCardSelectAction = "";
+					}
 			} break;
 		}
 	}
@@ -2564,6 +3290,8 @@ public class GameScreen implements Screen {
 			cardSelectStage.draw();
 			cardSelectStage.act();
 		}
+		
+		displayRapidVaccineNumbers();
 	}
 
 	@Override
@@ -2797,6 +3525,36 @@ public class GameScreen implements Screen {
 		colourToBeDrawn.dispose();
 	}
 
+	
+	void displayRapidVaccineNumbers()
+	{
+		if( !rapidVaccine )
+			return;
+		
+		if( rvCubesToRemove == null )
+			return;
+		
+		if( rvCubesToRemove.size() == 0 )
+			return;
+
+		rvFontBack.setColor( Color.WHITE );
+		rvFontBack.getData().setScale( 2.3f );
+		
+		rvFontFront.setColor( Color.BLACK );
+		rvFontFront.getData().setScale( 2.0f );
+		for( String key : rvCubesToRemove.keySet() )
+		{
+			CityNode city = lookupCity( key );
+			float x = city.getXInWindowCoords( windWidth ) + nodeSize / 2 -10f;
+			float y = city.getYInWindowCoords( windHeight ) + nodeSize / 2 + 15f;
+			
+			batch.begin();
+			rvFontBack.draw( batch, String.valueOf( rvCubesToRemove.get( key ) ), x, y );
+			rvFontFront.draw( batch, String.valueOf( rvCubesToRemove.get( key ) ), x, y );
+			batch.end();
+		}
+	}
+	
 	public static int getNumPlayers()
 	{
 		int num = 0;
@@ -2826,6 +3584,28 @@ public class GameScreen implements Screen {
 		return -1;
 	}
 
+	public static int getNumCubesOfColourInAdjCities( String[] cities, String colour )
+	{
+		int numCubes = 0;
+		
+		HashSet<String> reachableCities = new HashSet<String>();
+		for( String cityName : cities )
+		{
+			if( cityName != null )
+			{
+				reachableCities.add( cityName );
+				for( CityNode adjCity : lookupCity( cityName ).connectedCities )
+					reachableCities.add( adjCity.getName() );
+			}
+		}
+		
+		for( String city : reachableCities )
+			numCubes += lookupCity( city ).getCubesByColor( colour ).size();
+		
+		return numCubes;
+	}
+	
+	
 	public static PlayerInfo lookupPlayer( String name )
 	{
 		for ( PlayerInfo player : players )
@@ -2839,6 +3619,7 @@ public class GameScreen implements Screen {
 		return null;
 	}
 
+	
 	public static DiseaseColour lookupDisease( String name )
 	{
 		switch( name )
@@ -2860,6 +3641,40 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	public static int getRemCubesByName( String name )
+	{
+		int remCubes = 0;
+		
+		if( name.equalsIgnoreCase( "blue" ) )
+			remCubes = remBlueCubes;
+		else if( name.equalsIgnoreCase( "black" ) )
+			remCubes = remBlackCubes;
+		else if( name.equalsIgnoreCase( "yellow" ) )
+			remCubes = remYellowCubes;
+		else if( name.equalsIgnoreCase( "red" ) )
+			remCubes = remRedCubes;
+		
+		return remCubes;
+	}
+	
+	public static int getMaxCubesByColour( String name )
+	{
+		int maxCubes = 0;
+		
+		if( name.equalsIgnoreCase( "blue" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "black" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "yellow" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "red" ) )
+			maxCubes = 24;
+		else if( name.equalsIgnoreCase( "purple" ) )
+			maxCubes = 12;
+		
+		return maxCubes;	
+	}
+	
 	public static void requestConsent( String message )
 	{
 		Dialog consentRequest = new Dialog( message, skin ){
@@ -3107,6 +3922,9 @@ public class GameScreen implements Screen {
 				}
 			}
 		}
+		
+		specialOrders = false;
+		specialOrderPlayer = null;
 	}
 	
 	public static void NotifyTurnTroubleshoorter( String PlayerName, final String[] InfectionCards )
@@ -3159,6 +3977,9 @@ public class GameScreen implements Screen {
 				}
 			}
 		}
+
+		specialOrders = false;
+		specialOrderPlayer = null;
 	}
 
 	public static void StartGame()
@@ -3200,10 +4021,38 @@ public class GameScreen implements Screen {
 		lookupCity( CityName ).putResearchStation();
 	}
 	
-	public static void CureDisease( String DiseaseColor )
+	public static void CureDisease( final String DiseaseColor )
 	{
 		diseaseStatuses.remove( DiseaseColor );
+		
 		diseaseStatuses.put( DiseaseColor, DiseaseStatus.CURED );
+		
+		for( PlayerCardInfo card : clientPlayer.hand )
+		{
+			if( card.getName().equalsIgnoreCase( "RapidVaccine") && getRemCubesByName( DiseaseColor) < getMaxCubesByColour( DiseaseColor ) )
+			{
+				Dialog rvPrompt = new Dialog("Do you want to play Rapid Vaccine?", skin ) {
+					@Override
+					protected void result(Object object) {
+						if( (boolean)object )
+						{
+							rapidVaccine = true;
+							rvColour = DiseaseColor;
+							useCityButtonStage = true;
+							rvCubesToRemove = new HashMap<String,Integer>();
+						}
+						
+						
+						Gdx.input.setInputProcessor( buttonStage );
+					};
+				};
+				rvPrompt.button( "Okay", true );
+				rvPrompt.button( "No", false );
+				rvPrompt.show( dialogStage );
+				Gdx.input.setInputProcessor( dialogStage );
+				break;
+			}
+		}
 	}
 	
 	public static void EradicateDisease( String DiseaseColor )
@@ -3240,4 +4089,250 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
         gameEnd.show( dialogStage );
 	}
+
+	public static void Forecast( String[] InfectionCards )
+	{
+		possibleForecastSelections = new ArrayList<String>();
+		forecastSelections = new ArrayList<String>();
+		for( final String infectionCard : InfectionCards )
+			possibleForecastSelections.add( infectionCard );
+		
+		float cardSizeX = playerCardXSize*1.5f;
+		float cardSizeY = playerCardYSize*1.5f;
+		float cardOffset = playerCardXOffset*1.5f;
+		float cardPosX = windWidth / 2 - possibleForecastSelections.size()*( cardSizeX + cardOffset ) / 2; 
+		float cardPosY = windHeight / 2 - cardSizeY / 2;
+		for( final String card : possibleForecastSelections )
+		{
+			Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card ) ];
+			TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+			final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+			
+			Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card ) ];
+			TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
+			final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
+			
+			ButtonStyle cityButtonStyle = new ButtonStyle();
+			cityButtonStyle.up			= Draw_cardTexture;
+			cityButtonStyle.down		= Draw_cardTexture;
+			cityButtonStyle.checked		= Draw_selectedCardTexture;
+			
+	        button = new Button( cityButtonStyle );
+	        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
+	        
+	        cardSelectStage.addActor( button );
+	        
+	        button.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{	
+						waitForButton = true;
+						if( !((Button)actor).isChecked() )
+						{
+							for( int i = 0; i < selections.size(); i++ )
+							{
+								if( selections.get(i).getName().equals( card ) )
+								{
+									selections.remove( i );
+									break;
+								}
+							}
+							cardsToSelect++;
+						}
+						else
+						{
+							forecastSelections.add(card);
+							cardsToSelect--;
+						}
+						waitForButton = false;
+					}
+				}
+			});
+	        cardPosX += cardSizeX + cardOffset;
+		}
+		showCardSelectStage = true;
+		Gdx.input.setInputProcessor( cardSelectStage );
+		cardsToSelect = InfectionCards.length;
+		showCardSelectAction = "Forecast";
+	}
+
+	public static void ReexaminedResearch()
+	{
+		String[] cards = new String[ playerDiscardPile.size() ];
+		for( int i = 0; i < cards.length; i++ )
+			cards[i] = playerDiscardPile.get( i );
+		
+		final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json") );
+		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+		selector.setItems( cards );
+		
+		Dialog rrDiag = new Dialog("Select card to draw from discard", skin ){
+			@Override
+			protected void result(Object object) {
+				ClientComm.send( "ReexaminedResearchResponse/" + selector.getSelected() );
+				Gdx.input.setInputProcessor( buttonStage );
+				tempSkin.dispose();
+			}
+		};
+		rrDiag.getContentTable().add( selector );
+		rrDiag.button( "Select" );
+		rrDiag.show( dialogStage );
+		Gdx.input.setInputProcessor( dialogStage );
+	}
+
+	public static void SpecialOrders( String PlayerName )
+	{
+		if( PlayerName != null )
+		{
+			dialogStage.clear();
+			specialOrderPlayer = PlayerName;
+			specialOrders = true;
+			
+			Dialog soDiag = new Dialog("You now have control of " + PlayerName, skin ){
+				@Override
+				protected void result(Object object) {
+					Gdx.input.setInputProcessor( buttonStage );
+				}
+			};
+			
+			soDiag.button("Okay");
+			soDiag.show( dialogStage );
+			Gdx.input.setInputProcessor( dialogStage );
+		}
+		else
+		{
+			dialogStage.clear();
+			specialOrderPlayer = null;
+			specialOrders = false;
+			
+			Dialog soDiag = new Dialog("Consent not given", skin ){
+				@Override
+				protected void result(Object object) {
+					Gdx.input.setInputProcessor( buttonStage );
+				}
+			};
+			
+			soDiag.button("Okay");
+			soDiag.show( dialogStage );
+			Gdx.input.setInputProcessor( dialogStage );
+		}
+	}
+
+	public static void NewAssignment( String[] Roles )
+	{
+		final Skin tempSkin = new  Skin( Gdx.files.internal( "skin/uiskin.json") );
+		final SelectBox<String> selector = new SelectBox<String>(tempSkin);
+		Dialog naDiag = new Dialog( "Select New Role", skin ) {
+			@Override
+			protected void result(Object object) {
+				if( (boolean)object )
+				{
+					String selected = selector.getSelected();
+					tempSkin.dispose();
+					changeRole( selected );
+				}
+				Gdx.input.setInputProcessor( buttonStage );
+			}
+		};
+		selector.setItems( Roles );
+		naDiag.getContentTable().add( selector );
+		naDiag.button( "Select", true );
+		naDiag.button( "Cancel", false );
+		naDiag.show( dialogStage );
+		Gdx.input.setInputProcessor( dialogStage );
+	}
+	
+	public static void changeRole( String role )
+	{
+		currentPlayer.role = role;
+		currentPlayer.roleActionUsed = false;
+		switch( role )
+		{
+			case "ContingencyPlanner":
+			{
+			} break;
+			
+			case "OperationsExpert":
+			{
+			} break;
+
+			case "QuarantineSpecialist":
+			{
+			} break;
+			
+			case "Medic":
+			{
+			} break;
+			
+			case "Scientist":
+			{
+				currentPlayer.cardsToCure = 4;
+			} break;
+			
+			case "Troubleshooter":
+			{
+			} break;
+			
+			case "ContainmentSpecialist":
+			{
+			} break;
+			
+			case "Archivist":
+			{
+			} break;
+			
+			case "Epidemiologist":
+			{
+			} break;
+			
+			case "Generalist":
+			{
+				if( currentPlayer == clientPlayer && actionsRemaining != 0)
+					actionsRemaining++;
+			} break;
+			
+			case "Colonel":
+			{
+				//TODO: See if anything should be done here
+			} break;
+			
+			case "Dispatcher":
+			{
+			} break;
+			
+			case "Researcher":
+			{
+			} break;
+			
+			case "FieldOperative":
+			{
+			} break;
+		}
+		buttonGroup.clear();
+		createActionButtons();
+		initHandButtonStage();
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

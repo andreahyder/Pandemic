@@ -45,6 +45,17 @@ public class CityNode {
 		return cubes;
 	}
 	
+	public ArrayList<DiseaseCubeInfo> getCubesByColor( String color )
+	{
+		ArrayList<DiseaseCubeInfo> cubesOfColor = new ArrayList<DiseaseCubeInfo>();
+		
+		for( DiseaseCubeInfo cube : cubes )
+			if( DiseaseColour.getDiseaseName( cube.colour ).equalsIgnoreCase( color ) )
+				cubesOfColor.add( cube );
+		
+		return cubesOfColor;
+	}
+	
 	public ArrayList<CityNode> getConnectedCities()
 	{
 		return connectedCities;
