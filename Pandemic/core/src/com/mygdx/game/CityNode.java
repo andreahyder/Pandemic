@@ -93,7 +93,7 @@ public class CityNode {
 	
 	public boolean[] getDiseaseColours()
 	{
-		boolean[] coloursPresent = { false, false , false, false };
+		boolean[] coloursPresent = { false, false , false, false, false };
 		for ( DiseaseCubeInfo cube : cubes )
 		{
 			coloursPresent[ cube.getColourIndex() ] |= true;

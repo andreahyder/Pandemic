@@ -369,7 +369,7 @@ public class GameScreen implements Screen {
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
     	players[0].role = "Epidemiologist";
-    	//players[0].setCity( "Tokyo" );
+    	players[0].setCity( "Tokyo" );
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -2303,7 +2303,7 @@ public class GameScreen implements Screen {
 		                    }
 		                };
 		                
-		        		for( int i = 0; i < 4; i++ )
+		        		for( int i = 0; i < 5; i++ )
 		        		{
 		        			if ( coloursPresent[i] )
 		        			{
