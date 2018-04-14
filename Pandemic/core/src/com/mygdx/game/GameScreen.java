@@ -51,7 +51,7 @@ public class GameScreen implements Screen {
 	final static float nodeSize = 17.50f;
 	final static float pawnXSize = 15.0f;
 	final static float pawnYSize = pawnXSize * 2f;
-	final static float cubeSize = 25.f;
+	final static float cubeSize = 35.f;
 	final static float cubeOrbitOffset = 2.5f;
 	final static float cubeOrbitRate = 0.5f;
 	final static float actionButtonXSize = 200f;
@@ -381,11 +381,11 @@ public class GameScreen implements Screen {
     	
     	players[2] = new PlayerInfo( "Carrie", false );
     	players[2].colour = PawnColour.values()[2];
-    	players[2].role = "Operations Expert";
+    	players[2].role = "Bioterrorist";
     	
     	players[3] = new PlayerInfo( "Jarry", false );
     	players[3].colour = PawnColour.values()[3];
-    	players[3].role = "Containment Specialist";
+    	players[3].role = "ContainmentSpecialist";
     	
     	players[4] = new PlayerInfo( "Agarry", false );
     	players[4].colour = PawnColour.values()[4];
@@ -3516,7 +3516,67 @@ public class GameScreen implements Screen {
         createArchivistButton();
         
         createEpidemiologistButton();
+        
+        createCaptureAction();
 	}
+	
+	public static void createCaptureAction() 
+	{
+		PlayerInfo btPlayer = null;
+		for( int i = 0; i < players.length; i++ )
+		{
+			if( players[i] != null )
+			{
+				if( players[i].role.equalsIgnoreCase( "Bioterrorist" ) )
+				{
+					btPlayer = players[i];
+					break;
+				}
+			}
+		}
+		
+		if( btPlayer == null ) //No Bioterrorist
+			return;
+		
+		final PlayerInfo bt = btPlayer;
+		
+		TextButton endTurn = new TextButton( "Capture", skin );
+        endTurn.addListener( new ChangeListener() {
+            @Override
+			public void changed(ChangeEvent event, Actor actor) {
+            	if( !waitForButton && !clientPlayer.roleActionUsed )
+            	{
+            		waitForButton = true;
+            		if( currentPlayer == clientPlayer )
+            		{
+            			if( bt.getCity().equals( currentPlayer.getCity() ) )
+            			{
+            				ClientComm.send("Capture/");
+            			}
+            			else
+            			{
+            				Dialog ctDiag = new Dialog( "Bioterrorist not in the same city as you", skin ){
+            					@Override
+            					protected void result(Object object) {
+            						Gdx.input.setInputProcessor( buttonStage );
+            					}
+            				};
+            				ctDiag.button("Show");
+            				ctDiag.show( dialogStage );
+            				Gdx.input.setInputProcessor( dialogStage );
+            			}
+            		}	
+	                waitForButton = false;	                
+            	}
+			}
+        });
+        endTurn.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+        nextActionButtonHeight -= actionButtonYSize*1.125f;
+        buttonGroup.addActor( endTurn );
+		
+		
+	}
+	
 	
 	static void createOperationExpertButton()
 	{
@@ -5177,7 +5237,12 @@ public class GameScreen implements Screen {
 	{
 		extraMoveActionUsed = Boolean.valueOf( IsUsed );
 	}
+	public static void Capture()
+	{
+		isCaptured = true;
+	}
 }
+
 
 
 
