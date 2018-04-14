@@ -10,6 +10,8 @@ import java.net.*;
 
 public class Main {
 	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException{
+		
+		System.out.println((int)(8.5*1));
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
@@ -32,4 +34,8 @@ public class Main {
 	    //out2.println("Print/plzwork");
 	    
 	}
+}
+
+enum test{
+	a,b,c
 }

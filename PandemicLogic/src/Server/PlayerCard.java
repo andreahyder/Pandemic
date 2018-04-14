@@ -6,11 +6,11 @@ public class PlayerCard {
 	String name;
 	
 	PlayerCard(City c, Type t, String n){
-		if(t.compareTo(type.City) == 0) {
+		if(t.compareTo(Type.City) == 0) {
 			city = c;
 			type = t;
 		}
-		else if(t.compareTo(type.Event) == 0 || t.compareTo(type.Virulent) == 0 || t.compareTo(type.Mutation) == 0) {
+		else if(t.compareTo(Type.Event) == 0 || t.compareTo(Type.Virulent) == 0 || t.compareTo(Type.Mutation) == 0) {
 			name = n;
 			type = t;
 		}

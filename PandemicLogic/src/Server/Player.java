@@ -31,8 +31,18 @@ public class Player {
 		}
 	}
 	
-	void givePawn(City c){
-		pawn = new PawnQuarantineSpecialist(this, c);
+	void givePawn(Pawn p, City c){
+		if(pawn == null) {
+			pawn = p;
+			pawn.player = this;
+			pawn.city = c;
+			if(pawn.city != null) {
+				c.pawns.add(p);
+			}
+		}
+		else {
+			
+		}
 	}
 	
 	

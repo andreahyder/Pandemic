@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class GameManager {
-	public static ArrayList<Game> games = new ArrayList<Game>();
-	//public static Game game = new Game();
+	//public static ArrayList<Game> games = new ArrayList<Game>();
+	public static Game game;
 	public static ArrayList<Player> playerList = new ArrayList<Player>();
 	
 	GameManager(){
@@ -31,7 +31,7 @@ public class GameManager {
 	
 	public static void ChangeName(String indexs, String newname) {
 		int index = Integer.parseInt(indexs);
-		Player t1 = games.get(0).getPlayer(index);
+		Player t1 = game.getPlayer(index);
 		
 		System.out.println(t1.username + "changed their name to " + newname);
 		
@@ -42,22 +42,91 @@ public class GameManager {
 		int index = Integer.parseInt(indexs);
 		Player t1 = playerList.get(index);
 		
-		games.add(new Game());
-		games.get(0).players.add(t1);
-		t1.givePawn(games.get(0).getCity("Atlanta"));
+		game = new Game();
+		game.players.add(t1);
 		
+		//TODO send playerlist to this guy
 		//TODO send lobby to this guy
-		//TODO send list of games to all players except this guy
 	}
 	
-	public static void JoinGame(String indexs, String indexg) {
+	public static void JoinGame(String indexs) {
 		int index = Integer.parseInt(indexs);
-		int gindex = Integer.parseInt(indexg);
 		Player t1 = playerList.get(index);
-		games.get(gindex).players.add(t1);
-		t1.givePawn(games.get(0).getCity("Atlanta"));
+		game.players.add(t1);
 		
+		//TODO send playerlist to everyone in game
 		//TODO send lobby to this guy
+	}
+	
+	public static void ToggleSetting(String[] args) {
+		switch(args[2]) {
+		case "difficulty":
+			int a = Integer.parseInt(args[3]);
+			game.difficulty = a;
+			
+			//TODO update setting for all players
+			break;
+		case "playerNumber":
+			int b = Integer.parseInt(args[3]);
+			game.maxPlayer = b;
+			
+			//TODO update
+			break;
+		case "otb":
+			if(args[3].equals("true")) {
+				game.OTB = true;
+				
+				//TODO update
+			}
+			else {
+				game.OTB = false;
+				
+				//TODO update
+			}
+			break;
+		case "virulentStrain":
+			if(args[3].equals("true")) {
+				game.Vir = true;
+				
+				//TODO update
+			}
+			else {
+				game.Vir = false;
+				
+				//TODO update
+			}
+			break;
+		case "mutation":
+			if(args[3].equals("true")) {
+				game.Mut = true;
+				
+				//TODO update
+			}
+			else {
+				game.Mut = false;
+				
+				//TODO update
+			}
+			break;
+		case "bio":
+			if(args[3].equals("true")) {
+				game.Bio = true;
+				
+				//TODO update
+			}
+			else {
+				game.Bio = false;
+				
+				//TODO update
+			}
+			break;
+		case "bioPlayer":
+			int i = Integer.parseInt(args[3]);
+			game.BT = i;
+			
+			//TODO update
+			break;
+		}
 	}
 	
 	//when a player is ready to start the game
@@ -70,73 +139,9 @@ public class GameManager {
 		
 		if(game.allReady()) {
 			System.out.println("All players ready. Game started.");
-			
-			games.get(0).start();
-			
-			game.stage = Stage.Action;
-			
-			String tmes = "";
-			for(Player p: game.players){
-				tmes += p.username;
-				tmes += ",";
-			}
-			String mes = "StartGame/" + tmes + "/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes, i);
-			}
-			
-			int numcard = 7;
-			for(Player p:game.players) {
-				game.drawCard(p, numcard);
-			}
-			Collections.shuffle(game.playerDeck);
-			//PlayerCard tempp = game.playerDeck.remove(game.playerDeck.size()-1);
-			//PlayerCard tempp2 = game.playerDeck.remove(game.playerDeck.size()-1);
-			//game.playerDeck.add(5, tempp);
-			//game.playerDeck.add(0, tempp2);
-			
-			for(int i = 0; i < 3; i++) {
-				InfectionCard t2 = game.infectionDeck.remove(0);
-				game.infectCity(t2, 3);
-			}
-			for(int i = 0; i < 3; i++) {
-				InfectionCard t2 = game.infectionDeck.remove(0);
-				game.infectCity(t2, 2);
-			}
-			for(int i = 0; i < 3; i++) {
-				InfectionCard t2 = game.infectionDeck.remove(0);
-				game.infectCity(t2, 1);
-			}
-			
-			mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes, i);
-			}
+			game.start();
 		}
 	}
-	
-	//start the game, distribute cards, infect initial cities
-	/*void StartGame() {
-		game.stage = Stage.Action;
-		int numcard = 2;
-		for(Player p:game.players) {
-			game.drawCard(p, numcard);
-		}
-		Collections.shuffle(game.playerDeck);
-		
-		for(int i = 0; i < 3; i++) {
-			InfectionCard t1 = game.infectionDeck.remove(0);
-			game.infectCity(t1, 3);
-		}
-		for(int i = 0; i < 3; i++) {
-			InfectionCard t1 = game.infectionDeck.remove(0);
-			game.infectCity(t1, 2);
-		}
-		for(int i = 0; i < 3; i++) {
-			InfectionCard t1 = game.infectionDeck.remove(0);
-			game.infectCity(t1, 1);
-		}
-	}*/
 	
 	//drive
 	//color is sent by Client when the MobileHospital flag is True. "none" otherwise
@@ -170,6 +175,7 @@ public class GameManager {
 		City t2 = game.getCity(city); 
 		t1.pawn.move(t2, false);
 		PlayerCard t3 = t1.hand.remove(t1.getCard(city));
+		
 		game.playerDiscardPile.add(t3);
 		
 		if(game.mobileHospitalActive){
@@ -193,6 +199,35 @@ public class GameManager {
 		//ServerComm.sendMessage(mes, game.turn);
 	}
 	
+	//charterFlight
+	public static void CharterFlight(String city, String color) {
+		Player t1 = game.getCurrentPlayer();
+		PlayerCard t3 = t1.hand.remove(t1.getCard(t1.pawn.city.name));
+		City t2 = game.getCity(city); 
+		t1.pawn.move(t2, false);
+		
+		game.playerDiscardPile.add(t3);
+		
+		if(game.mobileHospitalActive){
+			Color c = Color.valueOf(color);
+			t1.pawn.treat(c, true);
+		}
+		
+		System.out.println(t1.username + " chartered a flight to " + city + ".");
+		
+		String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
+		String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t3.name + "/true/";
+		for(int i = 0; i < game.players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+			ServerComm.sendMessage(mes2, i);
+		}
+		
+		mes = "DecrementActions/";
+		for(int i = 0; i < game.players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+		}
+	}
+	
 	//treatDisease
 	public static void TreatDisease(String color) {
 		int count = 1;
@@ -214,12 +249,20 @@ public class GameManager {
 	}
 	
 	//shareKnowledge 
-	public static void ShareKnowledge(String target) {
+	public static void ShareKnowledge(String target, String city) {
+		Boolean researcher = !city.equals("none");
+		
 		Player t1 = game.getCurrentPlayer();
 		Player t2 = game.getPlayer(target);
 		int index = game.players.indexOf(t2);
 		
-		ServerComm.sendMessage("AskForConsent/",index);
+		if(researcher) {
+			ServerComm.sendMessage("AskForConsent/none/",index);
+		}
+		else {
+			String mes = "AskForConsent/" + city + "/";
+			ServerComm.sendMessage(mes,index);
+		}
 		while(ServerComm.response == null) {
 			try {
 				Thread.sleep(1);
@@ -234,6 +277,9 @@ public class GameManager {
 		
 		if(consent) {
 			String t3 = t1.pawn.city.name;
+			if(researcher) {
+				t3 = city;
+			}
 			int a = t1.getCard(t3);
 			int b = t2.getCard(t3);
 			if(a != -1) {
@@ -271,7 +317,7 @@ public class GameManager {
 			}
 		}
 		else {
-			
+			//TODO send message to guy saying he got denied
 		}
 	}
 	
@@ -279,13 +325,15 @@ public class GameManager {
 	public static void EndTurn(){
 		Player t1 = game.getCurrentPlayer();
 		t1.pawn.actions = 4;
+		if(t1.pawn.role.compareTo(Role.Gen) == 0) {
+			t1.pawn.actions = 5;
+		}
 		
 		game.drawCard(t1, 2);
 		
 		while(t1.hand.size() > 7) {
 			
 			ServerComm.sendMessage("AskForDiscard/",game.turn);
-			int count = 0;
 			while(ServerComm.response == null) {
 				try {
 					Thread.sleep(1);
@@ -338,43 +386,6 @@ public class GameManager {
 		}
 	}
 	
-	//can be called when game stage is Infection. Changes stage to Action at the end, and changes turn to the next player.
-	/*void BeginInfection() {
-		for(int i = 0; i < game.infectionRate[game.infectionCount]; i++) {
-			InfectionCard t1 = game.infectionDeck.remove(0);
-			game.infectCity(t1, 1);
-		}
-		
-		game.stage = Stage.Action;
-		if(game.turn == game.players.size()-1) {
-			game.turn = 0;
-		}
-		else {
-			game.turn++;
-		}
-	}*/
-	
-
-	
-	//helper function to return a player from a name string
-	/*public static Player getPlayer(String s) {
-		int i = 0;
-		Boolean found = false;
-		while(i < playerList.size() && !found) {
-			if(playerList.get(i).username.matches(s)) {
-				found = true;
-			}
-			else{
-				i++;
-			}
-		}
-		if(found) {
-			return playerList.get(i);
-		}
-		else {
-			return null;
-		}
-	}*/
 	public static void Event(String[] args){
 		switch (args[2]){
 		//params PlayerIndex/EventAction/Airlift/targetPlayer/targetCity
@@ -428,13 +439,35 @@ public class GameManager {
 			City targetCity = game.getCity(args[3]);
 			if (args[4].equals("none")){
 				targetCity.addResearchStation();
+				
+				//TODO send info to clients
 			}
 			else{
 				City cityToRemoveRSFrom = game.getCity(args[4]);
 				cityToRemoveRSFrom.removeResearchStation();
 				targetCity.addResearchStation();
+				
+				//TODO send info to clients
 			}
-			//TODO send info to clients
+			break;
+		
+		//params: PlayerIndex/EventAction/LocalInitiative/TargetCity/RemoveCity
+		case "LocalInitiative":
+			City t1 = game.getCity(args[3]);
+			if(args[4].equals("none")) {
+				t1.quarantine = 2;
+				game.quarantines--;
+				
+				//TODO update clients
+			}
+			else {
+				City t2 = game.getCity(args[4]);
+				t2.quarantine = 0;
+				t1.quarantine = 2;
+				
+				//TODO update clients
+			}
+			
 			break;
 		
 		case "MobileHospital":

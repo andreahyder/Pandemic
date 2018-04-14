@@ -6,12 +6,14 @@ public class Pawn {
 	Player player;
 	City city;
 	
-	Pawn(Player p, City c, Role r){
+	Pawn(Role r){
 		role = r;
 		actions = 4;
-		player = p;
-		city = c;
-		c.pawns.add(this);
+		if(role.compareTo(Role.Gen) == 0) {
+			actions = 5;
+		}
+		player = null;
+		city = null;
 	}
 	
 	void move(City c, Boolean free) {

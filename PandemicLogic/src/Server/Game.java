@@ -1,8 +1,12 @@
 package Server;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Random;
 
 public class Game {
+	Random rand = new Random();
+	
 	ArrayList<Player> players;
 	ArrayList<Pawn> pawns;
 	ArrayList<City> cities;
@@ -20,10 +24,12 @@ public class Game {
 	Boolean Vir;
 	Boolean Mut;
 	Boolean Bio;
+	int BT;
 	
 	boolean loaded;
 	int maxPlayer;
 	int turn;
+	int Bturn;
 	Stage stage;
 	static int[] infectionRate = new int[] {2,2,2,3,3,4,4};
 	int infectionCount;
@@ -33,9 +39,11 @@ public class Game {
 	
 	//initializes game, initializes alot of things.
 	Game(){
+		BT = -1;
 		maxPlayer = 5;
 		loaded = false;
 		turn = 0;
+		Bturn = 0;
 		stage = Stage.PreGame;
 		infectionCount = 0;
 		outbreakCount = 0;
@@ -43,10 +51,14 @@ public class Game {
 		pawns = new ArrayList<Pawn>();
 		cities = new ArrayList<City>();
 		diseases = new ArrayList<Disease>();
+		
+		//add basic diseases
 		diseases.add(new Disease("black"));
 		diseases.add(new Disease("blue"));
 		diseases.add(new Disease("red"));
 		diseases.add(new Disease("yellow"));
+		
+		//add all cities and connect them
 		for(String[] s:Vars.names) {
 			if(s[1].matches("black")) {
 				cities.add(new City(s[0],diseases.get(0),this));
@@ -67,6 +79,7 @@ public class Game {
 			}
 		}
 		
+		//add research station and quarantines
 		research = new ArrayList<ResearchStation>();
 		for(int i = 0; i < 6; i++) {
 			research.add(new ResearchStation());
@@ -75,15 +88,17 @@ public class Game {
 		
 		quarantines = 6;
 		
+		//add base cards to both decks
 		playerDeck = new ArrayList<PlayerCard>();
 		playerDiscardPile = new ArrayList<PlayerCard>();
 		infectionDeck = new ArrayList<InfectionCard>();
 		infectionDiscardPile = new ArrayList<InfectionCard>();
 		for(int i = 0; i < 48; i++) {
 			playerDeck.add(new PlayerCard(cities.get(i), Type.City, null));
-			infectionDeck.add(new InfectionCard(cities.get(i)));
+			infectionDeck.add(new InfectionCard(cities.get(i), Type.City));
 		}
 		Collections.shuffle(playerDeck);
+		Collections.shuffle(infectionDeck);
 	}
 	
 	Boolean allReady() {
@@ -93,91 +108,150 @@ public class Game {
 				y = false;
 			}
 		}
+		if(players.size() == 1) {
+			y = false;
+		}
 		return y;
 	}
 	
 	void start() {
-		int epi = difficulty + 4;
-		if(Vir) {
-			for(int i = 0; i < epi; i++) {
-				playerDeck.add(new PlayerCard(null, Type.Virulent, null));
-			}
-			Collections.shuffle(infectionDeck);
+		if(loaded) {
+			
 		}
 		else {
-			for(int i = 0; i < epi; i++) {
-				playerDeck.add(new PlayerCard(null, Type.Epidemic, null));
+			//add relevant pawns
+			pawns.add(new Pawn(Role.Bio));
+			pawns.add(new Pawn(Role.Col));
+			pawns.add(new Pawn(Role.ContP));
+			pawns.add(new Pawn(Role.Disp));
+			pawns.add(new Pawn(Role.Med));
+			pawns.add(new Pawn(Role.Op));
+			pawns.add(new Pawn(Role.Qua));
+			pawns.add(new Pawn(Role.Res));
+			pawns.add(new Pawn(Role.Sci));
+			
+			if(OTB) {
+				pawns.add(new Pawn(Role.Arch));
+				pawns.add(new Pawn(Role.ContS));
+				pawns.add(new Pawn(Role.Epi));
+				pawns.add(new Pawn(Role.Field));
+				pawns.add(new Pawn(Role.Gen));
+				pawns.add(new Pawn(Role.Troub));
 			}
-			Collections.shuffle(infectionDeck);
-		}
-		for(int i = 0; i < epi; i++) {
-			playerDeck.add(new PlayerCard(null, Type.Epidemic, null));
-		}
-		Collections.shuffle(infectionDeck);
-	}
-	
-	//return the current player
-	public Player getCurrentPlayer() {
-		return players.get(turn);
-	}
-	
-	//return a player with the specified name in the game
-	Player getPlayer(String s) {
-		int i = 0;
-		Boolean found = false;
-		while(i < players.size() && !found) {
-			if(players.get(i).username.matches(s)) {
-				found = true;
+			if(Bio) {
+				pawns.add(new Pawn(Role.Bio));
+				
 			}
-			else{
-				i++;
+			
+			//tell players game started, send player list to everyone
+			String tmes = "";
+			for(Player p: players){
+				tmes += p.username;
+				tmes += ",";
 			}
-		}
-		if(found) {
-			return players.get(i);
-		}
-		else {
-			return null;
-		}
-	}
-	
-	Player getPlayer(int i) {
-		for(Player p:players) {
-			if(p.ID == i) {
-				return p;
+			String mes = "StartGame/" + tmes + "/";
+			for(int i = 0; i < players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
 			}
-		}
-		return null;
-	}
-	
-	//return a city with the specified name in the game
-	public City getCity(String s){
-		int i = 0;
-		Boolean found = false;
-		while(i < cities.size() && !found) {
-			if(cities.get(i).name.matches(s)) {
-				found = true;
+			
+			//add event cards
+			if(OTB) {
+				for(int i = 0; i < (players.size()*2); i++) {
+					ArrayList<String> names = new ArrayList<String>(Arrays.asList(Vars.eventnames));
+					Collections.shuffle(names);
+					PlayerCard p = new PlayerCard(null, Type.Event, names.get(i));
+					playerDeck.add(p);
+				}
 			}
-			else{
-				i++;
+			else {
+				for(int i = 0; i < 6; i++) {
+					PlayerCard p = new PlayerCard(null, Type.Event, Vars.eventnames[i]);
+					playerDeck.add(p);
+				}
 			}
-		}
-		if(found) {
-			return cities.get(i);
-		}
-		else {
-			return null;
-		}
-	}
-	
-	//return the disease with the specified color
-	Disease getDisease(Color color) {
-		for(Disease d:diseases) {
-			if(d.color.equals(color)) {
-				return d;
+			Collections.shuffle(playerDeck);
+			
+			//deal cards
+			int numcard = 6 - players.size();
+			if(BT != -1) {
+				numcard++;
 			}
+			if(numcard > 4) {
+				numcard = 4;
+			}
+			
+			for(int i = 0; i < players.size(); i++) {
+				if(i != BT) {
+					drawCard(players.get(i), numcard);
+				}
+			}
+			Collections.shuffle(playerDeck);
+			
+			//setup mutation/bio
+			if(Mut) {
+				diseases.add(new Disease("purple"));
+				for(int i = 0; i < 3; i++) {
+					InfectionCard m = new InfectionCard(null, Type.Mutation);
+					infectionDiscardPile.add(m);
+				}
+				for(int i = 0; i < Vars.mutnames.length; i++) {
+					PlayerCard p = new PlayerCard(null, Type.Mutation, Vars.mutnames[i]);
+					playerDeck.add(p);
+				}
+				Collections.shuffle(playerDeck);
+			}
+			else if(Bio) {
+				diseases.add(new Disease("purple"));
+				players.get(BT).givePawn(getPawn("bio"), null);
+			}
+			
+			//setup epidemic/vir
+			int epi = difficulty + 4;
+			if(Vir) {
+				for(int i = 0; i < epi; i++) {
+					int r1 = i * (playerDeck.size()/epi);
+					int r2 = (i+1) * (playerDeck.size()/epi);
+					int r = rand.nextInt(r2-r1) + r1 + i;
+					PlayerCard p = new PlayerCard(null, Type.Virulent, null);
+					playerDeck.add(r,p);
+				}
+			}
+			else {
+				for(int i = 0; i < epi; i++) {
+					int r1 = i * (playerDeck.size()/epi);
+					int r2 = (i+1) * (playerDeck.size()/epi);
+					int r = rand.nextInt(r2-r1) + r1 + i;
+					PlayerCard p = new PlayerCard(null, Type.Epidemic, null);
+					playerDeck.add(r,p);;
+				}
+			}
+			
+			//place initial diseases
+			for(int i = 0; i < 3; i++) {
+				InfectionCard t2 = infectionDeck.remove(0);
+				infectCity(t2, 3);
+			}
+			for(int i = 0; i < 3; i++) {
+				InfectionCard t2 = infectionDeck.remove(0);
+				infectCity(t2, 2);
+			}
+			for(int i = 0; i < 3; i++) {
+				InfectionCard t2 = infectionDeck.remove(0);
+				infectCity(t2, 1);
+			}
+			
+			
+			if(turn == BT) {
+				turn++;
+			}
+			
+			mes = "NotifyTurn/" + players.get(turn).username + "/";
+			for(int i = 0; i < players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
+			
+			stage = Stage.Action;
 		}
-		return null;
 	}
 	
 	//helper function that is used to draw count number of cards for player p. Epidemic included
@@ -315,7 +389,82 @@ public class Game {
 	}
 	public void changeMobileHospitalFlag(boolean param){
 		mobileHospitalActive = param;
-	}	
+	}
+	
+	//return the current player
+	public Player getCurrentPlayer() {
+		return players.get(turn);
+	}
+	
+	//return a player with the specified name in the game
+	Player getPlayer(String s) {
+		int i = 0;
+		Boolean found = false;
+		while(i < players.size() && !found) {
+			if(players.get(i).username.matches(s)) {
+				found = true;
+			}
+			else{
+				i++;
+			}
+		}
+		if(found) {
+			return players.get(i);
+		}
+		else {
+			return null;
+		}
+	}
+	
+	Player getPlayer(int i) {
+		for(Player p:players) {
+			if(p.ID == i) {
+				return p;
+			}
+		}
+		return null;
+	}
+		
+	//return a city with the specified name in the game
+	public City getCity(String s){
+		int i = 0;
+		Boolean found = false;
+		while(i < cities.size() && !found) {
+			if(cities.get(i).name.matches(s)) {
+				found = true;
+			}
+			else{
+				i++;
+			}
+		}
+		if(found) {
+			return cities.get(i);
+		}
+		else {
+			return null;
+		}
+	}
+		
+	//return the disease with the specified color
+	Disease getDisease(Color color) {
+		for(Disease d:diseases) {
+			if(d.color.equals(color)) {
+				return d;
+			}
+		}
+		return null;
+	}
+	
+	Pawn getPawn(String r) {
+		Role t1 = Role.valueOf(r);
+		for(int i = 0; i < pawns.size(); i++) {
+			if (t1.compareTo(pawns.get(i).role) == 0) {
+				Pawn p = pawns.remove(i);
+				return p;
+			}
+		}
+		return null;
+	}
 }
 
 enum Stage{
@@ -325,15 +474,21 @@ enum Stage{
 class Vars{
 	static String[] eventnames = new String[]
 	{
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-	}
+		"Airlift",
+		"Forecast",
+		"GovernmentGrant",
+		"LocalInitiative",
+		"OneQuietNight",
+		"ResilientPopulation",
+		"BorrowedTime",
+		"CommercialTravelBan",
+		"MobileHospital",
+		"NewAssignment",
+		"RapidVaccineDeployment",
+		"ReexaminedResearch",
+		"RemoteTreatment",
+		"SpecialOrders",
+	};
 	
 	static String[] virnames = new String[]
 	{
@@ -345,6 +500,13 @@ class Vars{
 		"Slippery Slope",
 		"Unacceptable Loss",
 		"Unacounted Populations"
+	};
+	
+	static String[] mutnames = new String[]
+	{
+		"TheMutationIntensifies",
+		"TheMutationSpreads",
+		"TheMutationThreatens",
 	};
 	
 	static String[][] names = new String[][]
