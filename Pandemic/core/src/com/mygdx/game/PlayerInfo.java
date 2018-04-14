@@ -12,6 +12,7 @@ public class PlayerInfo {
 	public int cardsToCure = 5;
 	String role;
 	boolean roleActionUsed = false;
+	boolean visible = true;
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
 	
