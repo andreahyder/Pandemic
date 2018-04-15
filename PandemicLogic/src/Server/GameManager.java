@@ -589,16 +589,22 @@ public class GameManager {
 		}
 		
 		game.stage = Stage.Infection;
-		//Checks for CommercialTravelBan flag
-		if (game.EvCommercial == -1){
-			for(int i = 0; i < Game.infectionRate[game.infectionCount]; i++) {
+		//Check for OneQuietNightFlag
+		if(game.oneQuietNightFlag){
+			game.oneQuietNightFlag = false;
+		}
+		else{
+			//Checks for CommercialTravelBan flag
+			if (game.EvCommercial == -1){
+				for(int i = 0; i < Game.infectionRate[game.infectionCount]; i++) {
+					InfectionCard t2 = game.infectionDeck.remove(0);
+					game.infectCity(t2, 1);
+				}
+			} 
+			else{
 				InfectionCard t2 = game.infectionDeck.remove(0);
 				game.infectCity(t2, 1);
 			}
-		} 
-		else{
-			InfectionCard t2 = game.infectionDeck.remove(0);
-			game.infectCity(t2, 1);
 		}
 		
 		game.stage = Stage.Action;
@@ -702,19 +708,66 @@ public class GameManager {
 			
 		}
 		else if(args[2].equals("OneQuietNight")) {
-			
+			game.oneQuietNightFlag = true;
 		}
+		//params:PlayerIndex/EventAction/RVD/Color/ListOfCities <- separated by ,
 		else if(args[2].equals("RapidVaccineDeployment")) {
-			
+			//TODO prompt client to play RVD after curing sth
+			String[] citiesList = args[4].split(",");
+			Color z = Color.valueOf(args[3]);
+			for(String s:citiesList){
+				City c = game.getCity(s);
+				c.removeDiseaseCube(z);
+			}
+			//TODO update client
 		}
 		else if(args[2].equals("ReexaminedResearch")) {
-			
+			ArrayList<PlayerCard> discardPile = (ArrayList<PlayerCard>) game.playerDiscardPile.clone();
+			String q = "ChooseCard/PlayerCard/";
+			for(PlayerCard c: discardPile){
+				q = q + c.name + ",";
+			}
+			String cityCardToAddToHand = ServerComm.getResponse(q, Integer.parseInt(args[0]));
+			Player curPlayer = game.getCurrentPlayer();
+			PlayerCard targetCard = null;
+			for(PlayerCard c: game.playerDiscardPile){
+				if(c.name.equals(cityCardToAddToHand)){
+					targetCard = c;
+					break;
+				}
+			}
+			if(targetCard != null){
+				curPlayer.hand.add(targetCard);
+				game.playerDiscardPile.remove(targetCard);
+			}
+			//TODO update clients
 		}
+		//params:PlayerIndex/EventAction/RT/CitiesList(max 2, separated by ,)/ColorsList(max 2 separated by ,)
 		else if(args[2].equals("RemoteTreatment")) {
-			
+			String[] citiesList = args[3].split(",");
+			String[] colorsList = args[4].split(",");
+			for(int i = 0; i < citiesList.length; i++){
+				City targetCity = game.getCity(citiesList[i]);
+				Color targetColor = Color.valueOf(colorsList[i]);
+				targetCity.removeDiseaseCube(targetColor);
+			}
+			//TODO update clients
 		}
+		//params:PlayerIndex/EventAction/RP
 		else if(args[2].equals("ResilientPopulation")) {
-			
+			String q = "ChooseCard/InfectionCard/";
+			for(InfectionCard c: game.infectionDiscardPile){
+				//TODO What to do when city is null?
+				q = q + c.city.name + ","; 
+			}
+			String response = ServerComm.getResponse(q, Integer.parseInt(args[0]));
+			for(InfectionCard c: game.infectionDiscardPile){
+				if(c.city.name.equals(response)){
+					game.infectionDiscardPile.remove(c);
+					break;
+				}
+			}
+			//Send updates? Maybe not necessary
 		}
 		else if(args[2].equals("SpecialOrders")) {
 			

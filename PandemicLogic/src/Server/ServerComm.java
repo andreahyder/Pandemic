@@ -92,6 +92,20 @@ public class ServerComm {
 			messageQueue.add(temp);
 		}
 	}
+	public static String getResponse(String question, int clientNumber){
+		sendMessage(question, clientNumber);
+		while(response == null){
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		String r = response;
+		response = null;
+		return r;
+	}
 	
 	static ArrayList<Action> initializePossibleActions(){
 		ArrayList<Action> toReturn = new ArrayList<Action>();
@@ -103,6 +117,7 @@ public class ServerComm {
 		toReturn.add(new ToggleReady());
 		toReturn.add(new ChangeName());
 		toReturn.add(new EndTurn());
+		toReturn.add(new EventAction());
 		toReturn.add(new Print());
 		return toReturn;
 	}

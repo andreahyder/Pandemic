@@ -46,6 +46,8 @@ public class Game {
 	boolean VirGov = false;
 	boolean VirRate = false;
 	boolean VirSlip = false;
+
+	boolean oneQuietNightFlag;
 	
 	//initializes game, initializes alot of things.
 	Game(){
