@@ -1174,7 +1174,7 @@ public class GameScreen implements Screen {
 							protected void result(Object object) {
 								if( (Boolean)object )
 								{
-									ClientComm.send("BorrowedTime/");
+									ClientComm.send("EventAction/BorrowedTime/");
 								}
 								Gdx.input.setInputProcessor( buttonStage );
 							};
@@ -1221,7 +1221,7 @@ public class GameScreen implements Screen {
 							protected void result(Object object) {
 								if( (Boolean)object )
 								{
-									ClientComm.send("MobileHospital/");
+									ClientComm.send("EventAction/MobileHospital/");
 								}
 								Gdx.input.setInputProcessor( buttonStage );
 							};
@@ -1269,7 +1269,7 @@ public class GameScreen implements Screen {
 							protected void result(Object object) {
 								if( (Boolean)object )
 								{
-									ClientComm.send("NewAssingmentRequest/");
+									ClientComm.send("EventAction/NewAssingmentRequest/" + currentPlayer.getName() );
 								}
 								Gdx.input.setInputProcessor( buttonStage );
 							};
@@ -1354,7 +1354,7 @@ public class GameScreen implements Screen {
 							protected void result(Object object) {
 								if( (Boolean)object )
 								{
-									ClientComm.send("CommercialTravelBan/");
+									ClientComm.send("EventAction/CommercialTravelBan/");
 								}
 								Gdx.input.setInputProcessor( buttonStage );
 							};
@@ -1428,7 +1428,7 @@ public class GameScreen implements Screen {
 											@Override
 											protected void result(Object object) {
 												if( (boolean)object )
-													ClientComm.send( "SpecialOrdersRequest/" + selector.getSelected() + '/' );
+													ClientComm.send( "EventAction/SpecialOrdersRequest/" + selector.getSelected() + '/' );
 												Gdx.input.setInputProcessor( buttonStage );
 											}
 										};
@@ -1512,7 +1512,7 @@ public class GameScreen implements Screen {
 											protected void result(Object object) {
 												if( (boolean)object )
 												{
-													ClientComm.send( "ReexaminedResearch/" + selector.getSelected() + '/' );
+													ClientComm.send( "EventAction/ReexaminedResearch/" + selector.getSelected() + '/' );
 												}
 												Gdx.input.setInputProcessor( buttonStage );
 											};
@@ -1714,7 +1714,7 @@ public class GameScreen implements Screen {
 							protected void result(Object object) {
 								if( (Boolean)object )
 								{
-									ClientComm.send("OneQuietNight/");
+									ClientComm.send("EventAction/OneQuietNight/");
 								}
 								Gdx.input.setInputProcessor( buttonStage );
 							};
@@ -1765,7 +1765,7 @@ public class GameScreen implements Screen {
 							protected void result(Object object) {
 								if( (boolean)object )
 								{
-									ClientComm.send("ResilientPopulation/" + selector.getSelected() +'/');
+									ClientComm.send("EventAction/ResilientPopulation/" + selector.getSelected() +'/');
 								}
 								Gdx.input.setInputProcessor( buttonStage );
 							};
@@ -1887,7 +1887,7 @@ public class GameScreen implements Screen {
 									Dialog info = new Dialog( "Select cards in order to be drawn", skin ) {
 										@Override
 										protected void result(Object object) {
-											ClientComm.send("ForecastRequest/"); 
+											ClientComm.send("EventAction/ForecastRequest/"); 
 											//Forecast( new String[] { "Atlanta", "Tokyo", "Manila", "Toronto", "London", "Johannesburg" } );
 										};
 									};
@@ -2226,7 +2226,7 @@ public class GameScreen implements Screen {
 								if( opExpertFly )
 								{
 									String cityName = curr.getName();
-									ClientComm.send("OperationsExpertAction/Move/" + cityName + '/' + opExpertFlyCard );
+									ClientComm.send("RoleAction/OperationsExpertAction/Move/" + cityName + '/' + opExpertFlyCard );
 									clientPlayer.roleActionUsed = true;
 									useCityButtonStage = false;
 									opExpertFly = false;
@@ -2236,7 +2236,7 @@ public class GameScreen implements Screen {
 								else if( cityButtonsToAirlift )
 								{
 									String cityName = curr.getName();
-									ClientComm.send("Airlift/" + airliftedPlayer + '/' + cityName + '/');
+									ClientComm.send("EventAction/Airlift/" + airliftedPlayer + '/' + cityName + '/');
 									useCityButtonStage = false;
 									cityButtonsToAirlift = false;
 									airliftedPlayer = null;
@@ -2262,7 +2262,7 @@ public class GameScreen implements Screen {
 									{
 										if( remResearchStations > 0 )
 										{
-											ClientComm.send("GovernmentGrant/"+cityName);	
+											ClientComm.send("EventAction/GovernmentGrant/"+cityName);	
 										}
 										else
 										{
@@ -2280,7 +2280,7 @@ public class GameScreen implements Screen {
 												protected void result(Object object) {
 													if( (boolean) true )
 													{
-														ClientComm.send("GovernmentGrant/" + cityName + '/' + selectbox.getSelected() + '/');
+														ClientComm.send("EventAction/GovernmentGrant/" + cityName + '/' + selectbox.getSelected() + '/');
 													}
 													Gdx.input.setInputProcessor( buttonStage );
 												};
@@ -2336,7 +2336,7 @@ public class GameScreen implements Screen {
 											useCityButtonStage = true;
 											for( String key : rvCubesToRemove.keySet() )
 											{
-												String message = "RapidVaccine/";
+												String message = "EventAction/RapidVaccine/";
 												for( int i = 0; i < rvCubesToRemove.get( key ); i++ )
 													message += key + '/';
 												ClientComm.send( message ); 
@@ -2501,7 +2501,7 @@ public class GameScreen implements Screen {
 												else
 												{
 													String cityName = curr.getName();
-													ClientComm.send("SpecialOrdersMove/" + selected + '/' + cityName + '/' );
+													ClientComm.send("EventAction/SpecialOrdersMove/" + selected + '/' + cityName + '/' );
 												}
 											}
 											Gdx.input.setInputProcessor( buttonStage );
@@ -3613,7 +3613,7 @@ public class GameScreen implements Screen {
 			            				}
 			            				else if( remResearchStations > 0 )
 			            				{
-											ClientComm.send( "OperationsExpertAction/Build/" );
+											ClientComm.send( "RoleAction/OperationsExpertAction/Build/" );
 											clientPlayer.roleActionUsed = true;
 			            				}
 			            				else
@@ -3631,7 +3631,7 @@ public class GameScreen implements Screen {
 						        					if( (Boolean)(object) )
 						        					{
 						            					String selected = selectBox.getSelected();
-						            					ClientComm.send( "OperationsExpertAction/Build//"+selected );
+						            					ClientComm.send( "RoleAction/OperationsExpertAction/Build//"+selected );
 						            		            Gdx.input.setInputProcessor(buttonStage);
 						        					}
 						        					else
@@ -3763,7 +3763,7 @@ public class GameScreen implements Screen {
 		    						protected void result(Object object) {
 		    							if( (Boolean) object )
 		    							{
-		    								ClientComm.send("ArchivistAction/");
+		    								ClientComm.send("RoleAction/ArchivistAction/");
 		    								clientPlayer.roleActionUsed = true;
 		    							}
 		    							Gdx.input.setInputProcessor( buttonStage );
@@ -3865,7 +3865,7 @@ public class GameScreen implements Screen {
 						    							if( (Boolean)object )
 						    							{
 							    							String cardSelected = handSelectBox.getSelected();
-							    							ClientComm.send("EpidemiologistAction/" + selection + '/' + cardSelected );
+							    							ClientComm.send("RoleAction/EpidemiologistAction/" + selection + '/' + cardSelected );
 							    							currentPlayer.roleActionUsed = true;
 						    							}
 						    							Gdx.input.setInputProcessor( buttonStage );
@@ -3949,7 +3949,7 @@ public class GameScreen implements Screen {
 				{
 					showCardSelectStage = false;
 					Gdx.input.setInputProcessor( buttonStage );
-					String message = "ForecastResponse/";
+					String message = "EventAction/ForecastResponse/";
 					for( String card : forecastSelections )
 						message += card;
 					
@@ -5019,7 +5019,7 @@ public class GameScreen implements Screen {
 		Dialog rrDiag = new Dialog("Select card to draw from discard", skin ){
 			@Override
 			protected void result(Object object) {
-				ClientComm.send( "ReexaminedResearchResponse/" + selector.getSelected() );
+				ClientComm.send( "EventAction/ReexaminedResearchResponse/" + selector.getSelected() );
 				Gdx.input.setInputProcessor( buttonStage );
 			}
 		};
@@ -5213,7 +5213,7 @@ public class GameScreen implements Screen {
 			@Override
 			protected void result(Object object) 
 			{
-				ClientComm.send("MobileHospitalResponse/" + selector.getSelection() );
+				ClientComm.send("EventAction/MobileHospitalResponse/" + selector.getSelection() );
 				Gdx.input.setInputProcessor( buttonStage );
 			}
 		};
@@ -5234,6 +5234,16 @@ public class GameScreen implements Screen {
 		mhDiag.button("Select");
 		mhDiag.show( dialogStage );
 		Gdx.input.setInputProcessor( dialogStage );
+	}
+
+	public static void VirulentStrainChosen( String DiseaseColour )
+	{
+		virulentStrainDisease = DiseaseColour;
+	}
+	
+	public static void VirulentStrainEpidemic( String EpidemicName )
+	{
+		virulentStrainStatuses.put( EpidemicName, true );
 	}
 }
 
