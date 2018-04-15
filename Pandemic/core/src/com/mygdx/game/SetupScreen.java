@@ -14,6 +14,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.PandemicGame.Screens;
+
+import javafx.scene.control.CheckBox;
+
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -24,6 +27,8 @@ public class SetupScreen implements Screen {
 	private PandemicGame parent;
 	private Stage stage;
 	private Skin skin;
+	
+	boolean bioterroristOpt = false;
 	
 	SetupScreen( PandemicGame _parent )
 	{
@@ -40,39 +45,50 @@ public class SetupScreen implements Screen {
 		Table table = new Table();
 	    table.clear();
 		table.setFillParent(true);
-		table.setDebug(true);
 		stage.addActor(table);
 		
-		Label label1 = new Label("Players Ready?", skin);
-		label1.setAlignment(Align.center); // Align
-		table.add(label1).width(150).height(90);;
+		
+		Label nameLabel = new Label("Name:", skin);
+		nameLabel.setAlignment(Align.center); // Align center
+	    TextField nameText = new TextField("", skin);
+	    Label addressLabel = new Label("IP Address:", skin);
+	    addressLabel.setAlignment(Align.center); // Align center
+	    TextField addressText = new TextField("", skin);
+	    
+	    //Table table = new Table();
+	    table.add(nameLabel).width(100).spaceBottom(10);;
+	    table.add(nameText).width(100);
+	    table.row();
+	    table.add(addressLabel);
+	    table.add(addressText).width(100).spaceBottom(10);;
+	    
+	    table.setDebug(false); // Show or hide ugly red and blue lines.
+	    
+	    table.row();
+		
+		
+		
+//		Label label1 = new Label("Players Ready?", skin);
+//		label1.setAlignment(Align.center); // Align center
+//		table.add(label1).width(150).height(90);;
 		
 		for (int i=0; i<numPlayers; i++){
-		    Label labelL = new Label(players[i].getName(), skin);
+		    Label labelL = new Label(players[i].getName() + ", ready?", skin);
 		    labelL.setAlignment(Align.center); // Align
-		    labelL.setColor(Color.CYAN);
-//		    Label labelR = new Label( "" ,skin );
-//		    labelR.setAlignment(Align.center); // Align
-//		    labelR.setColor(Color.WHITE);
-		    
-//		    Label labelM = new Label( "" ,skin );
-//		    labelM.setAlignment(Align.center); // Align
-//		    labelM.setColor(Color.WHITE);
-//		    table.add(labelM).width(100).height(55);
-//		    labelM.setText( "") ;
+		    labelL.setColor(Color.WHITE);
 
 		    table.row();
 
-		    table.add(labelL).width(150).height(55);
+		    table.add(labelL).width(150).height(55).spaceBottom(10);;
 //		    table.add(labelR).width(100).height(55);
 //		    labelR.setText( Boolean.toString(players[i].getReady())) ;
 		    table.setFillParent(true);
-		    table.debugAll();
+		    //table.debugAll();
 		    
 		    Label labelR = new Label( "" ,skin );
 		    labelR.setAlignment(Align.center); // Align
 		    labelR.setColor(Color.WHITE);
-		    table.add(labelR).width(100).height(55);
+		    table.add(labelR).width(100).height(55).spaceBottom(10);
 		    String toPrint = "";
 		    if (players[i].getReady() == true) {
 		    	toPrint = "true";
@@ -84,21 +100,15 @@ public class SetupScreen implements Screen {
 		    
 		}
 		
-		TextButton toggleReady = new TextButton("Ready?", skin);
+		TextButton toggleReady = new TextButton("YES", skin);
 		toggleReady.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				PlayerInfo currentPlayer = parent.getCurrentPlayer();		
 				currentPlayer.toggleReady();
-				ClientComm.send("ToggleReady");
+				//ClientComm.send("ToggleReady");
+				// HAVE TO TAKE OFF ALL MESSAGES FOR NOW ^^^^^^^^^
 				
-//				for (int i=0; i<1; i++){
-//					Label labelR = new Label( "" ,skin );
-//				    labelR.setAlignment(Align.center); // Align
-//				    labelR.setColor(Color.WHITE);
-//				    table.add(labelR).width(100).height(55);
-//				    labelR.setText( Boolean.toString(currentPlayer.getReady())) ;
-//				}
 				stage.clear();
 				Table table = new Table();
 			    table.clear();
@@ -106,28 +116,15 @@ public class SetupScreen implements Screen {
 				table.setDebug(true);
 				stage.addActor(table);
 				
-				Label label1 = new Label("Players Ready?", skin);
-				label1.setAlignment(Align.center); // Align
-				table.add(label1).width(150).height(90);;
 				for (int i=0; i<numPlayers; i++){
-				    Label labelL = new Label(players[i].getName(), skin);
+				    Label labelL = new Label(players[i].getName() , skin);
 				    labelL.setAlignment(Align.center); // Align
-				    labelL.setColor(Color.CYAN);
-//				    Label labelR = new Label( "" ,skin );
-//				    labelR.setAlignment(Align.center); // Align
-//				    labelR.setColor(Color.WHITE);
-				    
-//				    Label labelM = new Label( "" ,skin );
-//				    labelM.setAlignment(Align.center); // Align
-//				    labelM.setColor(Color.WHITE);
-//				    table.add(labelM).width(100).height(55);
-//				    labelM.setText( "") ;
+				    labelL.setColor(Color.WHITE);
 
 				    table.row();
 
-				    table.add(labelL).width(150).height(55);
-//				    table.add(labelR).width(100).height(55);
-//				    labelR.setText( Boolean.toString(players[i].getReady())) ;
+				    table.add(labelL).width(150).height(55).spaceBottom(10);;
+				    
 				    table.setFillParent(true);
 				    table.debugAll();
 				    
@@ -137,7 +134,7 @@ public class SetupScreen implements Screen {
 				    table.add(labelR).width(100).height(55);
 				    String toPrint = "";
 				    if (players[i].getReady() == true) {
-				    	toPrint = "true";
+				    	toPrint = "Ready";
 				    }
 				    else {
 				    	toPrint = "?";
@@ -151,8 +148,21 @@ public class SetupScreen implements Screen {
 				stage.addActor(txtWait);
 			}
 		});
-
 		table.add(toggleReady);
+		
+		
+		table.row();
+		TextButton toggleBioterrorist = new TextButton("YES", skin);
+		toggleReady.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				bioterroristOpt = true;
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(toggleBioterrorist);
+		
+		
 		stage.draw();
 		stage.act();
 		
@@ -173,42 +183,32 @@ public class SetupScreen implements Screen {
 		stage.act();
 		
 
-		if ( ClientComm.messageQueue != null )
-		{
-			if ( ClientComm.messageQueue.size() > 0  )
-			{
+		if ( ClientComm.messageQueue != null ) {
+			if ( ClientComm.messageQueue.size() > 0  ) {
 				//Eat message
-				if ( ClientComm.possibleActions != null )
-				{
+				if ( ClientComm.possibleActions != null ) {
 					String[] message = ClientComm.messageQueue.get(0);
-					if ( message != null )
-					{
-						if ( message.length > 0 )
-						{
-							if( message[0].equals( "StartGame" ) )
-							{
+					if ( message != null ) {
+						if ( message.length > 0 ) {
+							if( message[0].equals( "StartGame" ) ) {
 								String[] pNames = message[1].split("[,]");
-								for( int i = 0; i < pNames.length; i++ )
-								{
-									if( !parent.getCurrentPlayer().getName().equals(pNames[i]) )
-									{
+								for( int i = 0; i < pNames.length; i++ ) {
+									if( !parent.getCurrentPlayer().getName().equals(pNames[i]) ) {
 										parent.addPlayer( new PlayerInfo( pNames[i], PawnColour.values()[i], false ) );
-										
 									}
-									else
-									{
+									else {
 										parent.getCurrentPlayer().setColour( PawnColour.values()[i] );
 									}
 									GameScreen.currentPlayer = parent.getPlayers()[0];
 								}
-								parent.changeScreen( Screens.GAME );
+								//parent.changeScreen( Screens.GAME );
+								parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
 							} 
 						}
 					}
 				}
 			}
 		}
-		
 	}
 	
 	public boolean checkAllReady() {  //checks if all players in player array are ready.
