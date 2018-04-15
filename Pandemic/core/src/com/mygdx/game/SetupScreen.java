@@ -28,7 +28,11 @@ public class SetupScreen implements Screen {
 	private Stage stage;
 	private Skin skin;
 	
-	boolean bioterroristOpt = false;
+	String bioterroristOpt;
+	Label showBioTOpt;
+	
+	String otbOpt;
+	Label otbOptLabel;
 	
 	SetupScreen( PandemicGame _parent )
 	{
@@ -46,7 +50,13 @@ public class SetupScreen implements Screen {
 	    table.clear();
 		table.setFillParent(true);
 		stage.addActor(table);
+		Gdx.input.setInputProcessor(stage);
 		
+		this.bioterroristOpt = "No";
+		this.showBioTOpt = new Label(bioterroristOpt, skin);
+		
+		this.otbOpt = "No";
+		this.otbOptLabel = new Label(otbOpt, skin);
 		
 		Label nameLabel = new Label("Name:", skin);
 		nameLabel.setAlignment(Align.center); // Align center
@@ -56,7 +66,7 @@ public class SetupScreen implements Screen {
 	    TextField addressText = new TextField("", skin);
 	    
 	    //Table table = new Table();
-	    table.add(nameLabel).width(100).spaceBottom(10);;
+	    table.add(nameLabel).width(100).spaceBottom(10);
 	    table.add(nameText).width(100);
 	    table.row();
 	    table.add(addressLabel);
@@ -64,13 +74,69 @@ public class SetupScreen implements Screen {
 	    
 	    table.setDebug(false); // Show or hide ugly red and blue lines.
 	    
-	    table.row();
+	    
+		
+		
+		table.row();
+		Label bioTLabel = new Label("Bioterrorist Expansion:", skin);
+		nameLabel.setAlignment(Align.center); // Align center
+		table.add(bioTLabel).spaceBottom(10);
+		table.add(showBioTOpt);
+		TextButton toggleBioterroristY = new TextButton("YES", skin);
+		toggleBioterroristY.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				bioterroristOpt = "Yes";
+				showBioTOpt.setText(bioterroristOpt);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(toggleBioterroristY);
+		TextButton toggleBioterroristN = new TextButton("NO", skin);
+		toggleBioterroristN.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				bioterroristOpt = "No";
+				showBioTOpt.setText(bioterroristOpt);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(toggleBioterroristN);
+		
+		
+		table.row();
+		Label otbLabel = new Label("On The Brink Expansion:", skin);
+		otbLabel.setAlignment(Align.center); // Align center
+		table.add(otbLabel).spaceBottom(10);
+		table.add(otbOptLabel);
+		TextButton otbY = new TextButton("YES", skin);
+		otbY.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				otbOpt = "Yes";
+				otbOptLabel.setText(otbOpt);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(otbY);
+		TextButton otbN = new TextButton("NO", skin);
+		otbN.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				otbOpt = "No";
+				otbOptLabel.setText(otbOpt);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(otbN);
 		
 		
 		
-//		Label label1 = new Label("Players Ready?", skin);
-//		label1.setAlignment(Align.center); // Align center
-//		table.add(label1).width(150).height(90);;
+		table.row();
 		
 		for (int i=0; i<numPlayers; i++){
 		    Label labelL = new Label(players[i].getName() + ", ready?", skin);
@@ -94,7 +160,7 @@ public class SetupScreen implements Screen {
 		    	toPrint = "true";
 		    }
 		    else {
-		    	toPrint = "?";
+		    	toPrint = "No";
 		    }
 		    labelR.setText( toPrint ) ;
 		    
@@ -150,22 +216,6 @@ public class SetupScreen implements Screen {
 		});
 		table.add(toggleReady);
 		
-		
-		table.row();
-		TextButton toggleBioterrorist = new TextButton("YES", skin);
-		toggleReady.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				bioterroristOpt = true;
-				// SEND SERVER MESSAGE
-			}
-		});
-		table.add(toggleBioterrorist);
-		
-		
-		stage.draw();
-		stage.act();
-		
 	}
 	
 	@Override
@@ -176,6 +226,8 @@ public class SetupScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		//showBioTOpt.setText(bioterroristOpt);
+		
 		Gdx.gl.glClearColor(0f, 0f, 0f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
