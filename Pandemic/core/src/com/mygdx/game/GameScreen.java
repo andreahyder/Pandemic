@@ -358,6 +358,7 @@ public class GameScreen implements Screen {
 	static boolean opExpertFly = false;
 	static boolean remoteTreat = false;
 	static boolean specialOrders = false;
+	static boolean specialOrdersCharterFlight = false;
 	static String[] remoteTreatCities;
 	static String[] remoteTreatDiseases;
 	static int remoteTreated;
@@ -506,6 +507,7 @@ public class GameScreen implements Screen {
 		IncOutbreakCounter();
 		IncOutbreakCounter();
 		IncOutbreakCounter();
+		SpecialOrders( "Larry" );
 		//AirportSighting( "Your Butt" );
     }
     
@@ -975,69 +977,166 @@ public class GameScreen implements Screen {
 				            		}
 				            		else
 				            		{
-					            		if (currentPlayer.getCity().equals(card.getName()) && !isCaptured ){
-			
-											Dialog confirmFlight = new Dialog("Use " + card.getName() + " city card to Charter Flight?", skin) {
-												@Override
-												protected void result(Object object) {
-													if ((boolean) (object)) {
-														useCityButtonStage = true;
-														//charterFlightCard = card.getName();
-														//System.out.println("TEEEEESTING");
+				            			if( !specialOrders )
+				            			{
+						            		if (currentPlayer.getCity().equals(card.getName()) ){
+				
+												Dialog confirmFlight = new Dialog("Use " + card.getName() + " city card to Charter Flight?", skin) {
+													@Override
+													protected void result(Object object) {
+														if ((boolean) (object)) {
+															useCityButtonStage = true;
+															//charterFlightCard = card.getName();
+															//System.out.println("TEEEEESTING");
+														}
+														Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+														//dialogStage = null;
 													}
-													Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-													//dialogStage = null;
-												}
-											};
-			
-											//dialogStag/e = new Stage( parent.screen );//
-											dialogStage.clear();
-			
-											confirmFlight.button("Yes", true);
-											confirmFlight.button("No", false);
-			
-											Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
-											confirmFlight.show(dialogStage);
-			
-										}
-										else {
-											Dialog confirmFlight = new Dialog("Fly to " + card.getName() + "?", skin) {
-												@Override
-												protected void result(Object object) {
-													if ((boolean) (object)) {
-														if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) )
-														{
-															ClientComm.send("DirectFlight/" + card.getName());
-															Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-															// IMPLEMENT Call Drive( CityName ) on Server
+												};
+				
+												//dialogStag/e = new Stage( parent.screen );//
+												dialogStage.clear();
+				
+												confirmFlight.button("Yes", true);
+												confirmFlight.button("No", false);
+				
+												Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+												confirmFlight.show(dialogStage);
+				
+											}
+											else {
+												Dialog confirmFlight = new Dialog("Fly to " + card.getName() + "?", skin) {
+													@Override
+													protected void result(Object object) {
+														if ((boolean) (object)) {
+															if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) )
+															{
+																ClientComm.send("DirectFlight/" + card.getName());
+																Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+																// IMPLEMENT Call Drive( CityName ) on Server
+															}
+															else
+															{
+																Dialog giDiag = new Dialog( "You must treat a "+ virulentStrainDisease +" cube before you can move", skin ) {
+																	protected void result(Object object) {
+																		Gdx.input.setInputProcessor( buttonStage );
+																	};
+																};
+																giDiag.button("Okay");
+																giDiag.show( dialogStage );
+																Gdx.input.setInputProcessor( dialogStage );
+															}
 														}
 														else
-														{
-															Dialog giDiag = new Dialog( "You must treat a "+ virulentStrainDisease +" cube before you can move", skin ) {
-																protected void result(Object object) {
-																	Gdx.input.setInputProcessor( buttonStage );
-																};
-															};
-															giDiag.button("Okay");
-															giDiag.show( dialogStage );
-															Gdx.input.setInputProcessor( dialogStage );
-														}
+															Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+														//dialogStage = null;
 													}
-													else
-														Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-													//dialogStage = null;
-												}
-											};
-			
-											//dialogStag/e = new Stage( parent.screen );//
-											dialogStage.clear();
-			
-											confirmFlight.button("Yes", true);
-											confirmFlight.button("No", false);
-			
-											Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
-											confirmFlight.show(dialogStage);
-										}
+												};
+				
+												//dialogStag/e = new Stage( parent.screen );//
+												dialogStage.clear();
+				
+												confirmFlight.button("Yes", true);
+												confirmFlight.button("No", false);
+				
+												Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+												confirmFlight.show(dialogStage);
+											}
+				            			}
+				            			else
+				            			{
+				            				final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+				            				String[] data = new String[]{ currentPlayer.getName(), specialOrderPlayer } ;
+				            				selector.setItems( data );
+				            				Dialog soDiag = new Dialog( "Pick player to move", skin ){
+				            					@Override
+				            					protected void result(Object object) {
+				            						if( (boolean)object )
+				            						{
+					            						PlayerInfo selectedPlayer = lookupPlayer( selector.getSelected() );
+					            						if (selectedPlayer.getCity().equals(card.getName()) ){
+					            							
+															Dialog confirmFlight = new Dialog("Use " + card.getName() + " city card to Charter Flight?", skin) {
+																@Override
+																protected void result(Object object) {
+																	if ((boolean) (object)) {
+																		useCityButtonStage = true;
+																		if( selectedPlayer != currentPlayer)
+																			specialOrdersCharterFlight = true;
+																		//charterFlightCard = card.getName();
+																		//System.out.println("TEEEEESTING");
+																	}
+																	Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+																	//dialogStage = null;
+																}
+															};
+							
+															//dialogStag/e = new Stage( parent.screen );//
+															dialogStage.clear();
+							
+															confirmFlight.button("Yes", true);
+															confirmFlight.button("No", false);
+							
+															Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+															confirmFlight.show(dialogStage);
+							
+														}
+														else {
+															Dialog confirmFlight = new Dialog("Fly to " + card.getName() + "?", skin) {
+																@Override
+																protected void result(Object object) {
+																	if ((boolean) (object)) {
+																		if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) || ( selectedPlayer != currentPlayer ) )
+																		{
+																			if( selectedPlayer != currentPlayer )
+																			{
+																				ClientComm.send( "EventAction/SpecialOrdersMove/DirectFlight/" + selectedPlayer.getName() + '/' + card.getName() );
+																			}
+																			else
+																			{
+																				ClientComm.send("DirectFlight/" + card.getName());
+																				Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+																				// IMPLEMENT Call Drive( CityName ) on Server
+																			}
+																		}
+																		else
+																		{
+																			Dialog giDiag = new Dialog( "You must treat a "+ virulentStrainDisease +" cube before you can move", skin ) {
+																				protected void result(Object object) {
+																					Gdx.input.setInputProcessor( buttonStage );
+																				};
+																			};
+																			giDiag.button("Okay");
+																			giDiag.show( dialogStage );
+																			Gdx.input.setInputProcessor( dialogStage );
+																		}
+																	}
+																	else
+																		Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+																	//dialogStage = null;
+																}
+															};
+							
+															//dialogStag/e = new Stage( parent.screen );//
+															dialogStage.clear();
+							
+															confirmFlight.button("Yes", true);
+															confirmFlight.button("No", false);
+							
+															Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+															confirmFlight.show(dialogStage);
+														}
+				            						}
+				            						else
+				            							Gdx.input.setInputProcessor( buttonStage );
+				            					};
+				            				};
+				            				soDiag.getContentTable().add( selector );
+				            				soDiag.button("Select", true);
+				            				soDiag.button("Cancel", false);
+				            				soDiag.show( dialogStage );
+				            				Gdx.input.setInputProcessor( dialogStage );
+				            			}
 				            		}
 				            		
 					                waitForButton = false;
@@ -2404,6 +2503,15 @@ public class GameScreen implements Screen {
 										Gdx.input.setInputProcessor( dialogStage );
 									}
 								}
+								else if ( specialOrdersCharterFlight && specialOrders )
+								{
+									String cityName = curr.getName();
+									String cardName = currentPlayer.getCity();
+									ClientComm.send("EventAction/SpecialOrders/CharterFlight/" + specialOrderPlayer +'/' + cityName);
+									useCityButtonStage = false;
+									specialOrdersCharterFlight = false;
+									Gdx.input.setInputProcessor( buttonStage );
+								}
 								else
 								{
 									if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) || currentPlayer.role.equalsIgnoreCase("Bioterrorist") )
@@ -2501,7 +2609,7 @@ public class GameScreen implements Screen {
 												else
 												{
 													String cityName = curr.getName();
-													ClientComm.send("EventAction/SpecialOrdersMove/" + selected + '/' + cityName + '/' );
+													ClientComm.send("EventAction/SpecialOrdersMove/Drive/" + selected + '/' + cityName + '/' );
 												}
 											}
 											Gdx.input.setInputProcessor( buttonStage );
@@ -4903,6 +5011,12 @@ public class GameScreen implements Screen {
 				break;
 			}
 		}
+	}
+
+	public static void HiddenPocket( String DiseaseColor )
+	{
+		diseaseStatuses.remove( DiseaseColor );
+		diseaseStatuses.put( DiseaseColor, DiseaseStatus.CURED );
 	}
 	
 	public static void EradicateDisease( String DiseaseColor )
