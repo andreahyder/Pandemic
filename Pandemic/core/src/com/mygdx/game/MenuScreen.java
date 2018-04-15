@@ -19,7 +19,7 @@ import com.mygdx.game.PandemicGame.Screens;
 
 public class MenuScreen implements Screen 
 {
-	// Andeas change
+	// And
 	private PandemicGame parent;
 	private Stage stage;
 	private Skin skin;
