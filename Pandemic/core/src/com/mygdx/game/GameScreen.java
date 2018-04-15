@@ -493,7 +493,7 @@ public class GameScreen implements Screen {
 		updateBioterroristVisibility();
 		ResetActions();
 		
-		AirportSighting( "Your Butt" );
+		//AirportSighting( "Your Butt" );
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -5240,6 +5240,26 @@ public class GameScreen implements Screen {
 	public static void Capture()
 	{
 		isCaptured = true;
+	}
+	public static void MobileHospitalResponse( String[] DiseaseNames )
+	{
+		final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+		
+		Dialog mhDiag = new Dialog( "Select Disease to treat with Mobile Hospital effect", skin ){
+			@Override
+			protected void result(Object object) 
+			{
+				tempSkin.dispose();
+				ClientComm.send("MobileHospitalResponse/" + selector.getSelection() );
+				Gdx.input.setInputProcessor( buttonStage );
+			}
+		};
+		selector.setItems( DiseaseNames );
+		mhDiag.getContentTable().add( selector );
+		mhDiag.button("Select");
+		mhDiag.show( dialogStage );
+		Gdx.input.setInputProcessor( dialogStage );
 	}
 }
 
