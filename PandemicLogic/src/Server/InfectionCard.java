@@ -10,6 +10,7 @@ public class InfectionCard {
 			type = t;
 		}
 		else{
+			city = null;
 			type = t;
 		}
 	}

@@ -82,6 +82,11 @@ public class ServerComm {
 			}
 		}
 	}
+	static void sendToAllClients(String message){
+		for (ClientThread t: clientList){
+			t.send(message);
+		}
+	}
 	public static void addToActionQueue(String pString, int client){
 		pString = client + "/"+ pString;
 		String[] temp = pString.split("/");

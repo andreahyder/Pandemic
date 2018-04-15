@@ -36,6 +36,7 @@ public class Player {
 	void givePawn(Pawn p, City c){
 		if(pawn == null) {
 			pawn = p;
+			
 			pawn.player = this;
 			pawn.city = c;
 			if(pawn.city != null) {
@@ -46,8 +47,15 @@ public class Player {
 			Pawn t1 = pawn;
 			game.pawns.add(t1);
 			pawn = p;
+			
 			pawn.player = this;
-			pawn.city = c;
+			pawn.city = t1.city;
+			pawn.actions = t1.actions;
+			pawn.roleactions = t1.roleactions;
+			pawn.stash = t1.stash;
+			
+			t1.city.pawns.remove(t1);
+			t1.city = null;
 		}
 	}
 	

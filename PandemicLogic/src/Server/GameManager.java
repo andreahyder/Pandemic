@@ -704,8 +704,30 @@ public class GameManager {
 			game.EvMobile = true;
 			//TODO send to client, turn on flag in client
 		}
+		//params: PlayerIndex/EventAction/NA/targetPlayer
 		else if(args[2].equals("NewAssignment")) {
-			
+			Player targetPlayer = game.getPlayer(args[3]);
+			String q = "PromptNewAssignment/";
+			for (Pawn p: game.pawns){
+				q = q + p.role.name();
+			}
+			String response = ServerComm.getResponse(q, targetPlayer.ID);
+			//Assign new role to that player
+			Pawn toGive = null;
+			for(Pawn p: game.pawns){
+				if(p.role.name().equals(response)){
+					toGive = p;
+					game.pawns.remove(p);
+					break;
+				}
+			}
+			if(toGive != null){
+				City c = targetPlayer.pawn.city;
+				targetPlayer.givePawn(toGive, c);
+			}
+			//Updates clients: UpdateRole/targetPlayer/targetRole
+			String update = "UpdateRole/"+ targetPlayer.username + "/" + response;
+			ServerComm.sendToAllClients(update);
 		}
 		else if(args[2].equals("OneQuietNight")) {
 			game.oneQuietNightFlag = true;
@@ -753,21 +775,25 @@ public class GameManager {
 			}
 			//TODO update clients
 		}
-		//params:PlayerIndex/EventAction/RP
+		//params:PlayerIndex/EventAction/RP/CardToRemove
 		else if(args[2].equals("ResilientPopulation")) {
-			String q = "ChooseCard/InfectionCard/";
-			for(InfectionCard c: game.infectionDiscardPile){
-				//TODO What to do when city is null?
-				q = q + c.city.name + ","; 
-			}
-			String response = ServerComm.getResponse(q, Integer.parseInt(args[0]));
-			for(InfectionCard c: game.infectionDiscardPile){
-				if(c.city.name.equals(response)){
-					game.infectionDiscardPile.remove(c);
-					break;
+			if(args[3].equals("Mutation")){
+				for(InfectionCard c: game.infectionDiscardPile){
+					if(c.type == Type.Mutation){
+						game.infectionDiscardPile.remove(c);
+						break;
+					}
 				}
 			}
-			//Send updates? Maybe not necessary
+			else{
+				for(InfectionCard c: game.infectionDiscardPile){
+					if(c.city.name.equals(args[3])){
+						game.infectionDiscardPile.remove(c);
+						break;
+					}
+				}
+			}
+			ServerComm.sendToAllClients("RemoveFromInfectionPile/" + args[3]);
 		}
 		else if(args[2].equals("SpecialOrders")) {
 			
