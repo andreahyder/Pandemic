@@ -237,12 +237,14 @@ public class GameScreen implements Screen {
 	static Texture[] infectRateCircles = new Texture[]
 			{
 					new Texture(Gdx.files.internal("infectRate2.png")),
-					new Texture(Gdx.files.internal("infectRate2.png")),
-					new Texture(Gdx.files.internal("infectRate2.png")),
 					new Texture(Gdx.files.internal("infectRate3.png")),
-					new Texture(Gdx.files.internal("infectRate3.png")),
-					new Texture(Gdx.files.internal("infectRate4.png")),
 					new Texture(Gdx.files.internal("infectRate4.png"))
+			};
+	static Texture[] infectRateCirclesGreen = new Texture[]
+			{
+				new Texture(Gdx.files.internal("infectRate2Green.png")),
+				new Texture(Gdx.files.internal("infectRate3Green.png")),
+				new Texture(Gdx.files.internal("infectRate4Green.png"))
 			};
 	static Texture[] outbreakRateCircles = new Texture[]
 			{
@@ -299,14 +301,24 @@ public class GameScreen implements Screen {
 	static Texture blue = new Texture(Gdx.files.internal("BlueDiseaseCube.png"));
 	static Texture black = new Texture(Gdx.files.internal("BlackDiseaseCube.png"));
 	static Texture researchStation = new Texture(Gdx.files.internal( "ResearchStation.png"));
+	static Texture outbreakMarker = new Texture( Gdx.files.internal("outBreakLogo.png") );
 	static Texture background;
 	static Texture connectionsTexture;
 
 	static ScreenViewport screen;
 	
-	static BitmapFont handPlayerFont = new BitmapFont();
-	static BitmapFont rvFontFront = new BitmapFont();
-	static BitmapFont rvFontBack = new BitmapFont();
+	static BitmapFont handPlayerFont 	= new BitmapFont();
+	static BitmapFont rvFontFront 		= new BitmapFont();
+	static BitmapFont rvFontBack 		= new BitmapFont();
+	static BitmapFont deckFont 			= new BitmapFont();
+	static BitmapFont yellowFont 		= new BitmapFont();
+	static BitmapFont redFont 			= new BitmapFont();
+	static BitmapFont blueFont 			= new BitmapFont();
+	static BitmapFont blackFont 		= new BitmapFont();
+	static BitmapFont researchFont 		= new BitmapFont();
+	static BitmapFont numActionsFont	= new BitmapFont();
+	static BitmapFont playerColourFont0 = new BitmapFont();
+	static BitmapFont playerColourFont1 = new BitmapFont();
 	
 	static ScrollPane discardPane; 
 	static int windWidth, windHeight;
@@ -325,6 +337,7 @@ public class GameScreen implements Screen {
 
 	static Skin skin;
 	static Skin altSkin = new Skin( Gdx.files.internal( "plain-james-ui/plain-james-ui.json" ) );
+	static Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 	
 	static BitmapFont troubleshooterFont = new BitmapFont();
 
@@ -365,6 +378,10 @@ public class GameScreen implements Screen {
 	static boolean hasSabotaged = false;
 	static boolean isCaptured = false;
 	static boolean extraMoveActionUsed = false;
+	
+	static BitmapFont currPlayerFont0 = new BitmapFont();
+	static BitmapFont currPlayerFont1 = new BitmapFont();
+	static BitmapFont infectionRateFont = new BitmapFont();
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
     {
@@ -422,7 +439,7 @@ public class GameScreen implements Screen {
 		
 		
 
-    	players[0].addCardToHand( new PlayerCardInfo("SpecialOrders" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("ResilientPopulation" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Tokyo" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -452,20 +469,11 @@ public class GameScreen implements Screen {
     	//players[2].addCardToHand( new PlayerCardInfo("Toronto" ) );
     	//players[2].addCardToHand( new PlayerCardInfo("Madrid" ) );
     	
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
-    	infectionDiscardPile.add( "Atalnta" );
+    	infectionDiscardPile.add( "Atlanta" );
+    	infectionDiscardPile.add( "Tokyo" );
+    	infectionDiscardPile.add( "Milan" );
+    	infectionDiscardPile.add( "London" );
+    	infectionDiscardPile.add( "Khartoum" );
 		handShownPlayer = clientPlayer;
 
     	playerDiscardPile.add( "Atlanta" );
@@ -494,6 +502,10 @@ public class GameScreen implements Screen {
 		updateBioterroristVisibility();
 		ResetActions();
 		
+		IncInfectionRate();
+		IncOutbreakCounter();
+		IncOutbreakCounter();
+		IncOutbreakCounter();
 		//AirportSighting( "Your Butt" );
     }
     
@@ -828,7 +840,7 @@ public class GameScreen implements Screen {
 					Texture cardTexture	 							= cityCardTextures[ index ];
 					TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 					final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
-		
+					
 					ButtonStyle cityButtonStyle = new ButtonStyle();
 					cityButtonStyle.up			= Draw_cardTexture;
 					cityButtonStyle.down		= Draw_cardTexture;
@@ -1409,7 +1421,6 @@ public class GameScreen implements Screen {
 											}
 										}
 										
-										final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 										selector.setItems( viablePlayers );
 										
@@ -1418,7 +1429,6 @@ public class GameScreen implements Screen {
 											protected void result(Object object) {
 												if( (boolean)object )
 													ClientComm.send( "SpecialOrdersRequest/" + selector.getSelected() + '/' );
-												tempSkin.dispose();
 												Gdx.input.setInputProcessor( buttonStage );
 											}
 										};
@@ -1494,7 +1504,6 @@ public class GameScreen implements Screen {
 											}
 										}
 										
-										final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 										selector.setItems( playerNames );
 										
@@ -1504,7 +1513,6 @@ public class GameScreen implements Screen {
 												if( (boolean)object )
 												{
 													ClientComm.send( "ReexaminedResearch/" + selector.getSelected() + '/' );
-													tempSkin.dispose();
 												}
 												Gdx.input.setInputProcessor( buttonStage );
 											};
@@ -1634,7 +1642,6 @@ public class GameScreen implements Screen {
 						waitForButton = true;
 	
 						dialogStage.clear();
-						final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 						final SelectBox<String> selectBox = new SelectBox<String>( tempSkin );
 						Dialog airliftDiag = new Dialog( "Select a player to airlift.", skin )
 						{
@@ -1750,7 +1757,6 @@ public class GameScreen implements Screen {
 						for( int i = 0; i < data.length; i++ )
 							data[i] = infectionDiscardPile.get( i );
 						
-						final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json") );
 						final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 						selector.setItems( data );
 						
@@ -2098,7 +2104,6 @@ public class GameScreen implements Screen {
 		            		for( int i = 0; i < data.length; i++ )
 		            			data[i] = cardsOfCol.get( i ).getName();
 		            		
-		            		final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 		            		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 		            		selector.setItems( data );
 		            		
@@ -2108,7 +2113,6 @@ public class GameScreen implements Screen {
 		            				if( (boolean )object )
 		            				{
 		            					String card = selector.getSelected();
-		            					tempSkin.dispose();
 		            					
 		            					ClientComm.send("Sabotage/" + card + "/" );
 		            					hasSabotaged = true;
@@ -2262,7 +2266,6 @@ public class GameScreen implements Screen {
 										}
 										else
 										{
-											final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 											final SelectBox<String> selectbox = new SelectBox<String>( tempSkin );
 											
 											String[] data = new String[ researchStationCityNames.size() ];
@@ -2369,7 +2372,6 @@ public class GameScreen implements Screen {
 											}
 										}
 										
-										final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 										
 										Dialog rtDiag = new Dialog("Pick Disease Colour of cube to remove", skin ) {
@@ -2377,7 +2379,6 @@ public class GameScreen implements Screen {
 											protected void result(Object object) {
 												if( (boolean)object )
 												{
-													tempSkin.dispose();
 													remoteTreatCities[remoteTreated] = curr.getName();
 													remoteTreatDiseases[remoteTreated] = selector.getSelected();
 													remoteTreated++;
@@ -2482,7 +2483,6 @@ public class GameScreen implements Screen {
 										}
 									}
 									
-									final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 									selector.setItems( viablePlayers );
 									
@@ -2492,7 +2492,6 @@ public class GameScreen implements Screen {
 											if( (boolean)object )
 											{
 												String selected = selector.getSelected();
-												tempSkin.dispose();
 												
 												if( currentPlayer.getName().equals( selected ) )
 												{
@@ -2657,13 +2656,11 @@ public class GameScreen implements Screen {
 	            					list[ i ] = playerList.get( i ).getName();
 	            				}
 	            				
-	            				final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 	                			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
 	                			
 	                			Dialog skPrompt = new Dialog("Choose a Player to give card to",skin){
 	                				protected void result(Object object){
 	                					String selected = selectBox.getSelected();
-	                					tempSkin.dispose();
 	                		            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 	                		            //dialogStage = null;
 	                		            ClientComm.send("ShareKnowledge/"+selected);
@@ -2874,8 +2871,6 @@ public class GameScreen implements Screen {
 				    				{
 				    					list[ i ] = researchStationCityNames.get(i);
 				    				}
-				    				
-				    				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 				        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
 				        			
 				        			Dialog rsPrompt = new Dialog("Choose a Research Station to remove",skin){
@@ -3096,7 +3091,6 @@ public class GameScreen implements Screen {
 								
 								if( diseaseName.equals("") )
 								{
-									final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 									
 									ArrayList<String> alData = new ArrayList<String>();
@@ -3234,7 +3228,6 @@ public class GameScreen implements Screen {
 										}
 									}
 									
-									final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 									selector.setItems( diseases );
 									Dialog dsDiag = new Dialog( "Select a disease to cure", skin ) {
@@ -3242,12 +3235,10 @@ public class GameScreen implements Screen {
 										protected void result(Object object) {
 											if( (boolean)object )
 											{
-												tempSkin.dispose();
 												String disease = selector.getSelected();
 												
 												if( disease.equalsIgnoreCase("Purple") )
 												{
-													final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 													final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 													
 													ArrayList<String> alData = new ArrayList<String>();
@@ -3633,7 +3624,6 @@ public class GameScreen implements Screen {
 						    					list[ i ] = researchStationCityNames.get(i);
 						    				}
 						    				
-						    				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 						        			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
 						        			
 						        			Dialog rsPrompt = new Dialog("Choose a Research Station to remove",skin){
@@ -3666,7 +3656,6 @@ public class GameScreen implements Screen {
 			            			else if ( ( (String)  object ).equals( "move") )
 			            			{
 			            				dialogStage.clear();;
-			            				Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 			            				final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
 
 			            				Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
@@ -3848,7 +3837,6 @@ public class GameScreen implements Screen {
 			            			}
 			            			
 
-			            			final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 			            			final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
 			            			selectBox.setItems( data );
 			            			dialogStage.clear();
@@ -4153,9 +4141,6 @@ public class GameScreen implements Screen {
 
 	void displayCurrPlayer(){
 
-		BitmapFont font = new BitmapFont();
-		BitmapFont secondPart = new BitmapFont();
-
 //		String str = "";
 
 		/*float x = curr.getXInWindowCoords( windWidth * 0.85 );
@@ -4173,56 +4158,55 @@ public class GameScreen implements Screen {
 		};
 
 		batch.begin();
-			font.setColor(colors[currentPlayer.getColour().ordinal()]);
+			currPlayerFont0.setColor(colors[currentPlayer.getColour().ordinal()]);
 			handPlayerFont.setColor(colors[handShownPlayer.getColour().ordinal()]);
-			secondPart.draw(batch, currentPlayer.getName() + "'s Turn", windWidth*0.87f, windHeight*0.98f);
-			font.draw(batch, currentPlayer.getName() + "'s", windWidth*0.87f, windHeight*0.98f);
+			currPlayerFont1.draw(batch, currentPlayer.getName() + "'s Turn", windWidth*0.87f, windHeight*0.98f);
+			currPlayerFont0.draw(batch, currentPlayer.getName() + "'s", windWidth*0.87f, windHeight*0.98f);
 			if( handShownPlayer == clientPlayer )
 			{
-				secondPart.draw(batch, "Your Hand:",  15f, handPanelYSize*1.3f );
+				currPlayerFont1.draw(batch, "Your Hand:",  15f, handPanelYSize*1.3f );
 			}
 			else
 			{
 				handPlayerFont.draw(batch, handShownPlayer.getName() + "'s Hand:", 15f, handPanelYSize*1.3f);
 			}
 		batch.end();
-
-		font.dispose();
-		secondPart.dispose();
 	}
 
 	void displayInfectionRate(int position){
-
-		BitmapFont font = new BitmapFont();
-
-		if(position >= 0 && position <= 2){
-			infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate2Green.png"));
+		
+		Texture[] infectionDisTexts = new Texture[7];
+		for( int idx = 0; idx < 7; idx++ )
+		{
+			if(idx >= 0 && idx <= 2){
+				infectionDisTexts[idx] = ( idx == position ) ? infectRateCirclesGreen[0] : infectRateCircles[0]; 
+			}
+			else if(idx > 2 && idx <= 4){
+				infectionDisTexts[idx] = ( idx == position ) ? infectRateCirclesGreen[1] : infectRateCircles[1]; 
+			}
+			else if(idx > 4 && idx <= 6){
+				infectionDisTexts[idx] = ( idx == position ) ? infectRateCirclesGreen[2] : infectRateCircles[2]; 
+			}
+			else{
+				System.out.println("Invalid position");
+			}
 		}
-		else if(position > 2 && position <= 4){
-			infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate3Green.png"));
-		}
-		else if(position > 4 && position <= 6){
-			infectRateCircles[position] = new Texture(Gdx.files.internal("infectRate4Green.png"));
-		}
-		else{
-			System.out.println("Invalid position");
-		}
+		
+		
 
 		batch.begin();
 
-		font.setColor(Color.GREEN);
+		infectionRateFont.setColor(Color.GREEN);
 
-		font.draw(batch, "Infection Rate:", windWidth * 0.765f, windHeight * 0.12f);
+		infectionRateFont.draw(batch, "Infection Rate:", windWidth * 0.765f, windHeight * 0.12f);
 
-		for(int i = 0; i < infectRateCircles.length; i++){
+		for(int i = 0; i < infectionDisTexts.length; i++){
 
-			batch.draw(infectRateCircles[i], windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
+			batch.draw(infectionDisTexts[i], windWidth * (float)(0.82 + (i * 2.3 * 0.01)), windHeight * 0.1f, 40f, 40f);
 
 		}
 
 		batch.end();
-
-		infectRateCircles[position].dispose();
 	}
 
 	void displayOutbreakCounter(int amountOfOutbreaks){
@@ -4231,7 +4215,7 @@ public class GameScreen implements Screen {
 
 		for(int i = 0; i < amountOfOutbreaks; i++){
 			if(amountOfOutbreaks >= 0 && amountOfOutbreaks <= 8){
-				outbreakRateCircles[i] = new Texture(Gdx.files.internal("outBreakLogo.png"));
+				outbreakRateCircles[i] = outbreakMarker;
 			}
 			else{
 				System.out.println("Invalid position");
@@ -4255,16 +4239,6 @@ public class GameScreen implements Screen {
 	}
 
 	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int researchNo){
-
-		BitmapFont deckFont = new BitmapFont();
-		BitmapFont yellowFont = new BitmapFont();
-		BitmapFont redFont = new BitmapFont();
-		BitmapFont blueFont = new BitmapFont();
-		BitmapFont blackFont = new BitmapFont();
-		BitmapFont researchFont = new BitmapFont();
-
-
-
 		batch.begin();
 
 		deckFont.draw(batch, Integer.toString(deckNo)+",", windWidth*0.3925f, windHeight*0.99f);
@@ -4275,35 +4249,21 @@ public class GameScreen implements Screen {
 		researchFont.draw(batch, Integer.toString(researchNo)+",", windWidth*0.582f, windHeight*0.99f);
 
 		batch.end();
-
-		deckFont.dispose();
-		yellowFont.dispose();
-		redFont.dispose();
-		blueFont.dispose();
-		blackFont.dispose();
-
 	}
 
 	void displayNumberOfActionsLeft(int remActions){
-
-		BitmapFont font = new BitmapFont();
-
 		batch.begin();
-		font.setColor(Color.RED);
-		font.draw(batch, "Remaining Actions: " + Integer.toString(remActions), windWidth*0.87f, windHeight*0.95f);
+		numActionsFont.setColor(Color.RED);
+		numActionsFont.draw(batch, "Remaining Actions: " + Integer.toString(remActions), windWidth*0.87f, windHeight*0.95f);
 		if( currentPlayer.role.equalsIgnoreCase("Bioterrorist") )
 		{
-			font.draw(batch, "Bonus move used: " + Boolean.toString(extraMoveActionUsed), windWidth*0.87f, windHeight*0.93f);
+			numActionsFont.draw(batch, "Bonus move used: " + Boolean.toString(extraMoveActionUsed), windWidth*0.87f, windHeight*0.93f);
 		}
 		batch.end();
-
-		font.dispose();
 	}
 
 	void displayPlayerColours(){
 
-		BitmapFont playersColores = new BitmapFont();
-		BitmapFont colourToBeDrawn = new BitmapFont();
 
 		Color[] colors = {
 				Color.GREEN,
@@ -4338,25 +4298,23 @@ public class GameScreen implements Screen {
 		batch.begin();
 		batch.draw( panelText, 0, localheight - 25*(players.length+2), 150, 25*(players.length+2) );
 		localheight -= 15f;
-		playersColores.setColor( Color.WHITE );
-		playersColores.getData().setScale( 1.25f );
-		playersColores.draw( batch, "Turn Order:", 15f, localheight );
+		playerColourFont0.setColor( Color.WHITE );
+		playerColourFont0.getData().setScale( 1.25f );
+		playerColourFont0.draw( batch, "Turn Order:", 15f, localheight );
 		localheight -= 25f;
 		for(int i = 0; i < players.length; i++){
 			if(playersInOrder[i] != null){
-				colourToBeDrawn.setColor(colors[playersInOrder[i].getColour().ordinal()]);
-				colourToBeDrawn.getData().setScale(1.25f);
-				colourToBeDrawn.draw(batch, playersInOrder[i].getName(), windWidth * 0.025f, localheight );
+				playerColourFont1.setColor(colors[playersInOrder[i].getColour().ordinal()]);
+				playerColourFont1.getData().setScale(1.25f);
+				playerColourFont1.draw(batch, playersInOrder[i].getName(), windWidth * 0.025f, localheight );
 				localheight -= 25f;
 				//playersColores.getData().setScale(1.25f);
 				//playersColores.draw( batch, players[i].getName() + " is ", windWidth * 0.01f, windHeight - (50f * 1.125f * 4f) - (float)((i+2) * 25f));
 			}
 		}
 		batch.end();
-
-		playersColores.dispose();
-
-		colourToBeDrawn.dispose();
+		panel.dispose();
+		panelText.dispose();
 	}
 
 	
@@ -4633,7 +4591,6 @@ public class GameScreen implements Screen {
 	public static void AskForDiscard()
 	{
 		dialogStage.clear();;
-		Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 		final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
 
 		Dialog discardPrompt = new Dialog("Choose a card to Discard",skin){
@@ -5056,7 +5013,6 @@ public class GameScreen implements Screen {
 		for( int i = 0; i < cards.length; i++ )
 			cards[i] = playerDiscardPile.get( i );
 		
-		final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json") );
 		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 		selector.setItems( cards );
 		
@@ -5065,7 +5021,6 @@ public class GameScreen implements Screen {
 			protected void result(Object object) {
 				ClientComm.send( "ReexaminedResearchResponse/" + selector.getSelected() );
 				Gdx.input.setInputProcessor( buttonStage );
-				tempSkin.dispose();
 			}
 		};
 		rrDiag.getContentTable().add( selector );
@@ -5114,7 +5069,6 @@ public class GameScreen implements Screen {
 
 	public static void NewAssignment( String[] Roles )
 	{
-		final Skin tempSkin = new  Skin( Gdx.files.internal( "skin/uiskin.json") );
 		final SelectBox<String> selector = new SelectBox<String>(tempSkin);
 		Dialog naDiag = new Dialog( "Select New Role", skin ) {
 			@Override
@@ -5122,7 +5076,6 @@ public class GameScreen implements Screen {
 				if( (boolean)object )
 				{
 					String selected = selector.getSelected();
-					tempSkin.dispose();
 					changeRole( selected );
 				}
 				Gdx.input.setInputProcessor( buttonStage );
@@ -5252,7 +5205,6 @@ public class GameScreen implements Screen {
 	
 	public static void MobileHospitalResponse( String[] DiseaseNames )
 	{
-		final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 		
 
@@ -5261,7 +5213,6 @@ public class GameScreen implements Screen {
 			@Override
 			protected void result(Object object) 
 			{
-				tempSkin.dispose();
 				ClientComm.send("MobileHospitalResponse/" + selector.getSelection() );
 				Gdx.input.setInputProcessor( buttonStage );
 			}
