@@ -1,6 +1,7 @@
 package Server;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class GameManager {
 	//public static ArrayList<Game> games = new ArrayList<Game>();
@@ -606,6 +607,8 @@ public class GameManager {
 				game.infectCity(t2, 1);
 			}
 		}
+		//Checks for MobileHospital flag
+		game.EvMobile = false;
 		
 		game.stage = Stage.Action;
 		if(game.turn == game.players.size()-1) {
@@ -628,11 +631,12 @@ public class GameManager {
 	}
 	
 	public static void EventAction(String[] args){
+		boolean removeEventFromHand = true;
 		if(args[2].equals("Airlift")) {
 			Player target = game.getPlayer(args[3]);
 			int index = game.players.indexOf(target);
 			
-			ServerComm.sendMessage("AskForConsentAirlift/",index);
+			ServerComm.sendMessage("AskForConsent/",index);
 			while(ServerComm.response == null) {
 				try {
 					Thread.sleep(1);
@@ -648,12 +652,11 @@ public class GameManager {
 			if(consent){
 				City c = game.getCity(args[4]);
 				target.pawn.move(c,true); 
-				Player temp = game.getPlayer(args[0]);
-				//TODO remove event card from player hand
-				//TODO send messages to client
+				//send messages to client
+				ServerComm.sendToAllClients("UpdatePlayerLocation/" + target.username + "/" + c.name + "/");
 			}
 			else{
-				
+				removeEventFromHand = false;
 			}
 		}
 		else if(args[2].equals("BorrowedTime")) {
@@ -661,26 +664,62 @@ public class GameManager {
 			Pawn pawn = curPlayer.getPawn();
 			pawn.actions += 2;
 			//TODO send to client
+			ServerComm.sendToAllClients("BorrowedTimeActivated/");
 		}
 		else if(args[2].equals("CommercialTravelBan")) {
 			game.EvCommercial = game.turn;
-			//TODO send to client
-		}
-		else if(args[2].equals("Forecast")) {
 			
 		}
+		//params: PlayerIndex/EventAction/Forecast
+		else if(args[2].equals("Forecast")) {
+			List<InfectionCard> forecastCards = game.infectionDeck.subList(0, 5);
+			String forecastPrompt = "ForecastPrompt/";
+			for(int i = 0; i<5; i++){
+				InfectionCard c = forecastCards.get(i);
+				if(c.city!=null){
+					forecastPrompt = forecastPrompt + c.city.name + ",";
+				}
+				else{
+					forecastPrompt = forecastPrompt + "Mutation,";
+				}
+			}
+			String[] response = ServerComm.getResponse(forecastPrompt, Integer.parseInt(args[0])).split(",");
+			//Create new infection pile, add first cards in order, then the rest.
+			ArrayList<InfectionCard> newInfectionDiscardPile = new ArrayList<InfectionCard>();
+			for(String s:response){
+				if(s.equals("Mutation")){
+					for (InfectionCard c:forecastCards){
+						if(c.city==null){
+							forecastCards.remove(c);
+							newInfectionDiscardPile.add(c);
+						}
+					}
+				}
+				else{
+					for (InfectionCard c:forecastCards){
+						if(c.city.name.equals(s)){
+							forecastCards.remove(c);
+							newInfectionDiscardPile.add(c);
+						}
+					}
+				}
+			}
+			newInfectionDiscardPile.addAll(game.infectionDiscardPile);
+			game.infectionDiscardPile = newInfectionDiscardPile;
+		}
+		//params: PlayerIndex/EventAction/GG/targetCity/CityToRemoveRS
 		else if(args[2].equals("GovernmentGrant")) {
 			City targetCity = game.getCity(args[3]);
 			if (args[4].equals("none")){
 				targetCity.addResearchStation();
-				
-				//TODO send info to clients
+				ServerComm.sendToAllClients("AddResearchStation/"+targetCity.name+"/");
 			}
 			else{
 				City cityToRemoveRSFrom = game.getCity(args[4]);
 				cityToRemoveRSFrom.removeResearchStation();
 				targetCity.addResearchStation();
-				
+				ServerComm.sendToAllClients("RemoveResearchStation/"+cityToRemoveRSFrom.name+"/");
+				ServerComm.sendToAllClients("AddResearchStation/"+targetCity.name+"/");
 				//TODO send info to clients
 			}
 		}
@@ -705,7 +744,7 @@ public class GameManager {
 			//TODO send to client, turn on flag in client
 		}
 		//params: PlayerIndex/EventAction/NA/targetPlayer
-		else if(args[2].equals("NewAssignment")) {
+		else if(args[2].equals("NewAssignmentRequest")) {
 			Player targetPlayer = game.getPlayer(args[3]);
 			String q = "PromptNewAssignment/";
 			for (Pawn p: game.pawns){
@@ -733,24 +772,26 @@ public class GameManager {
 			game.oneQuietNightFlag = true;
 		}
 		//params:PlayerIndex/EventAction/RVD/Color/ListOfCities <- separated by ,
-		else if(args[2].equals("RapidVaccineDeployment")) {
-			//TODO prompt client to play RVD after curing sth
+		else if(args[2].equals("RapidVaccine")) {
+			//prompt client to play RVD after curing sth (done in client)
 			String[] citiesList = args[4].split(",");
 			Color z = Color.valueOf(args[3]);
 			for(String s:citiesList){
 				City c = game.getCity(s);
 				c.removeDiseaseCube(z);
+				ServerComm.sendToAllClients("RemoveCube/" + c + "/" + z + "/" + 1 + "/");
 			}
-			//TODO update client
+			
 		}
+		//params: PlayerIndex/EventAction/ReexaminedResearch/TargetPlayer
 		else if(args[2].equals("ReexaminedResearch")) {
+			Player targetPlayer = game.getPlayer(args[3]);
 			ArrayList<PlayerCard> discardPile = (ArrayList<PlayerCard>) game.playerDiscardPile.clone();
 			String q = "ChooseCard/PlayerCard/";
 			for(PlayerCard c: discardPile){
 				q = q + c.name + ",";
 			}
-			String cityCardToAddToHand = ServerComm.getResponse(q, Integer.parseInt(args[0]));
-			Player curPlayer = game.getCurrentPlayer();
+			String cityCardToAddToHand = ServerComm.getResponse(q, targetPlayer.ID);
 			PlayerCard targetCard = null;
 			for(PlayerCard c: game.playerDiscardPile){
 				if(c.name.equals(cityCardToAddToHand)){
@@ -759,12 +800,12 @@ public class GameManager {
 				}
 			}
 			if(targetCard != null){
-				curPlayer.hand.add(targetCard);
+				targetPlayer.hand.add(targetCard);
 				game.playerDiscardPile.remove(targetCard);
 			}
 			//TODO update clients
 		}
-		//params:PlayerIndex/EventAction/RT/CitiesList(max 2, separated by ,)/ColorsList(max 2 separated by ,)
+		//params:PlayerIndex/EventAction/RT/CitiesList(max 2, separa 	ted by ,)/ColorsList(max 2 separated by ,)
 		else if(args[2].equals("RemoteTreatment")) {
 			String[] citiesList = args[3].split(",");
 			String[] colorsList = args[4].split(",");
@@ -795,7 +836,69 @@ public class GameManager {
 			}
 			ServerComm.sendToAllClients("RemoveFromInfectionPile/" + args[3]);
 		}
-		else if(args[2].equals("SpecialOrders")) {
+		//params:PlayerIndex/EventAction/SO/AffectedPlayer
+		else if(args[2].equals("SpecialOrdersRequest")) {
+			int targetPlayerIndex = game.getPlayer(args[3]).ID;
+			String consent = ServerComm.getResponse("AskForConsent", targetPlayerIndex);
+			//Sends name of affected player to current turn client
+			if(consent.equals("true")){
+				ServerComm.sendMessage("SpecialOrdersActivated/"+args[3]+"/", game.turn);
+			}
+			else{
+				removeEventFromHand = false;
+			}
+			
+		}
+		//PlayerIndex/EventAction/SpecialOrdersMove/(Drive/Flight etc)/targetPlayerToMove/normal args
+		else if(args[2].equals("SpecialOrdersMove")){
+			Player targetPlayer = game.getPlayer(args[4]);
+			Pawn targetPawn = targetPlayer.getPawn();
+			Player currentPlayer = game.getCurrentPlayer();
+			City destination = game.getCity(args[5]);
+			if(args[3].equals("Drive")){
+				targetPawn.move(destination, true);
+			}
+			else if(args[3].equals("DirectFlight")){
+				targetPawn.move(destination, true);
+				for (PlayerCard c: currentPlayer.hand){
+					if(c.city==destination){
+						currentPlayer.hand.remove(c);
+						game.playerDiscardPile.add(c);
+						ServerComm.sendToAllClients("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/");
+						break;
+					}
+				}
+			}
+			else if(args[3].equals("CharterFlight")){
+				for (PlayerCard c: currentPlayer.hand){
+					if(c.city==targetPawn.city){
+						currentPlayer.hand.remove(c);
+						game.playerDiscardPile.add(c);
+						ServerComm.sendToAllClients("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/");
+						break;
+					}
+				}
+				targetPawn.move(destination, true);
+			}
+			ServerComm.sendToAllClients("UpdatePlayerLocation/" + targetPlayer.username + "/" + destination.name + "/");
+			currentPlayer.pawn.actions--;
+			ServerComm.sendToAllClients("DecrementActions/");
+		}
+		if(removeEventFromHand){
+			Player player = game.getPlayer(Integer.parseInt(args[0]));
+			PlayerCard toRemove = null;
+			for(PlayerCard c:player.hand){
+				if(c.name.equals(args[2])){
+					toRemove = c;
+					break;
+				}
+			}
+			if(toRemove != null){
+				game.playerDiscardPile.add(toRemove);
+				player.hand.remove(toRemove);
+				
+			}
+			ServerComm.sendToAllClients("RemoveCardFromHand/"+player.username+"/"+toRemove.name+"/true/");
 			
 		}
 	}
