@@ -204,6 +204,7 @@ public class GameScreen implements Screen {
 	static boolean showCardSelectStage = false;
 	static ArrayList<PlayerCardInfo> possibleSelections;
 	static ArrayList<PlayerCardInfo> selections;
+	static String diseaseToCure;
 	static String showCardSelectAction;
 	static int cardsToSelect;
 	static ArrayList<String> possibleForecastSelections;
@@ -1502,7 +1503,7 @@ public class GameScreen implements Screen {
 											protected void result(Object object) {
 												if( (boolean)object )
 												{
-													ClientComm.send( "ReexaminedReseatch/" + selector.getSelected() + '/' );
+													ClientComm.send( "ReexaminedResearch/" + selector.getSelected() + '/' );
 													tempSkin.dispose();
 												}
 												Gdx.input.setInputProcessor( buttonStage );
@@ -1880,8 +1881,8 @@ public class GameScreen implements Screen {
 									Dialog info = new Dialog( "Select cards in order to be drawn", skin ) {
 										@Override
 										protected void result(Object object) {
-											//ClientComm.send("ForecastRequest/"); TODO: Remove
-											Forecast( new String[] { "Atlanta", "Tokyo", "Manila", "Toronto", "London", "Johannesburg" } );
+											ClientComm.send("ForecastRequest/"); 
+											//Forecast( new String[] { "Atlanta", "Tokyo", "Manila", "Toronto", "London", "Johannesburg" } );
 										};
 									};
 									info.button("Okay");
@@ -3071,6 +3072,7 @@ public class GameScreen implements Screen {
 									showCardSelectStage = true;
 									Gdx.input.setInputProcessor( cardSelectStage );
 									cardsToSelect = currentPlayer.cardsToCure + cureMod;
+									diseaseToCure = diseaseName;
 									showCardSelectAction = "DiscardForCure";
 								}
 							}
@@ -3194,6 +3196,7 @@ public class GameScreen implements Screen {
 												showCardSelectStage = true;
 												Gdx.input.setInputProcessor( cardSelectStage );
 												cardsToSelect = currentPlayer.cardsToCure - 1;
+												diseaseToCure = "purple";
 												showCardSelectAction = "DiscardForCure";
 											}
 											else
@@ -3344,6 +3347,7 @@ public class GameScreen implements Screen {
 																showCardSelectStage = true;
 																Gdx.input.setInputProcessor( cardSelectStage );
 																cardsToSelect = currentPlayer.cardsToCure - 1;
+																diseaseToCure = "purple";
 																showCardSelectAction = "DiscardForCure";
 															}
 															else
@@ -3433,6 +3437,7 @@ public class GameScreen implements Screen {
 													Gdx.input.setInputProcessor( cardSelectStage );
 													int mod = ( selected.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
 													cardsToSelect = currentPlayer.cardsToCure + mod;
+													diseaseToCure = selected;
 													showCardSelectAction = "DiscardForCure";
 												}
 											}
@@ -3636,7 +3641,7 @@ public class GameScreen implements Screen {
 						        					if( (Boolean)(object) )
 						        					{
 						            					String selected = selectBox.getSelected();
-						            					ClientComm.send( "BuildResearchStation/"+selected );
+						            					ClientComm.send( "OperationsExpertAction/Build//"+selected );
 						            		            Gdx.input.setInputProcessor(buttonStage);
 						        					}
 						        					else
@@ -3939,7 +3944,7 @@ public class GameScreen implements Screen {
 				{
 					showCardSelectStage = false;
 					Gdx.input.setInputProcessor( buttonStage );
-					String message = "CureDisease/";
+					String message = "CureDisease/" + diseaseToCure + '/';
 					for( PlayerCardInfo card : selections )
 						message += card.getName();
 					
@@ -5217,6 +5222,7 @@ public class GameScreen implements Screen {
 		else if( virulentStrainDisease.equalsIgnoreCase( "purple" ) )
 			remPurpleCubes -=  numToRem;
 	}
+	
 	public static void AirportSighting( String CityName ) 
 	{
 		if( !clientPlayer.role.equalsIgnoreCase( "Bioterrorist" ) )
@@ -5233,18 +5239,23 @@ public class GameScreen implements Screen {
 			Gdx.input.setInputProcessor( dialogStage );
 		}
 	}
+	
 	public static void SetBioterroristBonusAction( String IsUsed )
 	{
 		extraMoveActionUsed = Boolean.valueOf( IsUsed );
 	}
+	
 	public static void Capture()
 	{
 		isCaptured = true;
 	}
+	
 	public static void MobileHospitalResponse( String[] DiseaseNames )
 	{
 		final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
 		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+		
+
 		
 		Dialog mhDiag = new Dialog( "Select Disease to treat with Mobile Hospital effect", skin ){
 			@Override
@@ -5255,7 +5266,19 @@ public class GameScreen implements Screen {
 				Gdx.input.setInputProcessor( buttonStage );
 			}
 		};
-		selector.setItems( DiseaseNames );
+		
+		ArrayList<String> viableDiseases = new ArrayList<String>();
+		for( String name : DiseaseNames )
+		{
+			if( lookupCity( currentPlayer.getCity() ).getCubesByColor( name ).size() > 0 )
+				viableDiseases.add( name );
+		}
+		
+		String[] data = new String[viableDiseases.size()];
+		for( int i = 0; i < data.length; i++ )
+			data[i] = viableDiseases.get( i );
+		
+		selector.setItems( data );
 		mhDiag.getContentTable().add( selector );
 		mhDiag.button("Select");
 		mhDiag.show( dialogStage );
