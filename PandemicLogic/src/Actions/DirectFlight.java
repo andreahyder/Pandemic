@@ -6,7 +6,7 @@ public class DirectFlight implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameManager.DirectFlight(args[2],args[3]);
+		GameManager.DirectFlight(args[2]);
 		
 	}
 

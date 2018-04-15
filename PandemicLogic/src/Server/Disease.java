@@ -3,9 +3,13 @@ import java.util.ArrayList;
 
 public class Disease {
 	Color color;
+	Boolean virulent;
+	Boolean cured;
 	ArrayList<DiseaseCube> cubes;
 	
 	Disease(String s){
+		virulent = false;
+		cured = false;
 		cubes = new ArrayList<DiseaseCube>();
 		if(s.matches("black")) {
 			color = Color.black;

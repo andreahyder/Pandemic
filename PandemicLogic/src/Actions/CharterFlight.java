@@ -6,7 +6,7 @@ public class CharterFlight implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameManager.CharterFlight(args[2],args[3]);
+		GameManager.CharterFlight(args[2]);
 		
 	}
 

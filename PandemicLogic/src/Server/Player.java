@@ -7,11 +7,13 @@ public class Player {
 	String username;
 	String password;
 	Status status;
+	Game game;
 	Boolean ready;
 	Pawn pawn;
 	ArrayList<PlayerCard> hand;
 	
 	Player(String n){
+		game = null;
 		ID = IDcount;
 		IDcount++;
 		username = n;
@@ -41,7 +43,11 @@ public class Player {
 			}
 		}
 		else {
-			
+			Pawn t1 = pawn;
+			game.pawns.add(t1);
+			pawn = p;
+			pawn.player = this;
+			pawn.city = c;
 		}
 	}
 	

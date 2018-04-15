@@ -18,29 +18,39 @@ public class Game {
 	ArrayList<InfectionCard> infectionDiscardPile;
 	int quarantines;
 	
-	int difficulty;
-	int numPlayer;
-	Boolean OTB;
+	//settings
+	int Diff;
+	int Num;
+	Boolean Otb;
 	Boolean Vir;
 	Boolean Mut;
 	Boolean Bio;
 	int BT;
+	int VS;
 	
 	boolean loaded;
-	int maxPlayer;
 	int turn;
 	int Bturn;
 	Stage stage;
 	static int[] infectionRate = new int[] {2,2,2,3,3,4,4};
 	int infectionCount;
 	int outbreakCount;
-	boolean mobileHospitalActive = false;
-	int CommercialTravelBanTurnIndex = -1;
+	
+	//event flags
+	boolean EvMobile = false;
+	int EvCommercial = -1;
+	
+	//virulent flags
+	boolean VirChronic = false;
+	boolean VirComplex = false;
+	boolean VirGov = false;
+	boolean VirRate = false;
+	boolean VirSlip = false;
 	
 	//initializes game, initializes alot of things.
 	Game(){
 		BT = -1;
-		maxPlayer = 5;
+		VS = -1;
 		loaded = false;
 		turn = 0;
 		Bturn = 0;
@@ -130,7 +140,7 @@ public class Game {
 			pawns.add(new Pawn(Role.Res));
 			pawns.add(new Pawn(Role.Sci));
 			
-			if(OTB) {
+			if(Otb) {
 				pawns.add(new Pawn(Role.Arch));
 				pawns.add(new Pawn(Role.ContS));
 				pawns.add(new Pawn(Role.Epi));
@@ -155,10 +165,10 @@ public class Game {
 			}
 			
 			//add event cards
-			if(OTB) {
+			if(Otb) {
+				ArrayList<String> names = new ArrayList<String>(Arrays.asList(Vars.eventnames));
+				Collections.shuffle(names);
 				for(int i = 0; i < (players.size()*2); i++) {
-					ArrayList<String> names = new ArrayList<String>(Arrays.asList(Vars.eventnames));
-					Collections.shuffle(names);
 					PlayerCard p = new PlayerCard(null, Type.Event, names.get(i));
 					playerDeck.add(p);
 				}
@@ -206,13 +216,15 @@ public class Game {
 			}
 			
 			//setup epidemic/vir
-			int epi = difficulty + 4;
+			int epi = Diff + 4;
 			if(Vir) {
+				ArrayList<String> names = new ArrayList<String>(Arrays.asList(Vars.virnames));
+				Collections.shuffle(names);
 				for(int i = 0; i < epi; i++) {
 					int r1 = i * (playerDeck.size()/epi);
 					int r2 = (i+1) * (playerDeck.size()/epi);
 					int r = rand.nextInt(r2-r1) + r1 + i;
-					PlayerCard p = new PlayerCard(null, Type.Virulent, null);
+					PlayerCard p = new PlayerCard(null, Type.Virulent, names.get(i));
 					playerDeck.add(r,p);
 				}
 			}
@@ -258,7 +270,7 @@ public class Game {
 	void drawCard(Player p, int count) {
 		for(int i = 0; i < count; i++) {
 			PlayerCard t1 = playerDeck.remove(0);
-			if(t1.type.equals(Type.Epidemic)) {
+			if(t1.type.equals(Type.Epidemic) || t1.type.equals(Type.Virulent)) {
 				System.out.println("Player " + p.username + " drew an EPIDEMIC card!");
 				
 				infectionCount++;
@@ -276,6 +288,52 @@ public class Game {
 				else {
 					infectCity(t2, 4-c);
 				}
+				
+				if(t1.type.equals(Type.Virulent)) {
+					if(VS == -1) {
+						int cub = 25;
+						int d = -1;
+						for(int j = 0; j < 4; j++) {
+							if(diseases.get(j).cubes.size() < cub) {
+								cub = diseases.get(j).cubes.size();
+								d = j;
+							}
+						}
+						diseases.get(d).virulent = true;
+						VS = d;
+						
+						//TODO update virulent strain disease for everyone
+					}
+					
+					if(t1.name.equals("ChronicEffect")) {
+						
+					}
+					else if(t1.name.equals("ComplexMolecularStructure")) {
+						
+					}
+					else if(t1.name.equals("GovernmentInterference")) {
+						
+					}
+					else if(t1.name.equals("HiddenPocket")) {
+						
+					}
+					else if(t1.name.equals("RateEffect")) {
+						
+					}
+					else if(t1.name.equals("SlipperySlope")) {
+						
+					}
+					else if(t1.name.equals("UnacceptableLoss")) {
+						
+					}
+					else if(t1.name.equals("UnacountedPopulations")) {
+						
+					}
+					else {
+						
+					}
+				}
+				
 				Collections.shuffle(infectionDiscardPile);
 				for(int j = 0; j < infectionDiscardPile.size(); j++) {
 					InfectionCard d = infectionDiscardPile.remove(0);
@@ -285,6 +343,10 @@ public class Game {
 				for(int j = 0; j < players.size(); j++) {
 					ServerComm.sendMessage("ClearInfectionDiscard/", j);
 				}
+			}
+			else if(t1.type.equals(Type.Mutation)) {
+				System.out.println("Player " + p.username + " drew a MUTATION card!");
+				
 			}
 			else {
 				System.out.println("Player " + p.username + " drew " + t1.city.name + ".");
@@ -311,6 +373,8 @@ public class Game {
 				if(c.city.quarantine == 0) {
 					quarantines++;
 				}
+				
+				//TODO update quarantine and quarantines for all players
 			}
 			else {
 				if(c.city.countDiseaseCube(color) != 3) {
@@ -345,6 +409,8 @@ public class Game {
 								if(link.quarantine == 0) {
 									quarantines++;
 								}
+								
+								//TODO update quarantine and quarantines for all players
 							}
 							else {
 								if(!link.outbroken) {
@@ -387,9 +453,6 @@ public class Game {
 			ServerComm.sendMessage(mes, i);
 		}
 	}
-	public void changeMobileHospitalFlag(boolean param){
-		mobileHospitalActive = param;
-	}
 	
 	//return the current player
 	public Player getCurrentPlayer() {
@@ -424,7 +487,16 @@ public class Game {
 		}
 		return null;
 	}
-		
+	
+	int getDiscardCard(City c) {
+		for(int i = 0; i < playerDiscardPile.size(); i++) {
+			if(playerDiscardPile.get(i).city.equals(c)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	//return a city with the specified name in the game
 	public City getCity(String s){
 		int i = 0;
@@ -487,26 +559,26 @@ class Vars{
 		"RapidVaccineDeployment",
 		"ReexaminedResearch",
 		"RemoteTreatment",
-		"SpecialOrders",
+		"SpecialOrders"
 	};
 	
 	static String[] virnames = new String[]
 	{
-		"Chronic Effect",
-		"Complex Molecular Structure",
-		"Government Interference",
-		"Hidden Pocket",
-		"Rate Effect",
-		"Slippery Slope",
-		"Unacceptable Loss",
-		"Unacounted Populations"
+		"ChronicEffect",
+		"ComplexMolecularStructure",
+		"GovernmentInterference",
+		"HiddenPocket",
+		"RateEffect",
+		"SlipperySlope",
+		"UnacceptableLoss",
+		"UnacountedPopulations"
 	};
 	
 	static String[] mutnames = new String[]
 	{
 		"TheMutationIntensifies",
 		"TheMutationSpreads",
-		"TheMutationThreatens",
+		"TheMutationThreatens"
 	};
 	
 	static String[][] names = new String[][]
