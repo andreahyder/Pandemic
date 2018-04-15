@@ -197,6 +197,13 @@ public class GameScreen implements Screen {
 	static int remBlueCubes = 24;
 	static int remBlackCubes = 24;
 	static int remResearchStations = 6;
+
+	static int holdingPlayer = -1;
+	static int researcherPlayer = -1;
+	static Boolean give = false;
+	static Boolean presentResearcher = false;
+	static Boolean playerHasCityCard = false;
+
 	static ArrayList<String> researchStationCityNames = new ArrayList<String>();
 
 	static boolean turnEnded = false;
@@ -401,7 +408,7 @@ public class GameScreen implements Screen {
 		
 
     	players[0].addCardToHand( new PlayerCardInfo("RapidVaccine" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -1836,13 +1843,173 @@ public class GameScreen implements Screen {
 	        			dialogStage.clear();
 	        			String cityName = currentPlayer.getCity();
 	        			boolean hasCard = playerHasCityCard( currentPlayer, cityName );
-	        			boolean isResearcher = false;
-	        			if (clientPlayer.role.equalsIgnoreCase("Researcher")){
+	        			final boolean isResearcher = clientPlayer.role.equalsIgnoreCase("Researcher");
+	        			/*if (clientPlayer.role.equalsIgnoreCase("Researcher")){
 	        				isResearcher = true;
+						}*/
+
+						ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
+						for ( PlayerInfo player : players )
+						{
+							if( player != null && player != currentPlayer )
+							{
+								if ( player.getCity().equals(cityName) )
+								{
+									playerList.add( player );
+								}
+							}
 						}
-	        			if( hasCard || isResearcher)
-	        			{
-	        				ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
+
+						//Boolean presentResearcher = false;
+						//Boolean playerHasCityCard = false;
+						//ArrayList<PlayerInfo> playersThatCanGive = new ArrayList<PlayerInfo>();
+						for ( PlayerInfo player : playerList )
+						{
+	        					/*if( player == null ) {
+									playersThatCanGive.remove(playersThatCanGive.indexOf(player));
+									continue;
+								}*/
+
+							if ( player.role.equalsIgnoreCase("Researcher") && !player.equals(currentPlayer)) {
+								presentResearcher = true;
+								//researcherPlayer = player;
+								//playersThatCanGive.add(player);
+								//researcherPlayer = playersThatCanGive.indexOf(player);
+							}
+
+							else {
+								for (PlayerCardInfo card : player.getHand()) {
+									if (card.getName().equals(cityName) && !player.equals(currentPlayer)) {
+										//holdingPlayer = player;
+										playerHasCityCard = true;
+										//playersThatCanGive.add(player);
+										//holdingPlayer = playersThatCanGive.indexOf(player);
+										break;
+									}
+								}
+							}
+							if(presentResearcher && playerHasCityCard){
+								break;
+							}
+						}
+
+						if ( ( isResearcher && playerHasCityCard ) || ( presentResearcher && hasCard ) ){
+							final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+							final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+
+							Dialog skPrompt = new Dialog("Give or take card?",skin){
+								protected void result(Object object) {
+
+									String selected = selectBox.getSelected();
+									tempSkin.dispose();
+									Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+
+									if(selected.equalsIgnoreCase("Give")){
+										give = true;
+									}
+									else if (selected.equalsIgnoreCase("Take")){
+										give = false;
+									}
+
+									if( give )
+									{
+
+										String[] list = new String[ playerList.size() ];
+										if ( playerList.size() != 0 )
+										{
+											for ( int i = 0; i < playerList.size(); i++ )
+											{
+												list[ i ] = playerList.get( i ).getName();
+											}
+
+											final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+											final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+
+											if(isResearcher){
+												Dialog skPrompt = new Dialog("Choose a Player to give a card to",skin){
+													protected void result(Object object){
+
+														String selected = selectBox.getSelected();
+														tempSkin.dispose();
+														Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+														//dialogStage = null;
+
+														final Skin tempSkin2 = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+														final SelectBox<String> selectBox2 = new SelectBox<String>(tempSkin2);
+
+														Dialog skPrompt2 = new Dialog("Choose a card to give", skin){
+															protected void result(Object object){
+																String selectedCard = selectBox2.getSelected();
+																tempSkin2.dispose();
+																Gdx.input.setInputProcessor(buttonStage);
+
+																ClientComm.send("ShareKnowledge/"+selected+"/"+selectedCard);
+															}
+														};
+
+														System.out.println(Arrays.toString(clientPlayer.getHandOfStrings()));
+
+														skPrompt2.setSize(250,150);
+														skPrompt2.setPosition( windWidth / 2 - skPrompt2.getWidth() / 2, windHeight / 2 - skPrompt2.getHeight() / 2 );
+														skPrompt2.button( "Select" );
+														selectBox2.setItems( clientPlayer.getHandOfStrings() );
+														skPrompt2.getContentTable().add(selectBox2);
+
+														dialogStage.addActor(skPrompt2);
+														Gdx.input.setInputProcessor(dialogStage);
+													}
+												};
+
+												skPrompt.setSize(250,150);
+												skPrompt.setPosition( windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2 );
+												skPrompt.button( "Select" );
+												selectBox.setItems( list );
+												skPrompt.getContentTable().add(selectBox);
+
+												dialogStage.addActor(skPrompt);
+												Gdx.input.setInputProcessor(dialogStage);
+											}
+											else {
+
+												Dialog skPrompt = new Dialog("Choose a Player to give card to", skin) {
+													protected void result(Object object) {
+														String selected = selectBox.getSelected();
+														tempSkin.dispose();
+														Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+														//dialogStage = null;
+														ClientComm.send("ShareKnowledge/" + selected + "/" + currentPlayer.getCity());
+													}
+												};
+
+												skPrompt.setSize(250, 150);
+												skPrompt.setPosition(windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2);
+												skPrompt.button("Select");
+												selectBox.setItems(list);
+												skPrompt.getContentTable().add(selectBox);
+
+												dialogStage.addActor(skPrompt);
+												Gdx.input.setInputProcessor(dialogStage);
+											}
+										}
+										else
+										{
+											Dialog skPrompt = new Dialog( "No Valid Targets", skin ){
+												protected void result(Object object)
+												{
+													Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+													//dialogStage = null;
+												}
+											};
+
+											skPrompt.button("Okay");
+											dialogStage.clear();;
+											skPrompt.show( dialogStage );
+											Gdx.input.setInputProcessor(dialogStage);
+										}
+									}
+									else
+									{
+	        				/*ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
 	        				for ( PlayerInfo player : players )
 	        				{
 	        					if( player != null && player != currentPlayer )
@@ -1852,7 +2019,175 @@ public class GameScreen implements Screen {
 	        							playerList.add( player );
 	        						}
 	        					}
-	        				}
+	        				}*/
+
+
+
+										//PlayerInfo holdingPlayer = null;
+										//PlayerInfo researcherPlayer = null;
+
+										//Boolean presentResearcher = false;
+										//Boolean playerHasCityCard = false;
+										ArrayList<PlayerInfo> playersThatCanGive = new ArrayList<PlayerInfo>();
+										for ( PlayerInfo player : playerList )
+										{
+	        					/*if( player == null ) {
+									playersThatCanGive.remove(playersThatCanGive.indexOf(player));
+									continue;
+								}*/
+
+											if ( player.role.equalsIgnoreCase("Researcher")) {
+												presentResearcher = true;
+												//researcherPlayer = player;
+												playersThatCanGive.add(player);
+												researcherPlayer = playersThatCanGive.indexOf(player);
+											}
+
+											else {
+												for (PlayerCardInfo card : player.getHand()) {
+													if (card.getName().equals(cityName)) {
+														//holdingPlayer = player;
+														playerHasCityCard = true;
+														playersThatCanGive.add(player);
+														holdingPlayer = playersThatCanGive.indexOf(player);
+														break;
+													}
+												}
+											}
+											if(presentResearcher && playerHasCityCard){
+												break;
+											}
+										}
+										if ( presentResearcher || playerHasCityCard)
+										{
+											String[] list = new String[playersThatCanGive.size()];
+
+											for(int i = 0; i < list.length; i++){
+												list[i] = playersThatCanGive.get(i).getName();
+											}
+
+											final Skin tempSkin = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+											final SelectBox<String> selectBox=new SelectBox<String>(tempSkin);
+
+											Dialog skPrompt = new Dialog("Choose a Player to take a card from",skin){
+												protected void result(Object object){
+
+													String selected = selectBox.getSelected();
+													tempSkin.dispose();
+													Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+													//dialogStage = null;
+
+													final Skin tempSkin2 = new Skin( Gdx.files.internal( "skin/uiskin.json" ) );
+													final SelectBox<String> selectBox2 = new SelectBox<String>(tempSkin2);
+
+													Dialog skPrompt2 = new Dialog("Choose a card to take", skin){
+														protected void result(Object object){
+															String selectedCard = selectBox2.getSelected();
+															tempSkin2.dispose();
+															Gdx.input.setInputProcessor(buttonStage);
+
+															ClientComm.send("ShareKnowledge/"+selected+"/"+selectedCard);
+														}
+													};
+
+													System.out.println(Arrays.toString(clientPlayer.getHandOfStrings()));
+
+													skPrompt2.setSize(250,150);
+													skPrompt2.setPosition( windWidth / 2 - skPrompt2.getWidth() / 2, windHeight / 2 - skPrompt2.getHeight() / 2 );
+													skPrompt2.button( "Select" );
+													int researchIndex = researcherPlayer;
+
+													if(researcherPlayer != -1 && selected.equalsIgnoreCase(list[researcherPlayer])){
+														selectBox2.setItems(playersThatCanGive.get(researcherPlayer).getHandOfStrings());
+													}
+													else{
+														selectBox2.setItems(currentPlayer.getCity());
+													}
+
+													skPrompt2.getContentTable().add(selectBox2);
+
+													dialogStage.addActor(skPrompt2);
+													Gdx.input.setInputProcessor(dialogStage);
+
+													researcherPlayer = -1;
+													holdingPlayer = -1;
+												}
+											};
+
+											skPrompt.setSize(250,150);
+											skPrompt.setPosition( windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2 );
+											skPrompt.button( "Select" );
+											selectBox.setItems( list );
+											skPrompt.getContentTable().add(selectBox);
+
+											dialogStage.addActor(skPrompt);
+											Gdx.input.setInputProcessor(dialogStage);
+
+
+	        					/*Dialog skPrompt = new Dialog( "Take " + cityName + " from " + holdingPlayer.getName() , skin ){
+	        				        protected void result(Object object)
+	        				        {
+	        				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+	        				            //dialogStage = null;
+	        				        }
+	        					};
+
+	        					skPrompt.button("Okay", true);
+	        					skPrompt.button("No", false);
+	        					dialogStage.clear();;
+	        					skPrompt.show( dialogStage );
+	        					Gdx.input.setInputProcessor(dialogStage);*/
+											researcherPlayer = -1;
+											holdingPlayer = -1;
+										}
+										else
+										{
+											Dialog skPrompt = new Dialog( "No Valid Targets", skin ){
+												protected void result(Object object)
+												{
+													Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+													//dialogStage = null;
+												}
+											};
+
+											skPrompt.button("Okay");
+											dialogStage.clear();;
+											skPrompt.show( dialogStage );
+											Gdx.input.setInputProcessor(dialogStage);
+										}
+									}
+
+								}
+							};
+
+							skPrompt.setSize(250,150);
+							skPrompt.setPosition( windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2 );
+							skPrompt.button( "Select" );
+							String[] giveOrTake = {"Give", "Take"};
+							selectBox.setItems( giveOrTake );
+							skPrompt.getContentTable().add(selectBox);
+
+							dialogStage.addActor(skPrompt);
+							Gdx.input.setInputProcessor(dialogStage);
+
+
+						}
+
+
+
+	        			else if( hasCard || isResearcher )
+	        			{
+	        				/*ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
+	        				for ( PlayerInfo player : players )
+	        				{
+	        					if( player != null && player != currentPlayer )
+	        					{
+	        						if ( player.getCity().equals(cityName) )
+	        						{
+	        							playerList.add( player );
+	        						}
+	        					}
+	        				}*/
 	        				
 	        				String[] list = new String[ playerList.size() ];
 	        				if ( playerList.size() != 0 )
@@ -1949,7 +2284,7 @@ public class GameScreen implements Screen {
 	        			}
 	        			else
 	        			{
-	        				ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
+	        				/*ArrayList<PlayerInfo> playerList = new ArrayList<PlayerInfo>();
 	        				for ( PlayerInfo player : players )
 	        				{
 	        					if( player != null && player != currentPlayer )
@@ -1959,42 +2294,46 @@ public class GameScreen implements Screen {
 	        							playerList.add( player );
 	        						}
 	        					}
-	        				}
-	        				
-	        				PlayerInfo holdingPlayer = null;
-	        				PlayerInfo researcherPlayer = null;
-	        				Boolean presentResearcher = false;
-							ArrayList<PlayerInfo> playersThatCanGive = playerList;
+	        				}*/
+
+
+
+	        				//PlayerInfo holdingPlayer = null;
+	        				//PlayerInfo researcherPlayer = null;
+
+	        				//Boolean presentResearcher = false;
+	        				//Boolean playerHasCityCard = false;
+							ArrayList<PlayerInfo> playersThatCanGive = new ArrayList<PlayerInfo>();
 	        				for ( PlayerInfo player : playerList )
 	        				{
-	        					if( player == null )
-	        						playersThatCanGive.remove(playersThatCanGive.indexOf(player));
-	        						continue;
-
-	        					if ( player.role.equalsIgnoreCase("Researcher"))
-	        						presentResearcher = true;
-	        						researcherPlayer = player;
-									//playersThatCanGive.add(researcherPlayer);
-									continue;
-
-	        					for( PlayerCardInfo card : player.getHand() )
-	        					{
-	        						if ( card.getName().equals( cityName ) )
-	        						{
-	        							holdingPlayer = player;
-	        							//playersThatCanGive.add(holdingPlayer);
-	        						}
-	        					}
-	        					if(holdingPlayer.equals(player)){
-	        						continue;
-								}
-								else{
+	        					/*if( player == null ) {
 									playersThatCanGive.remove(playersThatCanGive.indexOf(player));
+									continue;
+								}*/
+
+	        					if ( player.role.equalsIgnoreCase("Researcher")) {
+									presentResearcher = true;
+									//researcherPlayer = player;
+									playersThatCanGive.add(player);
+									researcherPlayer = playersThatCanGive.indexOf(player);
 								}
-	        					/*if ( holdingPlayer == player && player != null && presentResearcher)
-	        						break;*/
+
+								else {
+									for (PlayerCardInfo card : player.getHand()) {
+										if (card.getName().equals(cityName)) {
+											//holdingPlayer = player;
+											playerHasCityCard = true;
+											playersThatCanGive.add(player);
+											holdingPlayer = playersThatCanGive.indexOf(player);
+											break;
+										}
+									}
+								}
+								if(presentResearcher && playerHasCityCard){
+	        						break;
+								}
 	        				}
-	        				if ( holdingPlayer != null || presentResearcher)
+	        				if ( presentResearcher || playerHasCityCard)
 	        				{
 	        					String[] list = new String[playersThatCanGive.size()];
 
@@ -2022,7 +2361,7 @@ public class GameScreen implements Screen {
 												tempSkin2.dispose();
 												Gdx.input.setInputProcessor(buttonStage);
 
-												//ClientComm.send("ShareKnowledge/"+selected+"/"+selectedCard);
+												ClientComm.send("ShareKnowledge/"+selected+"/"+selectedCard);
 											}
 										};
 
@@ -2031,23 +2370,22 @@ public class GameScreen implements Screen {
 										skPrompt2.setSize(250,150);
 										skPrompt2.setPosition( windWidth / 2 - skPrompt2.getWidth() / 2, windHeight / 2 - skPrompt2.getHeight() / 2 );
 										skPrompt2.button( "Select" );
-										if(selected.equalsIgnoreCase(list[0]) && playersThatCanGive.get(0).role.equalsIgnoreCase("Researcher")) {
+										int researchIndex = researcherPlayer;
 
-											selectBox2.setItems(playersThatCanGive.get(0).getHandOfStrings());
-
-										}
-										else if (selected.equalsIgnoreCase(list[1]) && playersThatCanGive.get(1).role.equalsIgnoreCase("Researcher")) {
-
-											selectBox2.setItems(playersThatCanGive.get(1).getHandOfStrings());
-
+										if(researcherPlayer != -1 && selected.equalsIgnoreCase(list[researcherPlayer])){
+											selectBox2.setItems(playersThatCanGive.get(researcherPlayer).getHandOfStrings());
 										}
 										else{
 											selectBox2.setItems(currentPlayer.getCity());
 										}
+
 										skPrompt2.getContentTable().add(selectBox2);
 
 										dialogStage.addActor(skPrompt2);
 										Gdx.input.setInputProcessor(dialogStage);
+
+										researcherPlayer = -1;
+										holdingPlayer = -1;
 									}
 								};
 
@@ -2074,6 +2412,8 @@ public class GameScreen implements Screen {
 	        					dialogStage.clear();;
 	        					skPrompt.show( dialogStage );
 	        					Gdx.input.setInputProcessor(dialogStage);*/
+	        					researcherPlayer = -1;
+	        					holdingPlayer = -1;
 	        				}
 	        				else
 	        				{
@@ -2099,6 +2439,9 @@ public class GameScreen implements Screen {
         shareKnowledgeButton.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( shareKnowledgeButton );
+
+        presentResearcher = false;
+        playerHasCityCard = false;
         
         TextButton showInfectionDiscard = new TextButton( "Show Infection Discard", skin );
         showInfectionDiscard.addListener( new ChangeListener() {
