@@ -1,9 +1,13 @@
 package Server;
 
+import java.util.ArrayList;
+
 public class ContingencyPlannerPawn extends Pawn {
-	private PlayerCard heldEvent = null;
+	PlayerCard heldEvent = null;
+	ArrayList<String> playedEvents;
 	ContingencyPlannerPawn(Role r) {
 		super(r);
+		playedEvents = new ArrayList<String>();
 	}
 	public void takeEvent(PlayerCard event){
 		if(heldEvent == null){
@@ -30,5 +34,8 @@ public class ContingencyPlannerPawn extends Pawn {
 				break;
 			}
 		}
+	}
+	public void addToPlayed(String s){
+		playedEvents.add(s);
 	}
 }

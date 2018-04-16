@@ -1433,10 +1433,18 @@ public class GameManager {
 			if(toRemove != null){
 				game.playerDiscardPile.add(toRemove);
 				player.hand.remove(toRemove);
-				
+				ServerComm.sendToAllClients("RemoveCardFromHand/"+player.username+"/"+toRemove.name+"/true/");
+			}else{
+				if(player.pawn.role==Role.ContingencyPlanner){
+					ContingencyPlannerPawn playerPawn = (ContingencyPlannerPawn)player.pawn;
+					if (playerPawn.heldEvent.name.equals(args[2])){
+						playerPawn.heldEvent = null;
+						ServerComm.sendToAllClients("RemoveCardFromStash/");
+					}
+				}
 			}
 			//will send discarded card to DP
-			ServerComm.sendToAllClients("RemoveCardFromHand/"+player.username+"/"+toRemove.name+"/true/");
+			
 		}
 	}
 	public static void chat(String[] args){
