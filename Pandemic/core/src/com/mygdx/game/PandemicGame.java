@@ -42,7 +42,7 @@ public class PandemicGame extends Game {
 			case GAME:
 				if ( gameScreen == null ) 
 				{
-					gameScreen = new GameScreen( this, players );
+					gameScreen = new GameScreen( this, players, false );
 				}
 				GameScreen.clientComm = clientComm;
 				setScreen( gameScreen );

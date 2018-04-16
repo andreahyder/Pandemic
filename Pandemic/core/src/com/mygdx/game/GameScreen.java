@@ -580,8 +580,9 @@ public class GameScreen implements Screen {
 		initBioterroristLocation();
     }
     
-	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
+	GameScreen( PandemicGame _parent, PlayerInfo[] _players, boolean _usePurpleDisease )
 	{
+		usePurpleDisease = _usePurpleDisease;
 		parent 	= _parent;
 		players = _players;
 
