@@ -6,7 +6,7 @@ public class NotifyTurnTroubleShooter implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameScreen.NotifyTurnTroubleshoorter( args[1], args[2] );
+		GameScreen.NotifyTurnTroubleshooter( args[1], args[2] );
 	}
 
 	@Override

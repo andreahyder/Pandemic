@@ -446,8 +446,7 @@ public class GameScreen implements Screen {
 
     	players[0].setCity( "Kinshasa" );
 
-    	players[0].role = "Colonel";
-    	players[0].role = "FieldOperative";
+    	players[0].role = "ContingencyPlanner";
     	players[0].setCity( "Atlanta" );
 
     	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
@@ -590,22 +589,22 @@ public class GameScreen implements Screen {
 		Chat("Hello World");
 		
 
-		virulentStrainStatuses.put( "ChronicEffect", true );
+		/*virulentStrainStatuses.put( "ChronicEffect", true );
 		virulentStrainStatuses.put( "ComplexMolecularStructure", true );
 		virulentStrainStatuses.put( "GovernmentInterference", true );
 		virulentStrainStatuses.put( "HiddenPocket", true );
 		virulentStrainStatuses.put( "RateEffect", true );
 		virulentStrainStatuses.put( "SlipperySlope", true );
 		virulentStrainStatuses.put( "UnacceptableLoss", true );
-		virulentStrainStatuses.put( "UncountedPopulations", true );
+		virulentStrainStatuses.put( "UncountedPopulations", true );*/
 		//AirportSighting( "Your Butt" );
 
-		AddQuarantineMarker("Santiago");
+		/*AddQuarantineMarker("Santiago");
 		DecreaseQuarantineMarker("Santiago");
 		AddQuarantineMarker("Tokyo");
 		AddQuarantineMarker("Atlanta");
 		AddQuarantineMarker("Buenos Aires");
-		AddQuarantineMarker("Shanghai");
+		AddQuarantineMarker("Shanghai");*/
 		//AddQuarantineMarker("Paris");
 		initBioterroristLocation();
     }
@@ -821,7 +820,26 @@ public class GameScreen implements Screen {
 		//chatMessageList.setBounds( 100, 115, windWidth - 200, windWidth - 150);
 		//chatStage.addActor( chatMessageList );
 	}
-	
+
+/*	static  void initOnRoleCardStage(){
+		int buttNum = 0;
+
+		TextButton showCardsButton = new TextButton( buttText, skin );
+		showCardsButton.addListener( new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				handShownPlayer = player;
+			}
+		});
+		float x = handButtonXOffset;
+		float y = playerCardYOffset + handButtonYOffset + playerCardYSize + ( handButtonYSize + handButtonYOffset ) * buttNum;
+
+
+		showCardsButton.setBounds( x, y, 300, 37.5f );
+		showCardsButton.setChecked(true);
+		buttonGroup.addActor( showCardsButton );
+	}*/
+
 	static void initHandButtonStage()
 	{
 		int buttNum = 0;
@@ -995,6 +1013,116 @@ public class GameScreen implements Screen {
 				cube.setBounds( x ,y, cubeSize, cubeSize);
 				diseaseStage.addActor( cube );
 
+			}
+		}
+	}
+
+	static void updateOnRoleCardStage() {
+		//handPanelGroup.clear();
+		if (currentPlayer.role.equalsIgnoreCase("ContingencyPlanner")) {
+
+			if (currentPlayer.eventCardOnRoleCard == null)
+				return;
+			final PlayerCardInfo card = currentPlayer.eventCardOnRoleCard;
+
+			//ArrayList<PlayerCardInfo> playerHand = handShownPlayer.getHand();
+			//int handIdx = 0;
+			//for( final PlayerCardInfo card : playerHand )
+			//{
+			if (card != null) {
+				int index = Arrays.asList(eventCardNames).indexOf(card.getName());
+				int handIdx = 0;
+				String name = card.getName();
+
+				switch (name) {
+					case "BorrowedTime": {
+						createBorrowedTime(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "MobileHospital": {
+						createMobileHospital(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "NewAssignment": {
+						createNewAssignment(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "RapidVaccine": {
+						createRapidVaccine(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "SpecialOrders": {
+						createSpecialOrders(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "CommercialTravelBan": {
+						createCommercialTravelBan(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "ReexaminedResearch": {
+						createReexaminedResearch(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "RemoteTreatment": {
+						createRemoteTreatment(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "Airlift": {
+						createAirlift(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "OneQuietNight": {
+						createOneQuietNight(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "ResilientPopulation": {
+						createResilientPopulation(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "GovernmentGrant": {
+						createGovernmentGrant(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "Forecast": {
+						createForecast(handIdx);
+						handIdx++;
+					}
+					break;
+
+					case "LocalInitiative": {
+						createLocalInitiative(handIdx);
+						handIdx++;
+					}
+					break;
+
+					default: {
+					}
+					break;
+				}
 			}
 		}
 	}
@@ -4272,7 +4400,8 @@ public class GameScreen implements Screen {
 						{
 							if( remQuarantines > 0 )
 							{
-								ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );
+								//ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );
+								ClientComm.send("UpdateQuarantine/" + currentPlayer.getCity() + "/" + "2");
 							}
 							else
 							{
@@ -4288,8 +4417,10 @@ public class GameScreen implements Screen {
 										if( (Boolean)(object) )
 										{
 											String selected = selectBox.getSelected();
-											ClientComm.send("RemoveQuarantine/" + selected);
-											ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );
+											/*ClientComm.send("RemoveQuarantine/" + selected);
+											ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );*/
+											ClientComm.send("UpdateQuarantine/" + selected + "/" + "0");
+											ClientComm.send("UpdateQuarantine/" + currentPlayer.getCity() + "/" + "2");
 											Gdx.input.setInputProcessor(buttonStage);
 										}
 										else
@@ -5526,6 +5657,8 @@ public class GameScreen implements Screen {
 
 		updateHandPanelStage();
 
+		updateOnRoleCardStage();
+
 		
 		if ( currentPlayer == clientPlayer && actionsRemaining <= 0 )
 		{
@@ -6383,7 +6516,7 @@ public class GameScreen implements Screen {
 	}
 	
 
-	public static void NotifyTurnTroubleshoorter( String PlayerName, String InfectionCardList )
+	public static void NotifyTurnTroubleshooter( String PlayerName, String InfectionCardList )
 	{
 		final String[] InfectionCards = InfectionCardList.split("[,]");
 		PlayerInfo player = lookupPlayer( PlayerName );
@@ -6471,7 +6604,7 @@ public class GameScreen implements Screen {
 		lookupCity( CityName ).removeResearchStation();
 	}
 
-	public static void DecreaseQuarantineMarker( String CityName ){
+	/*public static void DecreaseQuarantineMarker( String CityName ){
     	if( lookupCity( CityName ).hasQuarantineMarker2 ){
     		lookupCity( CityName ).decQuarantineMarker();
 		}
@@ -6494,7 +6627,7 @@ public class GameScreen implements Screen {
 			}
 		}
 		lookupCity( CityName ).removeQuarantineMarker();
-	}
+	}*/
 
 	public static void AddResearchStation( String CityName )
 	{
@@ -6503,10 +6636,41 @@ public class GameScreen implements Screen {
 		lookupCity( CityName ).putResearchStation();
 	}
 
-	public static void AddQuarantineMarker( String CityName ){
+	/*public static void AddQuarantineMarker( String CityName ){
     	remQuarantines--;
     	quarantineMarkerCityNames.add(CityName);
     	lookupCity( CityName ).putQuarantineMarker2();
+	}*/
+
+	public static void UpdateQuarantine( String CityName, int newMarker){
+		if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).putQuarantineMarker2();
+		}
+		else if(newMarker == 2 && lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).incQuarantineMarker();
+		}
+		else if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
+			return;
+		}
+		else if(newMarker == 1 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).putQuarantineMarker1();
+		}
+		else if(newMarker == 1 && lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+
+		}
+		else if(newMarker == 1 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).decQuarantineMarker();
+		}
+		else if(newMarker == 0 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+
+		}
+		else if(newMarker == 0 && lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).removeQuarantineMarker();
+		}
+		else if(newMarker == 0 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).removeQuarantineMarker();
+		}
+
 	}
 
 	public static void CureDisease( final String DiseaseColor )

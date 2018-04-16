@@ -124,11 +124,13 @@ public class CityNode {
 	public void putQuarantineMarker1()
 	{
 		hasQuarantineMarker1 = true;
+		hasQuarantineMarker2 = false;
 	}
 
 	public void putQuarantineMarker2()
 	{
 		hasQuarantineMarker2 = true;
+		hasQuarantineMarker1 = false;
 	}
 	
 	public void removeResearchStation() 
