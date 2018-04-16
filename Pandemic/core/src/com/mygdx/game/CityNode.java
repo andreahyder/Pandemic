@@ -9,7 +9,9 @@ public class CityNode {
 	String colour;
 	String name;
 	float x, y;
-	boolean hasResearchStation;
+	boolean hasResearchStation = false;
+	boolean hasQuarantineMarker1 = false;
+	boolean hasQuarantineMarker2 = false;
 	
 	CityNode( String[] nameData, float[] position )
 	{
@@ -118,9 +120,37 @@ public class CityNode {
 	{
 		hasResearchStation = true;
 	}
+
+	public void putQuarantineMarker1()
+	{
+		hasQuarantineMarker1 = true;
+		hasQuarantineMarker2 = false;
+	}
+
+	public void putQuarantineMarker2()
+	{
+		hasQuarantineMarker2 = true;
+		hasQuarantineMarker1 = false;
+	}
 	
 	public void removeResearchStation() 
 	{
 		hasResearchStation = false;
+	}
+
+	public void removeQuarantineMarker()
+	{
+		hasQuarantineMarker1 = false;
+		hasQuarantineMarker2 = false;
+	}
+
+	public void decQuarantineMarker(){
+		hasQuarantineMarker1 = true;
+		hasQuarantineMarker2 = false;
+	}
+
+	public void incQuarantineMarker(){
+		hasQuarantineMarker1 = false;
+		hasQuarantineMarker2 = true;
 	}
 }
