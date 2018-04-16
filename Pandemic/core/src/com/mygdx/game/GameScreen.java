@@ -6708,6 +6708,38 @@ public class GameScreen implements Screen {
 		lookupCity( CityName ).removeQuarantineMarker();
 	}*/
 
+	public static void UpdateQuarantine( String CityName, String Level )
+	{
+		int newMarker = Integer.valueOf( Level );
+		if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).putQuarantineMarker2();
+		}
+		else if(newMarker == 2 && lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).incQuarantineMarker();
+		}
+		else if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
+			return;
+		}
+		else if(newMarker == 1 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).putQuarantineMarker1();
+		}
+		else if(newMarker == 1 && lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+
+		}
+		else if(newMarker == 1 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).decQuarantineMarker();
+		}
+		else if(newMarker == 0 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+
+		}
+		else if(newMarker == 0 && lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).removeQuarantineMarker();
+		}
+		else if(newMarker == 0 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
+			lookupCity(CityName).removeQuarantineMarker();
+		}
+	}
+	
 	public static void AddResearchStation( String CityName )
 	{
 		remResearchStations--;
@@ -6715,13 +6747,20 @@ public class GameScreen implements Screen {
 		lookupCity( CityName ).putResearchStation();
 	}
 
-	/*public static void AddQuarantineMarker( String CityName ){
+	public static void AddQuarantine( String CityName ){
     	remQuarantines--;
     	quarantineMarkerCityNames.add(CityName);
     	lookupCity( CityName ).putQuarantineMarker2();
-	}*/
+	}
+	
+	public static void RemoveQuarantine( String CityName ){
+    	remQuarantines++;
+    	quarantineMarkerCityNames.remove(CityName);
+    	lookupCity( CityName ).putQuarantineMarker2();
+	}
 
-	public static void UpdateQuarantine( String CityName, int newMarker){
+	/*
+	public static void BuildQuarantine( String CityName, int newMarker){
 		if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
 			lookupCity(CityName).putQuarantineMarker2();
 		}
@@ -6751,7 +6790,7 @@ public class GameScreen implements Screen {
 		}
 
 	}
-
+	 */
 	public static void CureDisease( final String DiseaseColor )
 	{
 		diseaseStatuses.remove( DiseaseColor );

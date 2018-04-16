@@ -105,6 +105,9 @@ public class ClientComm {
 		toReturn.add(new UpdateRole());
 		toReturn.add(new VirulentStrainChosen());
 		toReturn.add(new VirulentStrainEpidemic());
+		toReturn.add(new AddQuarantine());
+		toReturn.add(new RemoveQuarantine());
+		toReturn.add(new UpdateQuarantine());
 		return toReturn;
 	}
 }
