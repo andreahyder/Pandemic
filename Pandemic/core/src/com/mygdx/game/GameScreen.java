@@ -5597,7 +5597,7 @@ public class GameScreen implements Screen {
 	
 	public static void RemoveCardFromInfectionDiscard( String CardName )
 	{
-		playerDiscardPile.remove( CardName );
+		infectionDiscardPile.remove( CardName );
 	}
 	
 }
