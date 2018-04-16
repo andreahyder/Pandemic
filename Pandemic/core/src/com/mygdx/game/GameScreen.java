@@ -276,7 +276,7 @@ public class GameScreen implements Screen {
 	static Texture[] selectedCityCardTextures;
 	static Texture[] playerTextures;
 	static Texture[] diseaseCubeTextures;
-	static Texture[] markerTextures = new Texture[4];
+	static Texture[] markerTextures = new Texture[5];
 	static Texture[] cureMarkerTextures = new Texture[] {
 			new Texture( Gdx.files.internal( "BlueCureMarker.png") ),
 			new Texture( Gdx.files.internal( "YellowCureMarker.png") ),
@@ -367,6 +367,8 @@ public class GameScreen implements Screen {
     static ArrayList<String> playerDiscardPile 		= new ArrayList<String>();
     
 	static float nextActionButtonHeight;
+	
+	static boolean usePurpleDisease = true;
 	
 	static boolean waitForButton = false;
 	static boolean govtGrant = false;
@@ -690,6 +692,8 @@ public class GameScreen implements Screen {
 		diseaseStatuses.put( "yellow", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "black", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "red", DiseaseStatus.ACTIVE );
+		if( usePurpleDisease )
+			diseaseStatuses.put( "purple", DiseaseStatus.ACTIVE );
 		
 		if ( currentPlayer.role.equalsIgnoreCase( "Generalist" ) )
 			actionsRemaining = 5;
@@ -5081,7 +5085,8 @@ public class GameScreen implements Screen {
 
 	public void drawMarkers()
 	{
-		for( int i = 0; i < diseaseStatuses.size(); i++ )
+		int numDiseases = ( usePurpleDisease ) ? 5 : 4;
+		for( int i = 0; i < numDiseases; i++ )
 		{
 			if( (DiseaseStatus)diseaseStatuses.values().toArray()[i] == DiseaseStatus.ACTIVE )
 			{
@@ -5094,7 +5099,7 @@ public class GameScreen implements Screen {
 		}
 		
 		batch.begin();
-		batch.draw(greyBarOfNumbers, windWidth*0.3425f-15f-4*(markerXSize+15f)+50f, windHeight-markerYSize*3.75f, 4*(markerXSize+15f)+39f, markerYSize*6.75f);
+		batch.draw(greyBarOfNumbers, windWidth*0.3425f-15f-numDiseases*(markerXSize+15f)+50f, windHeight-markerYSize*3.75f, numDiseases*(markerXSize+15f)+39f, markerYSize*6.75f);
 		for( int i = 0; i < markerTextures.length; i++ )
 		{
 			batch.draw( markerTextures[i],windWidth*0.3575f-15f-i*(markerXSize+15f), windHeight - markerYSize*1.075f, markerXSize, markerYSize );
