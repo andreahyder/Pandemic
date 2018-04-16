@@ -149,19 +149,19 @@ public class MenuScreen implements Screen
 		{
 			if( newGameF )
 			{
-//				try 
-//				{
-					//ClientComm.setupConnection( IP, 6004 );
+				try 
+				{
+					ClientComm.setupConnection( IP, 6004 );
 					IP = "";
-					//ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
+					ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
 					parent.changeScreen( Screens.SETUP );
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//					JoinGameTextInput listener = new JoinGameTextInput();
-//					Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
-//				} //IMPLEMENT
-				// IMPLEMENT addPlayer to Server Game 
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					JoinGameTextInput listener = new JoinGameTextInput();
+					Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
+				} //IMPLEMENT
+		// IMPLEMENT addPlayer to Server Game 
 			}
 			else
 			{
