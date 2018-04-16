@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -38,7 +39,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -46,6 +49,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
+import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
+
+import javafx.scene.control.ScrollBar;
+
 import com.mygdx.game.Actions.Action;
 
 public class GameScreen implements Screen {
@@ -390,6 +397,16 @@ public class GameScreen implements Screen {
 	static boolean isCaptured = false;
 	static boolean extraMoveActionUsed = false;
 	
+	static boolean showChatOverlay = false;
+	static ArrayList<String> messages = new ArrayList<String>();
+	static Stage chatStage;
+	static TextField chatInput;
+	static Stage lastStage;
+	static ScrollPane chatScrollPane;
+	static ScrollBar chatScrollBar;
+	static List<String> chatMessageList;
+	static TextArea chatMessages;
+	
 	static BitmapFont currPlayerFont0 = new BitmapFont();
 	static BitmapFont currPlayerFont1 = new BitmapFont();
 	static BitmapFont infectionRateFont = new BitmapFont();
@@ -401,7 +418,7 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].setCity( "Istanbul" );
+    	players[0].setCity( "Atlanta" );
     	players[0].role = "ContingencyPlanner";
     	
     	players[1] = new PlayerInfo( "Larry", false );
@@ -441,20 +458,23 @@ public class GameScreen implements Screen {
 		dialogStage = new Stage( parent.screen );
 		pawnStage = new Stage( parent.screen );
 		cardSelectStage = new Stage( parent.screen );
+		chatStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
-
 		
 		initButtonStage();
 		
 		initHandButtonStage();
 
 		updatePawnStage();
+		initChatStage();
 		
 		
 
     	players[0].addCardToHand( new PlayerCardInfo("ResilientPopulation" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Tokyo" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -522,6 +542,20 @@ public class GameScreen implements Screen {
 		IncOutbreakCounter();
 		IncOutbreakCounter();
 		IncOutbreakCounter();
+		
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
 		//AirportSighting( "Your Butt" );
     }
     
@@ -544,6 +578,7 @@ public class GameScreen implements Screen {
 		dialogStage = new Stage( screen );
 		pawnStage = new Stage( screen );
 		cardSelectStage = new Stage( parent.screen );
+		chatStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
@@ -660,6 +695,44 @@ public class GameScreen implements Screen {
 			actionsRemaining = 5;
 	}
 
+	static void initChatStage()
+	{
+		chatInput = new TextField( "Enter message text", skin );
+
+		chatInput.setBounds( windWidth - 400, 100, 300, 50f );
+		chatInput.addListener( new ClickListener(){
+			public void clicked(InputEvent event, float x, float y) {
+				chatInput.setText("");;
+			};
+		} );
+		chatStage.addActor( chatInput );
+		
+		TextButton sendButton = new TextButton( "Send", skin );
+		sendButton.addListener( new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				Chat( chatInput.getText() );
+				System.out.println( chatInput.getText() );
+			}
+		});
+		chatStage.addActor( sendButton );
+		 
+		chatMessages = new TextArea("", skin);
+		chatMessages.setFillParent( true );
+		chatMessages.setBounds(windWidth - 400, 155, 300,400f);
+		chatMessages.setColor( new Color( 255, 255, 255, 50 ) );
+		/*
+		chatScrollPane = new ScrollPane( chatMessages, tempSkin );
+		chatScrollPane.setBounds( 100, 155, windWidth - 200, windWidth - 650);
+		chatScrollPane.setDebug( false );
+		chatStage.addActor( chatScrollPane );
+		*/
+		chatStage.addActor(chatMessages);
+		
+		//chatMessageList.setBounds( 100, 115, windWidth - 200, windWidth - 150);
+		//chatStage.addActor( chatMessageList );
+	}
+	
 	static void initHandButtonStage()
 	{
 		int buttNum = 0;
@@ -3784,7 +3857,7 @@ public class GameScreen implements Screen {
 				{
 					waitForButton = true;
 					if( clientPlayer == currentPlayer )
-					{
+					{	
 						if(  lookupCity( currentPlayer.getCity() ).hasResearchStation  ) 
 						{	
 							ArrayList<PlayerCardInfo> hand = currentPlayer.getHand();
@@ -3843,7 +3916,7 @@ public class GameScreen implements Screen {
 									Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
 									if( cmsStatus != null & cmsStatus != false )
 										cureMod = ( diseaseName.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
-									
+																		
 									possibleSelections = new ArrayList<PlayerCardInfo>();
 									selections = new ArrayList<PlayerCardInfo>();
 	
@@ -4328,6 +4401,7 @@ public class GameScreen implements Screen {
         
         createCaptureAction();
         
+        
         TextButton endTurn = new TextButton( "End Turn", skin );
         endTurn.addListener( new ChangeListener() {
             @Override
@@ -4365,8 +4439,6 @@ public class GameScreen implements Screen {
         endTurn.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( endTurn );
-	
-	
 	}
 	
 	public static void createQuarantineButton()
@@ -4429,7 +4501,6 @@ public class GameScreen implements Screen {
         buttonGroup.addActor( endTurn );
 
 	}
-	
 	
 	static void createOperationExpertButton()
 	{
@@ -4973,7 +5044,7 @@ public class GameScreen implements Screen {
 					Gdx.input.setInputProcessor( buttonStage );
 					String message = "CureDisease/" + diseaseToCure + '/';
 					for( PlayerCardInfo card : selections )
-						message += card.getName();
+						message += card.getName() +',';
 					
 					selections.clear();
 					possibleSelections.clear();
@@ -5149,6 +5220,8 @@ public class GameScreen implements Screen {
 		}
 		
 		displayRapidVaccineNumbers();
+		
+		displayChat();
 	}
 
 	@Override
@@ -5356,6 +5429,46 @@ public class GameScreen implements Screen {
 		panelText.dispose();
 	}
 
+	void displayChat()
+	{
+		if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER))
+		{
+			if( showChatOverlay )
+			{
+				Chat( chatInput.getText() );
+				ClientComm.send("Chat/"+chatInput.getText()+'/');
+			}
+			else
+			{
+				showChatOverlay = true;
+				lastStage = (Stage) Gdx.input.getInputProcessor();
+				Gdx.input.setInputProcessor( chatStage );
+				chatInput.setText("");
+				chatStage.setKeyboardFocus( chatInput );
+			}
+		}
+		
+		if( Gdx.input.isKeyPressed( Input.Keys.ESCAPE ) )
+		{
+			if( showChatOverlay )
+			{
+				showChatOverlay = false;
+				Gdx.input.setInputProcessor( lastStage );
+			}
+		}
+		if( showChatOverlay == true )
+		{	
+			String text = "";
+			for( int i = 0; i < messages.size(); i++ )
+				text += messages.get(  messages.size()-i-1 ) + '\n';
+			chatMessages.setText( text );
+			chatMessages.layout();
+
+
+			chatStage.draw();
+			chatStage.act();
+		}
+	}
 	
 	void displayRapidVaccineNumbers()
 	{
@@ -6301,6 +6414,10 @@ public class GameScreen implements Screen {
 		infectionDiscardPile.remove( CardName );
 	}
 	
+	public static void Chat( String Message )
+	{
+		messages.add( Message );
+	}
 }
 
 
