@@ -362,7 +362,7 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].role = "Researcher";
+    	players[0].role = "Contingency Planner";
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -382,6 +382,8 @@ public class GameScreen implements Screen {
     	
     	currentPlayer = players[0];
     	clientPlayer = players[0];
+
+    	players[0].eventCardOnRoleCard = new PlayerCardInfo("Airlift");
     	
     	batch 	= new SpriteBatch();
 
@@ -818,6 +820,7 @@ public class GameScreen implements Screen {
 													useCityButtonStage = true;
 													//charterFlightCard = card.getName();
 													//System.out.println("TEEEEESTING");
+													ClientComm.send("");
 												}
 												Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 												//dialogStage = null;
@@ -3209,7 +3212,7 @@ public class GameScreen implements Screen {
 
 			if (clientPlayer.role.equalsIgnoreCase("Contingency Planner")) {        //	/* ADDED
 
-				TextButton retrieveEventCard = new TextButton("Retrieve Event Card", skin);
+				TextButton retrieveEventCard = new TextButton("ContingencyPlanner Action", skin);
 				retrieveEventCard.addListener(new ChangeListener() {
 					@Override
 					public void changed(ChangeEvent event, Actor actor) {
@@ -3231,62 +3234,130 @@ public class GameScreen implements Screen {
 									}
 								}
 
-								String[] list = new String[eventCardList.size()];
-								if (eventCardList.size() != 0) {
-									for (int i = 0; i < eventCardList.size(); i++) {
-										list[i] = eventCardList.get(i).getName();
-									}
+								Skin tempSkin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+								final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
 
-									Skin tempSkin = new Skin(Gdx.files.internal("skin/uiskin.json"));
-									final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+								Dialog skPrompt = new Dialog(" Choose an Action ", skin) {
+									protected void result(Object object) {
+										if ((Boolean) object) {
+											String selected = selectBox.getSelected();
 
-									Dialog skPrompt = new Dialog(" Choose an Event Card to retrieve ", skin) {
-										protected void result(Object object) {
+											Gdx.input.setInputProcessor(buttonStage);
 
-											if( (Boolean)object) {
+											if (selected.equalsIgnoreCase("Retrieve Card")) {
 
-												String selected = selectBox.getSelected();
+												String[] list = new String[eventCardList.size()];
+												if (eventCardList.size() != 0) {
+													for (int i = 0; i < eventCardList.size(); i++) {
+														list[i] = eventCardList.get(i).getName();
+													}
 
-												playerDiscardPile.remove(playerDiscardPile.indexOf(selected));
+													Skin tempSkin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+													final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
 
-												currentPlayer.addCardToHand(new PlayerCardInfo(selected));
+													Dialog skPrompt = new Dialog(" Choose an Event Card to retrieve ", skin) {
+														protected void result(Object object) {
 
-												// TODO : Add a retrieve event card "message"
-												ClientComm.send("RetrieveEventCard/" + selected + "/" + currentPlayer.getName());
+															if ((Boolean) object) {
+
+																String selected = selectBox.getSelected();
+
+																//playerDiscardPile.remove(playerDiscardPile.indexOf(selected));
+
+																//currentPlayer.addCardToHand(new PlayerCardInfo(selected));
+
+																// TODO : Add a retrieve event card "message"
+																ClientComm.send("RoleAction/ContingencyPlanner/Take/" + selected);
+																Gdx.input.setInputProcessor(buttonStage);
+																currentPlayer.roleActionUsed = true;
+
+															} else {
+
+																Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+																//												//dialogStage = null;
+															}
+
+														}
+													};
+
+													skPrompt.setSize(315, 150);
+													skPrompt.setPosition(windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2);
+													skPrompt.button("Select", true);
+													skPrompt.button("Cancel", false);
+													selectBox.setItems(list);
+													skPrompt.getContentTable().add(selectBox);
+
+													dialogStage.addActor(skPrompt);
+													Gdx.input.setInputProcessor(dialogStage);
+												} else {
+													Dialog skPrompt = new Dialog("No Event Cards in Player Discard Pile", skin) {
+														protected void result(Object object) {
+															Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+															//dialogStage = null;
+														}
+													};
+
+													skPrompt.button("Okay");
+													dialogStage.clear();
+													skPrompt.show(dialogStage);
+													Gdx.input.setInputProcessor(dialogStage);
+												}
+											} else {
+
+												if(currentPlayer.eventCardOnRoleCard == null){
+													Dialog notifyNoEventCardOnRoleCard = new Dialog( "You don't have an event card on you role card", skin ){
+														protected void result(Object object)
+														{
+															Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+															//dialogStage = null;
+														}
+													};
+
+													notifyNoEventCardOnRoleCard.button("Okay");
+
+
+													dialogStage.clear();;
+													notifyNoEventCardOnRoleCard.show( dialogStage );
+													Gdx.input.setInputProcessor(dialogStage);
+												}
+												else {
+													ClientComm.send("RoleAction/ContingencyPlanner/Play/" + currentPlayer.eventCardOnRoleCard.getName());
+													Gdx.input.setInputProcessor(buttonStage);
+													currentPlayer.roleActionUsed = true;
+												}
 
 											}
 
-											Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-											//dialogStage = null;
-
+										} else {
+											Gdx.input.setInputProcessor(buttonStage);
 										}
-									};
 
-									skPrompt.setSize(315, 150);
-									skPrompt.setPosition(windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2);
-									skPrompt.button("Select", true);
-									skPrompt.button("Cancel", false);
-									selectBox.setItems(list);
-									skPrompt.getContentTable().add(selectBox);
+									}
+								};
 
-									dialogStage.addActor(skPrompt);
-									Gdx.input.setInputProcessor(dialogStage);
-								} else {
-									Dialog skPrompt = new Dialog("No Event Cards in Player Discard Pile", skin) {
-										protected void result(Object object) {
-											Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-											//dialogStage = null;
-										}
-									};
-
-									skPrompt.button("Okay");
-									dialogStage.clear();
-									;
-									skPrompt.show(dialogStage);
-									Gdx.input.setInputProcessor(dialogStage);
+								skPrompt.setSize(315, 150);
+								skPrompt.setPosition(windWidth / 2 - skPrompt.getWidth() / 2, windHeight / 2 - skPrompt.getHeight() / 2);
+								skPrompt.button("Select", true);
+								skPrompt.button("Cancel", false);
+								//String playEventCardOnRoleCard = "Play " + currentPlayer.eventCardOnRoleCard.getName();
+								String playEventCardOnRoleCard;
+								if(currentPlayer.eventCardOnRoleCard != null){
+									playEventCardOnRoleCard = "Play " + currentPlayer.eventCardOnRoleCard.getName();
 								}
+								else{
+									playEventCardOnRoleCard = "Play Event Card";
+								}
+								String[] pickAction = {"Retrieve Card", playEventCardOnRoleCard};
+								selectBox.setItems(pickAction);
+								skPrompt.getContentTable().add(selectBox);
+
+								dialogStage.addActor(skPrompt);
+								Gdx.input.setInputProcessor(dialogStage);
+
+
 
 							}
+							waitForButton = false;
 						}
 					}
 				});

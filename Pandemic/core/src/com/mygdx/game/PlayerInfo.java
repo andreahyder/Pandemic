@@ -11,7 +11,8 @@ public class PlayerInfo {
 	String currCity = "Atlanta";
 	public int cardsToCure = 5;
 	String role;
-	public PlayerCardInfo onRoleCard;
+	public PlayerCardInfo eventCardOnRoleCard;
+	public PlayerCardInfo diseaseCubeOnRoleCard;
 	boolean roleActionUsed = false;
 	
 	ArrayList<PlayerCardInfo> hand = new ArrayList<PlayerCardInfo>();
