@@ -423,7 +423,7 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].role = "Bioterrorist";
+    	players[0].role = "FieldOperative";
     	players[0].setCity( "Atlanta" );
 
     	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
@@ -2330,6 +2330,14 @@ public class GameScreen implements Screen {
 				ArrayList<CityNode> adjCities = lookupCity(currentPlayer.getCity()).getConnectedCities();
 				for (CityNode curr : adjCities) {
 					cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+				}
+				
+				if( lookupCity( currentPlayer.getCity() ).hasResearchStation )
+				{
+					for( int i = 0; i < researchStationCityNames.size(); i++ )
+					{
+						cityButtons.get(lookupCityIndex(researchStationCityNames.get( i ))).setTouchable(Touchable.enabled);
+					}
 				}
 			}
 			else
