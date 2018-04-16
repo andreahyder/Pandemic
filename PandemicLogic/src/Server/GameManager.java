@@ -162,7 +162,6 @@ public class GameManager {
 					try {
 						Thread.sleep(1);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -244,7 +243,6 @@ public class GameManager {
 					try {
 						Thread.sleep(1);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -307,7 +305,6 @@ public class GameManager {
 					try {
 						Thread.sleep(1);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -443,7 +440,7 @@ public class GameManager {
 			try {
 				Thread.sleep(1);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 		}
@@ -510,7 +507,7 @@ public class GameManager {
 					ServerComm.sendMessage(mes, j);
 				}
 			}
-		}
+		}/*
 		else if(t1.pawn.role.equals(Role.FieldOperative)) {
 			for(int i = 0; i < 3 + extra; i++) {
 				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
@@ -522,7 +519,7 @@ public class GameManager {
 			}
 			t1.pawn.useStash(c);
 			//TODO update stash/diseasecubes
-		}
+		}*/
 		else {
 			for(int i = 0; i < 5 + extra; i++) {
 				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
@@ -552,7 +549,7 @@ public class GameManager {
 	public static void RoleAction(String[] args) {
 		int index = Integer.parseInt(args[0]);
 		Player t1 = game.getPlayer(index);
-		if(args[2].equals("archivist")) {
+		if(args[2].equals("Archivist")) {
 			City t2 = t1.pawn.city;
 			
 			PlayerCard p = game.playerDiscardPile.remove(game.getDiscardCard(t2));
@@ -592,6 +589,7 @@ public class GameManager {
 			City t3 = game.getCity(args[4]);
 			t3.quarantine = 2;
 			game.quarantines--;
+			ServerComm.sendToAllClients("UpdateQuarantine/"+t3.name+"/2/");
 			
 			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t3.name + "/true/";
 			for(int j = 0; j < game.players.size(); j++) {
@@ -676,7 +674,7 @@ public class GameManager {
 						game.playerDiscardPile.remove(c);
 						p.takeEvent(c);
 						ServerComm.sendToAllClients("RemoveCardFromPlayerDiscard/"+args[4]);
-						ServerComm.sendToAllClients("AddCardToStash/" + game.getCurrentPlayer().username + "/" + args[4] + "/false/");
+						ServerComm.sendToAllClients("AddCardToStash/" + args[4]);
 						break;
 					}
 				}
@@ -711,7 +709,6 @@ public class GameManager {
 			}
 		}
 		//index/RoleAction/Dispatcher/Drive-Fly/TargetPlayer/normal args
-		//index/EventAction/SpecialOrdersMove/(Drive/Flight etc)/targetPlayerToMove/normal args
 		else if(args[2].equals("Dispatcher")){
 			Player targetPlayer = game.getPlayer(args[4]);
 			Pawn targetPawn = targetPlayer.getPawn();
@@ -873,7 +870,6 @@ public class GameManager {
 				try {
 					Thread.sleep(1);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -935,11 +931,11 @@ public class GameManager {
 		if (game.turn == game.EvCommercial){
 			game.EvCommercial = -1;
 			
-			//TODO update flag for everyone
+			//update flag for everyone (client does this)
 		}
 		if(game.getCurrentPlayer().pawn.role==Role.Troubleshooter){
 			String infectionCardsToLookAt = "";
-			for(int i=0; i<game.infectionRate[game.infectionCount]; i++){
+			for(int i=0; i<Game.infectionRate[game.infectionCount]; i++){
 				InfectionCard c = game.infectionDeck.get(i);
 				if(c.city!=null){
 					infectionCardsToLookAt = infectionCardsToLookAt + c.city.name + ",";
@@ -966,7 +962,6 @@ public class GameManager {
 				try {
 					Thread.sleep(1);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -988,7 +983,7 @@ public class GameManager {
 			Player curPlayer = game.getCurrentPlayer();
 			Pawn pawn = curPlayer.getPawn();
 			pawn.actions += 2;
-			//TODO send to client
+			//send to client
 			ServerComm.sendToAllClients("BorrowedTimeActivated/");
 		}
 		else if(args[2].equals("CommercialTravelBan")) {
@@ -1047,20 +1042,24 @@ public class GameManager {
 				ServerComm.sendToAllClients("AddResearchStation/"+targetCity.name+"/");
 			}
 		}
+		//index/EventAction/LocalInit/CityName/CityToMoveQFrom
 		else if(args[2].equals("LocalInitiative")) {
 			City t1 = game.getCity(args[3]);
 			if(args[4].equals("none")) {
 				t1.quarantine = 2;
 				game.quarantines--;
 				
-				//TODO update clients
+				//update clients
+				ServerComm.sendToAllClients("UpdateQuarantine/"+t1.name+"/"+"2/");
 			}
 			else {
 				City t2 = game.getCity(args[4]);
 				t2.quarantine = 0;
 				t1.quarantine = 2;
 				
-				//TODO update clients
+				//update clients
+				ServerComm.sendToAllClients("UpdateQuarantine/"+t1.name+"/"+"2/");
+				ServerComm.sendToAllClients("UpdateQuarantine/"+t2.name+"/"+"0/");
 			}
 		}
 		else if(args[2].equals("MobileHospital")) {

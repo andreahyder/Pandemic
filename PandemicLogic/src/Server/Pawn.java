@@ -59,7 +59,8 @@ public class Pawn {
 			if(city.quarantine == 1) {
 				city.quarantine = 2;
 				
-				//TODO update quarantine count for all players
+				//update quarantine count for all players
+				ServerComm.sendToAllClients("UpdateQuarantine/"+city.name+"/2/");
 			}
 		}
 		if(role==Role.Medic){
