@@ -309,6 +309,8 @@ public class GameScreen implements Screen {
 	};
 	
 	
+	static HashMap<String,Texture> virulentStrainTextures;
+	
 	static Texture handPanelTexture;
 	static Texture greyBarOfNumbers = new Texture(Gdx.files.internal("numbersBar.png"));
 	static Texture deck = new Texture(Gdx.files.internal("faceDownCard.png"));
@@ -370,7 +372,7 @@ public class GameScreen implements Screen {
     
 	static float nextActionButtonHeight;
 	
-	static boolean usePurpleDisease = true;
+	static boolean usePurpleDisease = false;
 	
 	static boolean waitForButton = false;
 	static boolean govtGrant = false;
@@ -401,6 +403,7 @@ public class GameScreen implements Screen {
 	static boolean isCaptured = false;
 	static boolean extraMoveActionUsed = false;
 	static boolean btInitialCitySet = false;
+	static boolean showVirulent = false;
 	
 	static boolean showChatOverlay = false;
 	static ArrayList<String> messages = new ArrayList<String>();
@@ -423,7 +426,7 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].role = "FieldOperative";
+    	players[0].role = "ContingencyPlanner";
     	players[0].setCity( "Atlanta" );
 
     	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
@@ -439,7 +442,7 @@ public class GameScreen implements Screen {
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
-    	players[1].role = "Bioterrorist";
+    	players[1].role = "Dispatcher";
     	players[1].setCity( "Tokyo" );
     	
     	players[2] = new PlayerInfo( "Carrie", false );
@@ -563,6 +566,16 @@ public class GameScreen implements Screen {
 		Chat("Hello World");
 		Chat("Hello World");
 		Chat("Hello World");
+		
+
+		virulentStrainStatuses.put( "ChronicEffect", true );
+		virulentStrainStatuses.put( "ComplexMolecularStructure", true );
+		virulentStrainStatuses.put( "GovernmentInterference", true );
+		virulentStrainStatuses.put( "HiddenPocket", true );
+		virulentStrainStatuses.put( "RateEffect", true );
+		virulentStrainStatuses.put( "SlipperySlope", true );
+		virulentStrainStatuses.put( "UnacceptableLoss", true );
+		virulentStrainStatuses.put( "UncountedPopulations", true );
 		//AirportSighting( "Your Butt" );
 		initBioterroristLocation();
     }
@@ -664,6 +677,16 @@ public class GameScreen implements Screen {
 			cardTextPxMap.dispose();
 		}
 
+		virulentStrainTextures = new HashMap<String, Texture>();
+		virulentStrainTextures.put( "ChronicEffect", new Texture( Gdx.files.internal( "virulentstrains/ChronicEffect.png")) );
+		virulentStrainTextures.put( "ComplexMolecularStructure", new Texture( Gdx.files.internal( "virulentstrains/ComplexMolecularStructure.png")) );
+		virulentStrainTextures.put( "GovernmentInterference", new Texture( Gdx.files.internal( "virulentstrains/GovernmentInterference.png")) );
+		virulentStrainTextures.put( "HiddenPocket", new Texture( Gdx.files.internal( "virulentstrains/HiddenPocket.png")) );
+		virulentStrainTextures.put( "RateEffect", new Texture( Gdx.files.internal( "virulentstrains/RateEffect.png")) );
+		virulentStrainTextures.put( "SlipperySlope", new Texture( Gdx.files.internal( "virulentstrains/SlipperySlope.png")) );
+		virulentStrainTextures.put( "UnacceptableLoss", new Texture( Gdx.files.internal( "virulentstrains/UnacceptableLoss.png")) );
+		virulentStrainTextures.put( "UncountedPopulations", new Texture( Gdx.files.internal( "virulentstrains/UncountedPopulations.png")) );
+		
 		handPanelTexture = new Texture( Gdx.files.internal( "handPanel.png") );
 
 		createConnectionsTexture();
@@ -4317,7 +4340,7 @@ public class GameScreen implements Screen {
 						        					if( (Boolean)(object) )
 						        					{
 						            					String selected = selectBox.getSelected();
-						            					ClientComm.send( "RoleAction/OperationsExpertAction/Build//"+selected );
+						            					ClientComm.send( "RoleAction/OperationsExpertAction/Build/"+selected );
 						            		            Gdx.input.setInputProcessor(buttonStage);
 						        					}
 						        					else
@@ -4800,7 +4823,11 @@ public class GameScreen implements Screen {
 				{
 					showCardSelectStage = false;
 					Gdx.input.setInputProcessor( buttonStage );
-					String message = "CureDisease/" + diseaseToCure + '/';
+					String message;
+					if( currentPlayer.role.equalsIgnoreCase( "FieldOperative" ))
+						message = "RoleAction/FieldOperative/Cure/" + diseaseToCure + '/';
+					else
+						message = "CureDisease/" + diseaseToCure + '/';
 					for( PlayerCardInfo card : selections )
 						message += card.getName() +',';
 					
@@ -4854,7 +4881,7 @@ public class GameScreen implements Screen {
 		
 		batch.begin();
 		batch.draw(greyBarOfNumbers, windWidth*0.3425f-15f-numDiseases*(markerXSize+15f)+50f, windHeight-markerYSize*3.75f, numDiseases*(markerXSize+15f)+39f, markerYSize*6.75f);
-		for( int i = 0; i < markerTextures.length; i++ )
+		for( int i = 0; i < numDiseases; i++ )
 		{
 			batch.draw( markerTextures[i],windWidth*0.3575f-15f-i*(markerXSize+15f), windHeight - markerYSize*1.075f, markerXSize, markerYSize );
 		}
@@ -4892,6 +4919,9 @@ public class GameScreen implements Screen {
 			}
 		}
 
+		if( Gdx.input.isKeyJustPressed( Input.Keys.F1 ) )
+			showVirulent = !showVirulent;
+		
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -4998,6 +5028,8 @@ public class GameScreen implements Screen {
 		}
 		
 		displayRapidVaccineNumbers();
+		
+		displayVirulentStrains();
 		
 		displayChat();
 	}
@@ -5299,6 +5331,40 @@ public class GameScreen implements Screen {
 			rvFontFront.draw( batch, String.valueOf( rvCubesToRemove.get( key ) ), x, y );
 			batch.end();
 		}
+	}
+	
+	void displayVirulentStrains()
+	{
+		float xSize = 200;
+		float ySize = 300;
+		float startX = 100;
+		float row0y = 300;
+		float row1y = 600;
+		if ( showVirulent )
+		{
+		batch.begin();
+		int count = 0;
+		for( String key : virulentStrainTextures.keySet() )
+		{
+			if( key == null )
+				continue;
+			Texture entry = virulentStrainTextures.get(key);
+			if (entry == null )
+				continue;
+			
+			if( virulentStrainStatuses.get(key) )
+			{
+				if (count >= 4 )
+					batch.draw(entry, startX + (xSize+25)*(count-4), row0y, xSize, ySize );
+				else
+					batch.draw(entry, startX + (xSize+25)*count, row1y, xSize, ySize );
+				count++;
+			}
+				
+		}
+		batch.end();			
+		}
+
 	}
 	
 	public static int getNumPlayers()
@@ -5675,11 +5741,6 @@ public class GameScreen implements Screen {
 		currentInfectionRateIdx++;
 	}
 
-	public static void IncActionsRememaining()
-	{
-		actionsRemaining++;
-	}
-	
 	public static void ClearInfectionDiscard()
 	{
 		infectionDiscardPile.clear();
@@ -5726,17 +5787,15 @@ public class GameScreen implements Screen {
 		specialOrderPlayer = null;
 	}
 	
-	public static void NotifyTurnTroubleshoorter( String PlayerName, final String[] InfectionCards )
+	public static void NotifyTurnTroubleshoorter( String PlayerName, String InfectionCardList )
 	{
+		final String[] InfectionCards = InfectionCardList.split("[,]");
 		PlayerInfo player = lookupPlayer( PlayerName );
 
 		if ( player != null )
 		{
 			if ( currentPlayer != null )
 			{
-
-				actionsRemaining = 4;
-				currentPlayer = player;
 				if( clientPlayer == currentPlayer )
 				{
 					clientPlayer.roleActionUsed = false;
@@ -5764,6 +5823,7 @@ public class GameScreen implements Screen {
 							showInfectDialog.show( dialogStage );
 							Gdx.input.setInputProcessor(dialogStage);
 							turnEnded = false;
+							
 							//dialogStage = null;
 						}
 					};
@@ -5776,9 +5836,6 @@ public class GameScreen implements Screen {
 				}
 			}
 		}
-
-		specialOrders = false;
-		specialOrderPlayer = null;
 	}
 
 	public static void StartGame()
@@ -5900,8 +5957,9 @@ public class GameScreen implements Screen {
         gameEnd.show( dialogStage );
 	}
 
-	public static void Forecast( String[] InfectionCards )
+	public static void ForecastPrompt( String InfectionCardsList )
 	{
+		String[] InfectionCards = InfectionCardsList.split("[,]");
 		possibleForecastSelections = new ArrayList<String>();
 		forecastSelections = new ArrayList<String>();
 		for( final String infectionCard : InfectionCards )
@@ -5989,7 +6047,7 @@ public class GameScreen implements Screen {
 		Gdx.input.setInputProcessor( dialogStage );
 	}
 
-	public static void SpecialOrders( String PlayerName )
+	public static void SpecialOrdersActivate( String PlayerName )
 	{
 		if( PlayerName != null )
 		{
@@ -6027,8 +6085,9 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	public static void NewAssignment( String[] Roles )
+	public static void PromptNewAssignment( String RolesList )
 	{
+		String[] Roles = RolesList.split("[,]");
 		final SelectBox<String> selector = new SelectBox<String>(tempSkin);
 		Dialog naDiag = new Dialog( "Select New Role", skin ) {
 			@Override
@@ -6036,7 +6095,7 @@ public class GameScreen implements Screen {
 				if( (boolean)object )
 				{
 					String selected = selector.getSelected();
-					changeRole( selected );
+					ClientComm.send("data/" + selected);
 				}
 				Gdx.input.setInputProcessor( buttonStage );
 			}
@@ -6049,11 +6108,11 @@ public class GameScreen implements Screen {
 		Gdx.input.setInputProcessor( dialogStage );
 	}
 	
-	public static void changeRole( String role )
+	public static void UpdateRole( String Player, String Role )
 	{
-		currentPlayer.role = role;
-		currentPlayer.roleActionUsed = false;
-		switch( role )
+		lookupPlayer(Player).role = Role;
+		lookupPlayer(Player).roleActionUsed = false;
+		switch( Role )
 		{
 			case "ContingencyPlanner":
 			{
@@ -6073,7 +6132,7 @@ public class GameScreen implements Screen {
 			
 			case "Scientist":
 			{
-				currentPlayer.cardsToCure = 4;
+				lookupPlayer(Player).cardsToCure = 4;
 			} break;
 			
 			case "Troubleshooter":
@@ -6094,13 +6153,11 @@ public class GameScreen implements Screen {
 			
 			case "Generalist":
 			{
-				if( currentPlayer == clientPlayer && actionsRemaining != 0)
-					actionsRemaining++;
+				actionsRemaining++;
 			} break;
 			
 			case "Colonel":
 			{
-				//TODO: See if anything should be done here
 			} break;
 			
 			case "Dispatcher":
@@ -6163,8 +6220,9 @@ public class GameScreen implements Screen {
 		isCaptured = true;
 	}
 	
-	public static void MobileHospitalResponse( String[] DiseaseNames )
+	public static void MobileHospitalResponse( String DiseaseNamesList )
 	{
+		String[] DiseaseNames = DiseaseNamesList.split("[,]"); 
 		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
 		
 
@@ -6216,7 +6274,6 @@ public class GameScreen implements Screen {
 		infectionDiscardPile.remove( CardName );
 	}
 
-
 	static void createFieldOperativeButton() {
 		TextButton fieldOperativeButton = new TextButton("FieldOperative Action", skin);
 		fieldOperativeButton.addListener(new ClickListener() {
@@ -6258,14 +6315,52 @@ public class GameScreen implements Screen {
 		nextActionButtonHeight -= actionButtonYSize * 1.125f;
 		buttonGroup.addActor(fieldOperativeButton);
 	}
-
-
 	
 	public static void Chat( String Message )
 	{
 		messages.add( Message );
 	}
 
+	public static void RemoveCardFromStash()
+	{
+		for( PlayerInfo curr: players )
+			if( curr != null )
+				if( curr.getName().equalsIgnoreCase("ContingencyPlanner") )
+					curr.eventCardOnRoleCard = null;
+	}
+	
+	public static void AddCardToStash( String CardName )
+	{
+		for( PlayerInfo curr: players )
+			if( curr != null )
+				if( curr.getName().equalsIgnoreCase("ContingencyPlanner") )
+					curr.eventCardOnRoleCard = new PlayerCardInfo( CardName );
+	}
+	
+	public static void AddCubeToStash( String DiseaseColor )
+	{
+		for( PlayerInfo curr: players )
+			if( curr != null )
+				if( curr.getName().equalsIgnoreCase("FieldOperative") )
+					curr.diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.lookupColourByName( DiseaseColor) ) );
+	}
+	
+	public static void RemoveCubeFromStash( String DiseaseColor )
+	{
+		for( PlayerInfo curr: players )
+			if( curr != null )
+				if( curr.getName().equalsIgnoreCase("FieldOperative") )
+					for( int i = 0; i < curr.diseaseCubesOnRoleCard.size(); i++ )
+					{
+						if( curr.diseaseCubesOnRoleCard.get( i ).getColour() == DiseaseColour.lookupColourByName( DiseaseColor) )
+							curr.diseaseCubesOnRoleCard.remove( i );
+					}
+	}
+
+	public static void BorrowedTimeActivated()
+	{
+		actionsRemaining++;
+	}
 }
 
 
