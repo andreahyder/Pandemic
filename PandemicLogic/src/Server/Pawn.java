@@ -9,15 +9,23 @@ public class Pawn {
 	Player player;
 	City city;
 	
+	boolean captured;
+	
 	ArrayList<DiseaseCube> stash;
+	PlayerCard card;
 	
 	Pawn(Role r){
+		captured = false;
 		stash = new ArrayList<DiseaseCube>();
+		card = null;
 		role = r;
 		actions = 4;
 		roleactions = 1;
 		if(role.compareTo(Role.Gen) == 0) {
 			actions = 5;
+		}
+		if(role.compareTo(Role.Bio) == 0) {
+			actions = 2;
 		}
 		player = null;
 		city = null;
@@ -60,6 +68,14 @@ public class Pawn {
 		for(int i = 0; i < count; i++) {
 			city.removeDiseaseCube(c);
 		}
+		if(player.game.getDisease(c).cubes.size() == player.game.getDisease(c).max && player.game.getDisease(c).cured) {
+			player.game.getDisease(c).eradicated = true;
+			
+			String mes = "EradicateDisease/" + c + "/";
+			for(int j = 0; j < player.game.players.size(); j++) {
+				ServerComm.sendMessage(mes, j);
+			}
+		}
 		if(!free){
 			actions--;
 		}
@@ -78,6 +94,14 @@ public class Pawn {
 				if(stash.get(i).disease.color.equals(c)) {
 					count++;
 					player.game.getDisease(c).cubes.add(stash.remove(i));
+					if(player.game.getDisease(c).cubes.size() == player.game.getDisease(c).max && player.game.getDisease(c).cured) {
+						player.game.getDisease(c).eradicated = true;
+						
+						String mes = "EradicateDisease/" + c + "/";
+						for(int j = 0; j < player.game.players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+					}
 					break;
 				}
 			}

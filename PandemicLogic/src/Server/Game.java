@@ -28,6 +28,8 @@ public class Game {
 	int BT;
 	int VS;
 	
+	int victory;
+	int Biovictory;
 	boolean loaded;
 	int turn;
 	int Bturn;
@@ -51,6 +53,8 @@ public class Game {
 	
 	//initializes game, initializes alot of things.
 	Game(){
+		victory = 0;
+		Biovictory = 0;
 		BT = -1;
 		VS = -1;
 		loaded = false;
@@ -152,18 +156,6 @@ public class Game {
 			}
 			if(Bio) {
 				pawns.add(new Pawn(Role.Bio));
-				
-			}
-			
-			//tell players game started, send player list to everyone
-			String tmes = "";
-			for(Player p: players){
-				tmes += p.username;
-				tmes += ",";
-			}
-			String mes = "StartGame/" + tmes + "/";
-			for(int i = 0; i < players.size(); i++) {
-				ServerComm.sendMessage(mes, i);
 			}
 			
 			//add event cards
@@ -182,6 +174,29 @@ public class Game {
 				}
 			}
 			Collections.shuffle(playerDeck);
+			
+			//give pawns
+			if(Bio) {
+				players.get(BT).givePawn(getPawn("bio"), null);
+			}
+			for(Player p: players) {
+				Collections.shuffle(pawns);
+				if(p.pawn == null) {
+					Pawn paw = pawns.remove(0);
+					p.givePawn(paw, getCity("Atlanta"));
+				}
+			}
+			
+			//tell players game started, send player list to everyone
+			String tmes = "";
+			for(Player p: players){
+				tmes += p.username;
+				tmes += ",";
+			}
+			String mes = "StartGame/" + tmes + "/";
+			for(int i = 0; i < players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 			
 			//deal cards
 			int numcard = 6 - players.size();
@@ -214,7 +229,6 @@ public class Game {
 			}
 			else if(Bio) {
 				diseases.add(new Disease("purple"));
-				players.get(BT).givePawn(getPawn("bio"), null);
 			}
 			
 			//setup epidemic/vir
@@ -243,17 +257,41 @@ public class Game {
 			//place initial diseases
 			for(int i = 0; i < 3; i++) {
 				InfectionCard t2 = infectionDeck.remove(0);
-				infectCity(t2, 3);
+				infectCity(t2.city, t2.city.disease.color, 3);
+				infectionDiscardPile.add(t2);
+				
+				mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 			for(int i = 0; i < 3; i++) {
 				InfectionCard t2 = infectionDeck.remove(0);
-				infectCity(t2, 2);
+				infectCity(t2.city, t2.city.disease.color, 2);
+				infectionDiscardPile.add(t2);
+				
+				mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 			for(int i = 0; i < 3; i++) {
 				InfectionCard t2 = infectionDeck.remove(0);
-				infectCity(t2, 1);
+				infectCity(t2.city, t2.city.disease.color, 1);
+				infectionDiscardPile.add(t2);
+				
+				mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+				for(int j = 0; j < players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 			
+			//setup quarantine spec
+			for(Player p: players) {
+				if(p.pawn.role.equals(Role.Qua)) {
+					p.pawn.move(getCity("Atlanta"), true);
+				}
+			}
 			
 			if(turn == BT) {
 				turn++;
@@ -285,11 +323,26 @@ public class Game {
 				InfectionCard t2 = infectionDeck.remove(infectionDeck.size()-1);
 				int c = t2.city.countDiseaseCube(t2.city.disease.color);
 				if(c == 0) {
-					infectCity(t2, 3);
+					infectCity(t2.city, t2.city.disease.color, 3);
+					infectionDiscardPile.add(t2);
+					
+					String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+					for(int j = 0; j < players.size(); j++) {
+						ServerComm.sendMessage(mes, j);
+					}
 				}
 				else {
-					infectCity(t2, 4-c);
+					infectCity(t2.city, t2.city.disease.color, 4-c);
+					infectionDiscardPile.add(t2);
+					
+					String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+					for(int j = 0; j < players.size(); j++) {
+						ServerComm.sendMessage(mes, j);
+					}
 				}
+				
+				Boolean unaccept = false;
+				Boolean unaccount = false;
 				
 				if(t1.type.equals(Type.Virulent)) {
 					if(VS == -1) {
@@ -304,32 +357,87 @@ public class Game {
 						diseases.get(d).virulent = true;
 						VS = d;
 						
-						//TODO update virulent strain disease for everyone
+						String mes = "VirulentStrainChosen/" + diseases.get(d).color.toString();
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
 					}
 					
 					if(t1.name.equals("ChronicEffect")) {
+						VirChronic = true;
 						
+						String mes = "VirulentStrainEpidemic/ChronicEffect/";
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+						//TODO update
 					}
 					else if(t1.name.equals("ComplexMolecularStructure")) {
+						VirComplex = true;
 						
+						String mes = "VirulentStrainEpidemic/ChronicEffect/";
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+						//TODO update
 					}
 					else if(t1.name.equals("GovernmentInterference")) {
+						VirGov = true;
 						
+						String mes = "VirulentStrainEpidemic/GovernmentInterference/";
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+						//TODO update
 					}
 					else if(t1.name.equals("HiddenPocket")) {
-						
+						if(diseases.get(VS).eradicated) {
+							boolean found = false;
+							for(InfectionCard inf:infectionDiscardPile) {
+								if(inf.type.equals(Type.City)) {
+									if(diseases.get(VS).color.equals(inf.city.disease.color)) {
+										found = true;
+										inf.city.addDiseaseCube(inf.city.disease.color);
+										
+										String mes = "AddDiseaseCubeToCity/" + inf.city.name + "/" + inf.city.disease.color.toString() + "/";	
+										for(int j = 0; j < players.size(); j++) {
+											ServerComm.sendMessage(mes, j);
+										}
+									}
+								}
+							}
+							
+							if(found) {
+								String mes = "HiddenPocket/" + diseases.get(VS).color.toString() + "/";	
+								for(int j = 0; j < players.size(); j++) {
+									ServerComm.sendMessage(mes, j);
+								}
+							}
+						}
 					}
 					else if(t1.name.equals("RateEffect")) {
+						VirRate = true;
 						
+						String mes = "VirulentStrainEpidemic/RateEffect/";
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+						//TODO update
 					}
 					else if(t1.name.equals("SlipperySlope")) {
+						VirSlip = true;
 						
+						String mes = "VirulentStrainEpidemic/SlipperySlope/";
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+						//TODO update
 					}
 					else if(t1.name.equals("UnacceptableLoss")) {
-						
+						unaccept = true;
 					}
 					else if(t1.name.equals("UnacountedPopulations")) {
-						
+						unaccount = true;
 					}
 					else {
 						
@@ -344,6 +452,32 @@ public class Game {
 				
 				for(int j = 0; j < players.size(); j++) {
 					ServerComm.sendMessage("ClearInfectionDiscard/", j);
+				}
+				
+				if(unaccept) {
+					int unacceptcount = 4;
+					int unacceptSize = diseases.get(VS).cubes.size();
+					if(unacceptSize < 4) {
+						unacceptcount = unacceptSize;
+					}
+					for(int j = 0; j < unacceptcount; j++) {
+						diseases.get(VS).cubes.remove(0);
+					}
+					
+					String mes = "UnacceptableLoss/" + String.valueOf(unacceptcount) + "/";
+				}
+				
+				if(unaccount) {
+					for(City cit: cities) {
+						if(cit.countDiseaseCube(diseases.get(VS).color) == 1) {
+							cit.addDiseaseCube(diseases.get(VS).color);
+							
+							String mes = "AddDiseaseCubeToCity/" + cit.name + "/" + diseases.get(VS).color.toString() + "/";	
+							for(int j = 0; j < players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+						}
+					}
 				}
 			}
 			else if(t1.type.equals(Type.Mutation)) {
@@ -364,27 +498,26 @@ public class Game {
 	}
 	
 	//helper function that is used to infect city of c with count number of disease cubes. Outbreak included
-	void infectCity(InfectionCard c, int count) {
-		Color color = c.city.disease.color;
+	void infectCity(City c, Color color, int count) {
 		for(int i = 0; i < count; i++) {
-			if(c.city.QS) {
+			if(c.QS) {
 				
 			}
-			else if(c.city.quarantine != 0) {
-				c.city.quarantine--;
-				if(c.city.quarantine == 0) {
+			else if(c.quarantine != 0) {
+				c.quarantine--;
+				if(c.quarantine == 0) {
 					quarantines++;
 				}
 				
 				//TODO update quarantine and quarantines for all players
 			}
 			else {
-				if(c.city.countDiseaseCube(color) != 3) {
-					c.city.addDiseaseCube(color);
+				if(c.countDiseaseCube(color) != 3) {
+					c.addDiseaseCube(color);
 					
-					System.out.println("Infected " + c.city.name + " with a " + color.toString() + " disease cube!");
+					System.out.println("Infected " + c.name + " with a " + color.toString() + " disease cube!");
 					
-					String mes = "AddDiseaseCubeToCity/" + c.city.name + "/" + color.toString() + "/";	
+					String mes = "AddDiseaseCubeToCity/" + c.name + "/" + color.toString() + "/";	
 					for(int j = 0; j < players.size(); j++) {
 						ServerComm.sendMessage(mes, j);
 					}
@@ -398,8 +531,8 @@ public class Game {
 					}
 					
 					ArrayList<City> outbreakList = new ArrayList<City>();
-					outbreakList.add(c.city);
-					c.city.outbroken = true;
+					outbreakList.add(c);
+					c.outbroken = true;
 					while(!outbreakList.isEmpty()) {
 						outbreakCount++;
 						for(City link: outbreakList.get(0).connected) {
@@ -447,12 +580,6 @@ public class Game {
 					}
 				}
 			}
-		}
-		infectionDiscardPile.add(c);
-		
-		String mes = "AddInfectionCardToDiscard/" + c.city.name + "/";	
-		for(int i = 0; i < players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
 		}
 	}
 	
@@ -527,6 +654,16 @@ public class Game {
 			}
 		}
 		return null;
+	}
+	
+	boolean checkVictory() {
+		boolean v = true;
+		for(Disease d: diseases) {
+			if(!d.cured) {
+				v = false;
+			}
+		}
+		return v;
 	}
 	
 	Pawn getPawn(String r) {

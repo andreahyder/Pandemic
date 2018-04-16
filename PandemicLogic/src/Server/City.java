@@ -27,9 +27,18 @@ public class City {
 	}
 	
 	void addDiseaseCube(Color color) {
-		DiseaseCube t1 = game.getDisease(color).cubes.remove(0);
-		cubes.add(t1);
-		t1.location = this;
+		if(game.getDisease(color).cubes.isEmpty()) {
+			game.victory = -1;
+			String mes = "EndGame/false/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
+		}
+		else {
+			DiseaseCube t1 = game.getDisease(color).cubes.remove(0);
+			cubes.add(t1);
+			t1.location = this;
+		}
 	}
 	
 	void removeDiseaseCube(Color color) {

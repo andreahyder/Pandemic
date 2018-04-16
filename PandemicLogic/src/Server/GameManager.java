@@ -4,7 +4,7 @@ import java.util.Collections;
 
 public class GameManager {
 	//public static ArrayList<Game> games = new ArrayList<Game>();
-	public static Game game;
+	public static Game game = new Game();
 	public static ArrayList<Player> playerList = new ArrayList<Player>();
 	
 	GameManager(){
@@ -22,8 +22,8 @@ public class GameManager {
 	public static void AddPlayer(String name) {
 		Player t1 = new Player(name);
 		playerList.add(t1);
-		
-		//TODO send list of games to player
+		game.players.add(t1);
+		t1.game = game;
 		
 		System.out.println("New player connected: " + t1.username);
 	
@@ -36,28 +36,6 @@ public class GameManager {
 		System.out.println(t1.username + "changed their name to " + newname);
 		
 		t1.username = newname;
-	}
-	
-	public static void CreateGame(String indexs) {
-		int index = Integer.parseInt(indexs);
-		Player t1 = playerList.get(index);
-		
-		game = new Game();
-		game.players.add(t1);
-		t1.game = game;
-		
-		//TODO send playerlist to this guy
-		//TODO send lobby to this guy
-	}
-	
-	public static void JoinGame(String indexs) {
-		int index = Integer.parseInt(indexs);
-		Player t1 = playerList.get(index);
-		game.players.add(t1);
-		t1.game = game;
-		
-		//TODO send playerlist to everyone in game
-		//TODO send lobby to this guy
 	}
 	
 	public static void ToggleSetting(String[] args) {
@@ -150,155 +128,287 @@ public class GameManager {
 	//drive
 	public static void Drive(String city) {
 		Player t1 = game.getCurrentPlayer();
-		City t2 = game.getCity(city);
-		t1.pawn.move(t2, false);
-		
-		
-		if(game.EvMobile){
-			ServerComm.sendMessage("AskForTreat/",game.turn);
-			while(ServerComm.response == null) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		if(t1.pawn.role.equals(Role.Bio)) {
+			City t2 = game.getCity(city);
+			t1.pawn.move(t2, false);
+			
+			System.out.println(t1.username + " drived to " + city + ".");
+			
+			String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
+			ServerComm.sendMessage(mes, game.BT);
+			
+			if(t1.pawn.roleactions == 0) {
+				mes = "DecrementActions/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
 				}
 			}
-			String s = ServerComm.response;
-			System.out.println(s);
-			ServerComm.response = null;
+			else {
+				mes = "DecrementActionsBio/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
+			}
+		}
+		else {
+			City t2 = game.getCity(city);
+			t1.pawn.move(t2, false);
 			
-			Color c = Color.valueOf(s);
-			t1.pawn.treat(c, 1, true);
 			
-			String mes = "RemoveCube/" + t1.pawn.city.name + "/" + s + "/" + 1 + "/";
+			if(game.EvMobile){
+				ServerComm.sendMessage("AskForTreat/",game.turn);
+				while(ServerComm.response == null) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				String s = ServerComm.response;
+				System.out.println(s);
+				ServerComm.response = null;
+				
+				Color c = Color.valueOf(s);
+				t1.pawn.treat(c, 1, true);
+				
+				String mes = "RemoveCube/" + t1.pawn.city.name + "/" + s + "/" + 1 + "/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
+			}
+			
+			System.out.println(t1.username + " drived to " + city + ".");
+			
+			String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
 			for(int i = 0; i < game.players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
 			}
-		}
-		
-		System.out.println(t1.username + " drived to " + city + ".");
-		
-		String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
-		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
-		}
-		
-		mes = "DecrementActions/";
-		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
+			
+			mes = "DecrementActions/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 		}
 	}
 	
 	//directFlight
 	public static void DirectFlight(String city) {
 		Player t1 = game.getCurrentPlayer();
-		City t2 = game.getCity(city); 
-		t1.pawn.move(t2, false);
-		PlayerCard t3 = t1.hand.remove(t1.getCard(city));
-		
-		game.playerDiscardPile.add(t3);
-		
-		if(game.EvMobile){
-			ServerComm.sendMessage("AskForTreat/",game.turn);
-			while(ServerComm.response == null) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		if(t1.pawn.role.equals(Role.Bio)) {
+			City t2 = game.getCity(city); 
+			t1.pawn.move(t2, false);
+			InfectionCard t3 = t1.Bhand.remove(t1.getBCard(city));
+			
+			game.infectionDiscardPile.add(t3);
+			
+			System.out.println(t1.username + " directly flew to " + city + ".");
+			
+			String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
+			ServerComm.sendMessage(mes, game.BT);
+			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + city + "/false/";
+			ServerComm.sendMessage(mes2, game.BT);
+			String mes3 = "AddInfectionCardToDiscard/" + t3.city.name + "/";
+			String mes4 = "AirportSighting/" + city + "/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes3, i);
+				ServerComm.sendMessage(mes4, i);
 			}
-			String s = ServerComm.response;
-			System.out.println(s);
-			ServerComm.response = null;
 			
-			Color c = Color.valueOf(s);
-			t1.pawn.treat(c, 1, true);
+			if(t1.pawn.captured) {
+				t1.pawn.captured = false;
+			}
 			
-			String mes = "RemoveCube/" + t1.pawn.city.name + "/" + s + "/" + 1 + "/";
+			mes = "DecrementActions/";
 			for(int i = 0; i < game.players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
 			}
 		}
-		
-		System.out.println(t1.username + " directly flew to " + city + ".");
-		
-		String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
-		String mes2 = "RemoveCardFromHand/" + t1.username + "/" + city + "/true/";
-		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
-			ServerComm.sendMessage(mes2, i);
+		else {
+			City t2 = game.getCity(city); 
+			t1.pawn.move(t2, false);
+			PlayerCard t3 = t1.hand.remove(t1.getCard(city));
+			
+			game.playerDiscardPile.add(t3);
+			
+			if(game.EvMobile){
+				ServerComm.sendMessage("AskForTreat/",game.turn);
+				while(ServerComm.response == null) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				String s = ServerComm.response;
+				System.out.println(s);
+				ServerComm.response = null;
+				
+				Color c = Color.valueOf(s);
+				t1.pawn.treat(c, 1, true);
+				
+				String mes = "RemoveCube/" + t1.pawn.city.name + "/" + s + "/" + 1 + "/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
+			}
+			
+			System.out.println(t1.username + " directly flew to " + city + ".");
+			
+			String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
+			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + city + "/true/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+				ServerComm.sendMessage(mes2, i);
+			}
+			
+			mes = "DecrementActions/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 		}
-		
-		mes = "DecrementActions/";
-		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
-		}
-		//ServerComm.sendMessage(mes, game.turn);
 	}
 	
 	//charterFlight
 	public static void CharterFlight(String city) {
 		Player t1 = game.getCurrentPlayer();
-		PlayerCard t3 = t1.hand.remove(t1.getCard(t1.pawn.city.name));
-		City t2 = game.getCity(city); 
-		t1.pawn.move(t2, false);
-		
-		game.playerDiscardPile.add(t3);
-		
-		if(game.EvMobile){
-			ServerComm.sendMessage("AskForTreat/",game.turn);
-			while(ServerComm.response == null) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		if(t1.pawn.role.equals(Role.Bio)) {
+			InfectionCard t3 = t1.Bhand.remove(t1.getBCard(t1.pawn.city.name));
+			City t2 = game.getCity(city); 
+			t1.pawn.move(t2, false);
+			
+			game.infectionDiscardPile.add(t3);
+			
+			System.out.println(t1.username + " chartered a flight to " + city + ".");
+			
+			String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
+			ServerComm.sendMessage(mes, game.BT);
+			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t3.city.name + "/true/";
+			ServerComm.sendMessage(mes2, game.BT);
+			String mes3 = "AddInfectionCardToDiscard/" + t3.city.name + "/";
+			String mes4 = "AirportSighting/" + city + "/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes3, i);
+				ServerComm.sendMessage(mes4, i);
 			}
-			String s = ServerComm.response;
-			System.out.println(s);
-			ServerComm.response = null;
 			
-			Color c = Color.valueOf(s);
-			t1.pawn.treat(c, 1, true);
-			
-			String mes = "RemoveCube/" + t1.pawn.city.name + "/" + s + "/" + 1 + "/";
+			mes = "DecrementActions/";
 			for(int i = 0; i < game.players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
 			}
 		}
-		
-		System.out.println(t1.username + " chartered a flight to " + city + ".");
-		
-		String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
-		String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t3.name + "/true/";
-		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
-			ServerComm.sendMessage(mes2, i);
-		}
-		
-		mes = "DecrementActions/";
-		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
+		else {
+			PlayerCard t3 = t1.hand.remove(t1.getCard(t1.pawn.city.name));
+			City t2 = game.getCity(city); 
+			t1.pawn.move(t2, false);
+			
+			game.playerDiscardPile.add(t3);
+			
+			if(game.EvMobile){
+				ServerComm.sendMessage("AskForTreat/",game.turn);
+				while(ServerComm.response == null) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				String s = ServerComm.response;
+				System.out.println(s);
+				ServerComm.response = null;
+				
+				Color c = Color.valueOf(s);
+				t1.pawn.treat(c, 1, true);
+				
+				String mes = "RemoveCube/" + t1.pawn.city.name + "/" + s + "/" + 1 + "/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
+			}
+			
+			System.out.println(t1.username + " chartered a flight to " + city + ".");
+			
+			String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
+			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t3.name + "/true/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+				ServerComm.sendMessage(mes2, i);
+			}
+			
+			mes = "DecrementActions/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 		}
 	}
 	
 	public static void BuildResearchStation(String city) {
+		Player t1 = game.getCurrentPlayer();
 		if(game.research.isEmpty()) {
 			City c = game.getCity(city);
 			c.removeResearchStation();
 			game.getCurrentPlayer().pawn.city.addResearchStation();
+			PlayerCard p = t1.hand.remove(t1.getCard(city));
+			game.playerDiscardPile.add(p);
 			
-			//TODO update new RS and old RS
+			String mes = "RemoveResearchStation/" + c.name + "/";
+			String mes2 = "AddResearchStation/" + game.getCurrentPlayer().pawn.city.name + "/";
+			String mes3 = "RemoveCardFromHand/" + t1.username + "/" + p.city.name + "/true";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+				ServerComm.sendMessage(mes2, i);
+				ServerComm.sendMessage(mes3, i);
+			}
 		}
 		else {
 			game.getCurrentPlayer().pawn.city.addResearchStation();
+			PlayerCard p = t1.hand.remove(t1.getCard(city));
+			game.playerDiscardPile.add(p);
 			
-			//TODO update new RS
+			String mes2 = "AddResearchStation/" + game.getCurrentPlayer().pawn.city.name + "/";
+			String mes3 = "RemoveCardFromHand/" + t1.username + "/" + p.city.name + "/true";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes2, i);
+				ServerComm.sendMessage(mes3, i);
+			}
 		}
 	}
+	
+	public static void BuildQuarantine(String city) {
+		Player t1 = game.getCurrentPlayer();
+		if(game.quarantines == 0) {
+			City t2 = game.getCity(city);
+			t2.quarantine = 0;
+			game.getCurrentPlayer().pawn.city.quarantine = 2;
+			PlayerCard p = t1.hand.remove(t1.getCard(city));
+			game.playerDiscardPile.add(p);
+			
+			String mes = "RemoveQuarantine/" + city + "/";
+			String mes2 = "AddQuarantine/" + game.getCurrentPlayer().pawn.city.name + "/";
+			String mes3 = "RemoveCardFromHand/" + t1.username + "/" + p.city.name + "/true";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+				ServerComm.sendMessage(mes2, i);
+				ServerComm.sendMessage(mes3, i);
+			}
+		}
+		else {
+			game.getCurrentPlayer().pawn.city.quarantine = 2;
+			game.quarantines--;
+			PlayerCard p = t1.hand.remove(t1.getCard(city));
+			game.playerDiscardPile.add(p);
+			
+			String mes2 = "AddResearchStation/" + game.getCurrentPlayer().pawn.city.name + "/";
+			String mes3 = "RemoveCardFromHand/" + t1.username + "/" + p.city.name + "/true";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes2, i);
+				ServerComm.sendMessage(mes3, i);
+			}
+		}
+	}
+	
 	//treatDisease
 	public static void TreatDisease(String color) {
 		int count = 1;
@@ -330,7 +440,8 @@ public class GameManager {
 		int index = game.players.indexOf(t2);
 		
 		String mes = "AskForConsent/" + city + "/";
-		ServerComm.sendMessage(mes,index);
+		String ans = ServerComm.getResponse(mes,index);
+		/*ServerComm.sendMessage(mes,index);
 		
 		while(ServerComm.response == null) {
 			try {
@@ -341,9 +452,8 @@ public class GameManager {
 			}
 		}
 		String ans = ServerComm.response;
+		ServerComm.response = null;*/
 		Boolean consent = ans.matches("true");
-		ServerComm.response = null;
-		
 		if(consent) {
 			int a = t1.getCard(city);
 			int b = t2.getCard(city);
@@ -386,86 +496,60 @@ public class GameManager {
 		}
 	}
 	
-	//color/city1/city2/city3/city4/city5
-	public static void DiscoverCure(String color, String c1, String c2, String c3, String c4, String c5) {
+	//index/cure/color/city1/city2/city3/city4/city5/city6
+	public static void CureDisease(String[] args) {
 		Player t1 = game.getCurrentPlayer();
-		Color c = Color.valueOf(color);
+		Color c = Color.valueOf(args[2]);
+		game.getDisease(c).cured = true;
+		int extra = 0;
+		if(game.getDisease(c).virulent) {
+			extra = 1;
+		}
 		if(t1.pawn.role.equals(Role.Sci)) {
-			game.getDisease(c).cured = true;
-			PlayerCard card1 = t1.hand.remove(t1.getCard(c1));
-			PlayerCard card2 = t1.hand.remove(t1.getCard(c2));
-			PlayerCard card3 = t1.hand.remove(t1.getCard(c3));
-			PlayerCard card4 = t1.hand.remove(t1.getCard(c4));
-			game.playerDiscardPile.add(card1);
-			game.playerDiscardPile.add(card2);
-			game.playerDiscardPile.add(card3);
-			game.playerDiscardPile.add(card4);
-			
-			//TODO update disease cured
-			String mes1 = "RemoveCardFromHand/" + t1.username + "/" + c1 + "/true/";
-			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + c2 + "/true/";
-			String mes3 = "RemoveCardFromHand/" + t1.username + "/" + c3 + "/true/";
-			String mes4 = "RemoveCardFromHand/" + t1.username + "/" + c4 + "/true/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes1, i);
-				ServerComm.sendMessage(mes2, i);
-				ServerComm.sendMessage(mes3, i);
-				ServerComm.sendMessage(mes4, i);
+			for(int i = 0; i < 4 + extra; i++) {
+				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
+				game.playerDiscardPile.add(card);
+				String mes = "RemoveCardFromHand/" + t1.username + "/" + card + "/true/";
+				for(int j = 0; j < game.players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 		}
 		else if(t1.pawn.role.equals(Role.Field)) {
-			game.getDisease(c).cured = true;
-			PlayerCard card1 = t1.hand.remove(t1.getCard(c1));
-			PlayerCard card2 = t1.hand.remove(t1.getCard(c2));
-			PlayerCard card3 = t1.hand.remove(t1.getCard(c3));
-			game.playerDiscardPile.add(card1);
-			game.playerDiscardPile.add(card2);
-			game.playerDiscardPile.add(card3);
-			
-			t1.pawn.useStash(c);
-			
-			//TODO update disease cured
-			//TODO update stash/diseasecubes
-			String mes1 = "RemoveCardFromHand/" + t1.username + "/" + c1 + "/true/";
-			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + c2 + "/true/";
-			String mes3 = "RemoveCardFromHand/" + t1.username + "/" + c3 + "/true/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes1, i);
-				ServerComm.sendMessage(mes2, i);
-				ServerComm.sendMessage(mes3, i);
+			for(int i = 0; i < 3 + extra; i++) {
+				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
+				game.playerDiscardPile.add(card);
+				String mes = "RemoveCardFromHand/" + t1.username + "/" + card + "/true/";
+				for(int j = 0; j < game.players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
+			t1.pawn.useStash(c);
+			//TODO update stash/diseasecubes
 		}
 		else {
-			game.getDisease(c).cured = true;
-			PlayerCard card1 = t1.hand.remove(t1.getCard(c1));
-			PlayerCard card2 = t1.hand.remove(t1.getCard(c2));
-			PlayerCard card3 = t1.hand.remove(t1.getCard(c3));
-			PlayerCard card4 = t1.hand.remove(t1.getCard(c4));
-			PlayerCard card5 = t1.hand.remove(t1.getCard(c5));
-			game.playerDiscardPile.add(card1);
-			game.playerDiscardPile.add(card2);
-			game.playerDiscardPile.add(card3);
-			game.playerDiscardPile.add(card4);
-			game.playerDiscardPile.add(card5);
-			
-			//TODO update disease cured
-			String mes1 = "RemoveCardFromHand/" + t1.username + "/" + c1 + "/true/";
-			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + c2 + "/true/";
-			String mes3 = "RemoveCardFromHand/" + t1.username + "/" + c3 + "/true/";
-			String mes4 = "RemoveCardFromHand/" + t1.username + "/" + c4 + "/true/";
-			String mes5 = "RemoveCardFromHand/" + t1.username + "/" + c5 + "/true/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes1, i);
-				ServerComm.sendMessage(mes2, i);
-				ServerComm.sendMessage(mes3, i);
-				ServerComm.sendMessage(mes4, i);
-				ServerComm.sendMessage(mes5, i);
+			for(int i = 0; i < 5 + extra; i++) {
+				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
+				game.playerDiscardPile.add(card);
+				String mes = "RemoveCardFromHand/" + t1.username + "/" + card + "/true/";
+				for(int j = 0; j < game.players.size(); j++) {
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 		}
 		
 		String mes = "DecrementActions/";
+		String mes2 = "CureDisease/" + args[2] + "/";
 		for(int i = 0; i < game.players.size(); i++) {
 			ServerComm.sendMessage(mes, i);
+			ServerComm.sendMessage(mes2, i);
+		}
+		
+		if(game.checkVictory()) {
+			mes = "EndGame/true/";
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 		}
 	}
 	
@@ -479,17 +563,18 @@ public class GameManager {
 			t1.hand.add(p);
 			
 			t1.pawn.roleactions--;
-			//TODO update role action count for this player only
-			//TODO update discard pile for everyone
-			String mes = "AddCardToHand/" + t1.username + "/" + p.city.name + "/false/";
+			
+			String mes = "RemoveCardFromPlayerDiscard/" + p.city.name + "/";
+			String mes2 = "AddCardToHand/" + t1.username + "/" + p.city.name + "/false/";
 			for(int j = 0; j < game.players.size(); j++) {
 				ServerComm.sendMessage(mes, j);
+				ServerComm.sendMessage(mes2, j);
 			}
 			
 			
 			while(t1.hand.size() > 8) {
 				
-				ServerComm.sendMessage("AskForDiscard/",game.turn);
+				/*ServerComm.sendMessage("AskForDiscard/",game.turn);
 				while(ServerComm.response == null) {
 					try {
 						Thread.sleep(1);
@@ -500,21 +585,19 @@ public class GameManager {
 				}
 				String s = ServerComm.response;
 				System.out.println(s);
-				ServerComm.response = null;
+				ServerComm.response = null;*/
 				
+				String s = ServerComm.getResponse("AskForDiscard/",game.turn);
 				PlayerCard t3 = t1.hand.remove(t1.getCard(s));
 				game.playerDiscardPile.add(t3);
 				
-				String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t3.city.name + "/true/";
+				String mes3 = "RemoveCardFromHand/" + t1.username + "/" + t3.city.name + "/true/";
 				for(int j = 0; j < game.players.size(); j++) {
-					ServerComm.sendMessage(mes2, j);
+					ServerComm.sendMessage(mes3, j);
 				}
 			}
 		}
-		else if(args[2].equals("bioterrorist")) {
-			
-		}
-		else if(args[2].equals("colonel")) { //index/RA/colonel/cardtoremove/target/targettorob
+		else if(args[2].equals("Colonel")) { //index/RA/colonel/cardtoremove/target/targettorob
 			PlayerCard t2 = t1.hand.remove(t1.getCard(args[3]));
 			game.playerDiscardPile.add(t2);
 			
@@ -532,8 +615,51 @@ public class GameManager {
 				ServerComm.sendMessage(mes2, j);
 			}
 		}
-		else if(args[2].equals("bioterrorist")) {
-			
+		else if(args[2].equals("ContingencyPlanner")) {//index/RoleAction/ContingencyPlanner/Take/eventname
+			if(args[3].equals("Take")) {
+				int ind = 0;
+				for(int i = 0; i < game.playerDiscardPile.size(); i++) {
+					if(game.playerDiscardPile.get(i).name.equalsIgnoreCase(args[4])) {
+						ind = i;
+					}
+				}
+				t1.pawn.card = game.playerDiscardPile.remove(ind);
+				
+				String mes = "RemoveCardFromPlayerDiscard/" + args[4] + "/";
+				String mes2 = "AddCardToStash/" + args[4] + "/";
+				String mes3 = "DecrementActions/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+					ServerComm.sendMessage(mes2, i);
+					ServerComm.sendMessage(mes3, i);
+				}
+			}
+			else {
+				PlayerCard t2 = t1.pawn.card;
+				t1.pawn.card = null;
+				
+				int length = args.length;
+				int extra = length - 5;
+				String[] s = new String[3+extra];
+				s[0] = args[0];
+				s[1] = "EventAction";
+				s[2] = t2.name;
+				for(int i = 3; i < 3+extra; i++) {
+					s[i] = args[i+2];
+				}
+				GameManager.EventAction(s);
+				
+				String mes = "RemoveCardFromStash/" + t2.name + "/";
+				String mes2 = "DecrementActions/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+					ServerComm.sendMessage(mes2, i);
+				}
+			}
+		}
+		else if(args[2].equals("FieldOperative")) {//index/RoleAction/FieldOperative/color/
+			//AddCubeToStash/color
+			//RemoveCubeFromStash/color
 		}
 		else if(args[2].equals("bioterrorist")) {
 			
@@ -544,8 +670,102 @@ public class GameManager {
 		else if(args[2].equals("bioterrorist")) {
 			
 		}
-		else if(args[2].equals("bioterrorist")) {
+	}
+	
+	public static void InfectRemotely(String cardname) {
+		Player t1 = game.players.get(game.BT);
+		InfectionCard t2 = t1.Bhand.remove(t1.getBCard(cardname));
+		
+		game.infectCity(t2.city, Color.purple, 1);
+		game.infectionDiscardPile.add(t2);
+		
+		t1.pawn.actions--;
+		
+		String mes = "RemoveCardFromHand/" + t2.city.name + "/false/";
+		ServerComm.sendMessage(mes, game.BT);
+		
+		mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+		String mes2 = "DecrementActions/" + t1.username + "/";
+		for(int j = 0; j < game.players.size(); j++) {
+			ServerComm.sendMessage(mes, j);
+			ServerComm.sendMessage(mes2, j);
+		}
+	}
+	
+	public static void BioterroristStart(String cityname) {
+		Player t1 = game.players.get(game.BT);
+		t1.pawn.city = game.getCity(cityname);
+		t1.pawn.city.pawns.add(t1.pawn);
+		
+		String mes = "UpdatePlayerLocation/" + t1.username + "/" + cityname + "/";
+		ServerComm.sendMessage(mes, game.BT);
+	}
+	
+	public static void BioterroristDraw() {
+		Player t1 = game.players.get(game.BT);
+		InfectionCard t2 = game.infectionDeck.remove(0);
+		t1.Bhand.add(t2);
+		
+		String mes = "AddCardToHand/" + t1.username + "/" + t2.city.name + "/false/";
+		ServerComm.sendMessage(mes, game.BT);
+		
+		String mes2 = "DecrementActions/" + t1.username + "/";
+		for(int j = 0; j < game.players.size(); j++) {
+			ServerComm.sendMessage(mes2, j);
+		}
+	}
+	
+	public static void InfectLocally() {
+		Player t1 = game.players.get(game.BT);
+		
+		game.infectCity(t1.pawn.city, Color.purple, 1);
+		
+		String mes2 = "DecrementActions/" + t1.username + "/";
+		for(int j = 0; j < game.players.size(); j++) {
+			ServerComm.sendMessage(mes2, j);
+		}
+	}
+	
+	public static void Sabotage(String cityname) {
+		Player t1 = game.players.get(game.BT);
+		InfectionCard t2 = t1.Bhand.remove(t1.getBCard(cityname));
+		t1.pawn.city.removeResearchStation();
+		game.infectionDiscardPile.add(t2);
+		
+		String mes = "RemoveResearchStation/" + t1.pawn.city.name + "/";
+		String mes2 = "RemoveCardFromHand/" + t1.username + "/" + cityname + "/false";
+		ServerComm.sendMessage(mes2, game.BT);
+		String mes3 = "AddInfectionCardToDiscard/" + cityname + "/";
+		String mes4 = "DecrementActions/" + t1.username + "/";
+		for(int i = 0; i < game.players.size(); i++) {
+			ServerComm.sendMessage(mes, i);
+			ServerComm.sendMessage(mes3, i);
+			ServerComm.sendMessage(mes4, i);
+		}
+	}
+	
+	public static void Capture() {
+		Player t1 = game.getCurrentPlayer();
+		Player t2 = game.players.get(game.BT);
+		
+		int handsize = t2.Bhand.size();
+		for(int i = 0; i < handsize; i++) {
+			InfectionCard t3 = t2.Bhand.remove(0);
+			game.infectionDiscardPile.add(t3);
 			
+			String mes2 = "RemoveCardFromHand/" + t2.username + "/" + t3.city.name + "/false";
+			ServerComm.sendMessage(mes2, game.BT);
+			String mes3 = "AddInfectionCardToDiscard/" + t3.city.name + "/";
+			for(int j = 0; j < game.players.size(); j++) {
+				ServerComm.sendMessage(mes3, j);
+			}
+		}
+		
+		t2.pawn.captured = true;
+		
+		String mes = "Capture/";
+		for(int j = 0; j < game.players.size(); j++) {
+			ServerComm.sendMessage(mes, j);
 		}
 	}
 	
@@ -587,8 +807,9 @@ public class GameManager {
 				ServerComm.sendMessage(mes2, i);
 			}
 		}
-		
 		game.stage = Stage.Infection;
+		
+		
 		//Check for OneQuietNightFlag
 		if(game.oneQuietNightFlag){
 			game.oneQuietNightFlag = false;
@@ -598,12 +819,24 @@ public class GameManager {
 			if (game.EvCommercial == -1){
 				for(int i = 0; i < Game.infectionRate[game.infectionCount]; i++) {
 					InfectionCard t2 = game.infectionDeck.remove(0);
-					game.infectCity(t2, 1);
+					game.infectCity(t2.city, t2.city.disease.color, 1);
+					game.infectionDiscardPile.add(t2);
+					
+					String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+					for(int j = 0; j < game.players.size(); j++) {
+						ServerComm.sendMessage(mes, j);
+					}
 				}
 			} 
 			else{
 				InfectionCard t2 = game.infectionDeck.remove(0);
-				game.infectCity(t2, 1);
+				game.infectCity(t2.city, t2.city.disease.color, 1);
+				game.infectionDiscardPile.add(t2);
+				
+				String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 		}
 		

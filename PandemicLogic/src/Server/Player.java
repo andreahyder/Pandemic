@@ -11,6 +11,7 @@ public class Player {
 	Boolean ready;
 	Pawn pawn;
 	ArrayList<PlayerCard> hand;
+	ArrayList<InfectionCard> Bhand;
 	
 	Player(String n){
 		game = null;
@@ -21,6 +22,7 @@ public class Player {
 		ready = false;
 		pawn = null;
 		hand = new ArrayList<PlayerCard>();
+		Bhand = new ArrayList<InfectionCard>();
 	}
 	
 	void share(Player p, int c, Boolean give) {
@@ -46,22 +48,37 @@ public class Player {
 			Pawn t1 = pawn;
 			game.pawns.add(t1);
 			pawn = p;
+			
 			pawn.player = this;
 			pawn.city = c;
+			pawn.actions = t1.actions;
+			pawn.roleactions = t1.roleactions;
+			pawn.stash = t1.stash;
+			
+			t1.city.pawns.remove(t1);
+			t1.city = null;
 		}
 	}
-	
-	
 	
 	int getCard(String s){
 		int i = 0;
 		Boolean found = false;
 		while(i < hand.size() && !found) {
-			if(hand.get(i).city.name.matches(s)) {
-				found = true;
+			if(hand.get(i).type.equals(Type.City)) {
+				if(hand.get(i).city.name.matches(s)) {
+					found = true;
+				}
+				else{
+					i++;
+				}
 			}
-			else{
-				i++;
+			else {
+				if(hand.get(i).name.equalsIgnoreCase(s)){
+					found = true;
+				}
+				else {
+					i++;
+				}
 			}
 		}
 		if(found) {
@@ -71,6 +88,28 @@ public class Player {
 			return -1;
 		}
 	}
+	
+	int getBCard(String s){
+		int i = 0;
+		Boolean found = false;
+		while(i < Bhand.size() && !found) {
+			if(Bhand.get(i).type.equals(Type.City)) {
+				if(Bhand.get(i).city.name.matches(s)) {
+					found = true;
+				}
+				else{
+					i++;
+				}
+			}
+		}
+		if(found) {
+			return i;
+		}
+		else {
+			return -1;
+		}
+	}
+	
 	public Pawn getPawn(){
 		return pawn;
 	}
