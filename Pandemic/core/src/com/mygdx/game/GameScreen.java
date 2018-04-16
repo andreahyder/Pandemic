@@ -4033,12 +4033,12 @@ public class GameScreen implements Screen {
             		waitForButton = true;
             		if( clientPlayer == currentPlayer )
             		{
-		            	Dialog endTurnDiag = new Dialog("End Turn?" , skin ){
+		            	Dialog endTurnDiag = new Dialog("SaveGame?" , skin ){
 		            		@Override
 		            		protected void result(Object object) {
 		            			if ( (boolean) ( object ) )
 		            			{
-		            				ClientComm.send("SaveGame/");
+		            				ClientComm.send("SaveGame/" );
 		            			}
 		        				Gdx.input.setInputProcessor( buttonStage );
 		            		}
@@ -6403,9 +6403,11 @@ public class GameScreen implements Screen {
 		actionsRemaining++;
 	}
 
-	public static void SaveGame(String GameName)
+	public void SaveGame()
 	{
-		
+		SaveLoadGame.saveGame( this );
+		beenSaved = true;
+		numSaves++;
 	}
 }
 

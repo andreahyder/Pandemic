@@ -75,13 +75,12 @@ public class NameScreen implements Screen {
 				name = text;
 			}
 			
-			
 		}
 	
 		@Override
 		public void canceled () 
 		{
-		   
+		   System.exit(1);
 		}
 	}
 
