@@ -40,72 +40,97 @@ public class GameManager {
 	}
 	
 	public static void ToggleSetting(String[] args) {
+		String mes = "";
 		switch(args[2]) {
 		case "Diff":
 			int a = Integer.parseInt(args[3]);
 			game.Diff = a;
 			
-			//TODO update setting for all players
+			mes = "UpdateSetting/Diff/" + args[3] + "/"; 
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 			break;
 		case "Num":
 			int b = Integer.parseInt(args[3]);
 			game.Num = b;
 			
-			//TODO update
+			mes = "UpdateSetting/Num/" + args[3] + "/"; 
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 			break;
 		case "Otb":
 			if(args[3].equals("true")) {
 				game.Otb = true;
-				
-				//TODO update
+				mes = "UpdateSetting/Otb/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			else {
 				game.Otb = false;
-				
-				//TODO update
+				mes = "UpdateSetting/Otb/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			break;
 		case "Vir":
 			if(args[3].equals("true")) {
 				game.Vir = true;
-				
-				//TODO update
+				mes = "UpdateSetting/Vir/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			else {
 				game.Vir = false;
-				
-				//TODO update
+				mes = "UpdateSetting/Vir/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			break;
 		case "Mut":
 			if(args[3].equals("true")) {
 				game.Mut = true;
-				
-				//TODO update
+				mes = "UpdateSetting/Mut/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			else {
 				game.Mut = false;
-				
-				//TODO update
+				mes = "UpdateSetting/Mut/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			break;
 		case "Bio":
 			if(args[3].equals("true")) {
 				game.Bio = true;
-				
-				//TODO update
+				mes = "UpdateSetting/Bio/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			else {
 				game.Bio = false;
-				
-				//TODO update
+				mes = "UpdateSetting/Bio/" + args[3] + "/"; 
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes, i);
+				}
 			}
 			break;
 		case "BT":
-			int i = Integer.parseInt(args[3]);
-			game.BT = i;
-			
-			//TODO update
+			int ind = Integer.parseInt(args[3]);
+			game.BT = ind;
+			mes = "UpdateSetting/BT/" + args[3] + "/"; 
+			for(int i = 0; i < game.players.size(); i++) {
+				ServerComm.sendMessage(mes, i);
+			}
 			break;
 		default:
 			break;
@@ -852,88 +877,113 @@ public class GameManager {
 	public static void EndTurn(){
 		Player t1 = game.getCurrentPlayer();
 		t1.pawn.actions = 4;
+		t1.pawn.roleactions = 1;
 		if(t1.pawn.role.compareTo(Role.Generalist) == 0) {
 			t1.pawn.actions = 5;
 		}
-		
-		game.drawCard(t1, 2);
-		
-		int maxhand = 7;
-		if(t1.pawn.role.equals(Role.Archivist)) {
-			maxhand++;
+		if(t1.pawn.role.compareTo(Role.Bioterrorist) == 0) {
+			t1.pawn.actions = 2;
 		}
 		
-		while(t1.hand.size() > maxhand) {
+		if(game.Bturn == 0) {
+			game.drawCard(t1, 2);
+		
+			int maxhand = 7;
+			if(t1.pawn.role.equals(Role.Archivist)) {
+				maxhand++;
+			}
 			
-			ServerComm.sendMessage("AskForDiscard/",game.turn);
-			while(ServerComm.response == null) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+			while(t1.hand.size() > maxhand) {
+				
+				ServerComm.sendMessage("AskForDiscard/",game.turn);
+				while(ServerComm.response == null) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				String s = ServerComm.response;
+				System.out.println(s);
+				ServerComm.response = null;
+				
+				PlayerCard t2 = t1.hand.remove(t1.getCard(s));
+				game.playerDiscardPile.add(t2);
+				
+				String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t2.city.name + "/true/";
+				for(int i = 0; i < game.players.size(); i++) {
+					ServerComm.sendMessage(mes2, i);
 				}
 			}
-			String s = ServerComm.response;
-			System.out.println(s);
-			ServerComm.response = null;
+			game.stage = Stage.Infection;
 			
-			PlayerCard t2 = t1.hand.remove(t1.getCard(s));
-			game.playerDiscardPile.add(t2);
 			
-			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t2.city.name + "/true/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes2, i);
+			//Check for OneQuietNightFlag
+			if(game.oneQuietNightFlag){
+				game.oneQuietNightFlag = false;
 			}
-		}
-		game.stage = Stage.Infection;
-		
-		
-		//Check for OneQuietNightFlag
-		if(game.oneQuietNightFlag){
-			game.oneQuietNightFlag = false;
-		}
-		else{
-			//Checks for CommercialTravelBan flag
-			if (game.EvCommercial == -1){
-				for(int i = 0; i < Game.infectionRate[game.infectionCount]; i++) {
+			else{
+				//Checks for CommercialTravelBan flag
+				if (game.EvCommercial == -1){
+					for(int i = 0; i < Game.infectionRate[game.infectionCount]; i++) {
+						InfectionCard t2 = game.infectionDeck.remove(0);
+						game.infectCity(t2.city, t2.city.disease.color, 1);
+						game.infectionDiscardPile.add(t2);
+						
+						String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+						for(int j = 0; j < game.players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+					}
+				} 
+				else{
 					InfectionCard t2 = game.infectionDeck.remove(0);
 					game.infectCity(t2.city, t2.city.disease.color, 1);
 					game.infectionDiscardPile.add(t2);
 					
 					String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
-					for(int j = 0; j < game.players.size(); j++) {
-						ServerComm.sendMessage(mes, j);
+					for(int i = 0; i < game.players.size(); i++) {
+						ServerComm.sendMessage(mes, i);
 					}
-				}
-			} 
-			else{
-				InfectionCard t2 = game.infectionDeck.remove(0);
-				game.infectCity(t2.city, t2.city.disease.color, 1);
-				game.infectionDiscardPile.add(t2);
-				
-				String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
-				for(int i = 0; i < game.players.size(); i++) {
-					ServerComm.sendMessage(mes, i);
 				}
 			}
 		}
+		
 		//Checks for MobileHospital flag
 		game.EvMobile = false;
 		
 		game.stage = Stage.Action;
-		if(game.turn == game.players.size()-1) {
-			game.turn = 0;
+		
+		//set turn, if turn = bt turn index, keep going. If bt just finished turn, Bturn set to 0
+		if(game.Bturn == 0) {
+			game.Bturn = 1;
 		}
 		else {
-			game.turn++;
+			game.Bturn = 0;
+			if(game.turn == game.players.size()-1) {
+				game.turn = 0;
+			}
+			else {
+				game.turn++;
+			}
+			if(game.turn == game.BT) {
+				if(game.turn == game.players.size()-1) {
+					game.turn = 0;
+				}
+				else {
+					game.turn++;
+				}
+			}
 		}
+		
 		
 		if (game.turn == game.EvCommercial){
 			game.EvCommercial = -1;
 			
 			//update flag for everyone (client does this)
 		}
-		if(game.getCurrentPlayer().pawn.role==Role.Troubleshooter){
+		if(game.Bturn == 0 && game.getCurrentPlayer().pawn.role==Role.Troubleshooter){
 			String infectionCardsToLookAt = "";
 			for(int i=0; i<Game.infectionRate[game.infectionCount]; i++){
 				InfectionCard c = game.infectionDeck.get(i);
@@ -946,8 +996,17 @@ public class GameManager {
 			}
 			ServerComm.sendMessage("NotifyTurnTroubleShooter/" + infectionCardsToLookAt, game.turn);
 		}
-		//Client resets flag on NotifyTurn
-		String mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
+		//Client resets flag on NotifyTurn, bioterrorist turn if Bturn = 1
+		String mes = "";
+		if(game.Bturn == 1) {
+			game.Bturn = 0;
+			mes = "NotifyTurn/" + game.players.get(game.BT).username + "/";
+		}
+		else {
+			game.Bturn = 1;
+			mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
+		}
+		
 		ServerComm.sendToAllClients(mes);
 	}
 	

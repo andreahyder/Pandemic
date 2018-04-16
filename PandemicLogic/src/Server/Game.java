@@ -1,11 +1,18 @@
 package Server;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
+import java.io.File;
 
 public class Game {
 	Random rand = new Random();
+	
+	protected static boolean beenSaved;
+	private static File saveFile;
+	private static FileOutputStream fileOut;
+	protected static int posInSavedArray;
 	
 	ArrayList<Player> players;
 	ArrayList<Pawn> pawns;
