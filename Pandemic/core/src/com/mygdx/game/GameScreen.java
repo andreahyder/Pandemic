@@ -5590,6 +5590,11 @@ public class GameScreen implements Screen {
 		virulentStrainStatuses.put( EpidemicName, true );
 	}
 
+	public static void RemoveCardFromDiscard( String CardName )
+	{
+		playerDiscardPile.remove( CardName );
+	}
+	
 }
 
 
