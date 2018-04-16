@@ -4436,7 +4436,7 @@ public class GameScreen implements Screen {
 							if( remQuarantines > 0 )
 							{
 								//ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );
-								ClientComm.send("UpdateQuarantine/" + currentPlayer.getCity() + "/" + "2");
+								ClientComm.send("BuildQuarantine/" );
 							}
 							else
 							{
@@ -4454,8 +4454,7 @@ public class GameScreen implements Screen {
 											String selected = selectBox.getSelected();
 											/*ClientComm.send("RemoveQuarantine/" + selected);
 											ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );*/
-											ClientComm.send("UpdateQuarantine/" + selected + "/" + "0");
-											ClientComm.send("UpdateQuarantine/" + currentPlayer.getCity() + "/" + "2");
+											ClientComm.send("BuildQuarantine/" +selected );
 											Gdx.input.setInputProcessor(buttonStage);
 										}
 										else
