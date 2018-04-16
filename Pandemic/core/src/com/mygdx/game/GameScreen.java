@@ -251,7 +251,7 @@ public class GameScreen implements Screen {
 		"CommercialTravelBan",
 		"ReexaminedResearch",
 		"RemoteTreatment",
-			"LocalInitiative"
+		"LocalInitiative"
 	};
 	
 	static PandemicGame parent;
@@ -648,6 +648,7 @@ public class GameScreen implements Screen {
 		handShownPlayer = clientPlayer;
 		
 		initBioterroristLocation();
+		initChatStage();
 	}
 
 	static void initBioterroristLocation()
@@ -1880,7 +1881,7 @@ public class GameScreen implements Screen {
 	
 	static void createCommercialTravelBan( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 4 ];
+		Texture cardTexture	 							= eventCardTextures[ 10 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -1928,7 +1929,7 @@ public class GameScreen implements Screen {
 	
 	static void createSpecialOrders( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 5 ];
+		Texture cardTexture	 							= eventCardTextures[ 4 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -2013,7 +2014,7 @@ public class GameScreen implements Screen {
 	
 	static void createReexaminedResearch( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 6 ];
+		Texture cardTexture	 							= eventCardTextures[ 11 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -2110,7 +2111,7 @@ public class GameScreen implements Screen {
 	
 	static void createRemoteTreatment( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 7 ];
+		Texture cardTexture	 							= eventCardTextures[ 12 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -2174,7 +2175,7 @@ public class GameScreen implements Screen {
 	
 	static void createAirlift( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 8 ];
+		Texture cardTexture	 							= eventCardTextures[ 5 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -2240,7 +2241,7 @@ public class GameScreen implements Screen {
 	
 	static void createOneQuietNight( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 9 ];
+		Texture cardTexture	 							= eventCardTextures[ 6 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -2288,7 +2289,7 @@ public class GameScreen implements Screen {
 	
 	static void createResilientPopulation( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 10 ];
+		Texture cardTexture	 							= eventCardTextures[ 7 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -2351,7 +2352,7 @@ public class GameScreen implements Screen {
 	
 	static void createGovernmentGrant( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 11 ];
+		Texture cardTexture	 							= eventCardTextures[ 9 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -2410,7 +2411,7 @@ public class GameScreen implements Screen {
 	
 	static void createForecast( int idx )
 	{
-		Texture cardTexture	 							= eventCardTextures[ 12 ];
+		Texture cardTexture	 							= eventCardTextures[ 8 ];
 		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
 		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
 
@@ -3256,6 +3257,10 @@ public class GameScreen implements Screen {
 											for( PlayerInfo player : players )
 											{
 												if( players == null )
+													continue;
+												if( adj == null )
+													continue;
+												if( adj.getName() == null )
 													continue;
 												
 												if( adj.getName().equals( player.getCity() ) )
