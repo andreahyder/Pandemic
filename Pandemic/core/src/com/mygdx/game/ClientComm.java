@@ -76,7 +76,35 @@ public class ClientComm {
 		toReturn.add(new ClearInfectionDiscard());
 		toReturn.add(new NotifyTurn());
 		toReturn.add(new StartGame());
+		toReturn.add(new AddCardToStash());
+		toReturn.add(new AddCubeToStash());
+		toReturn.add(new AddResearchStation());
+		toReturn.add(new AirportSighting());
+		toReturn.add(new BorrowedTimeActivate());
+		toReturn.add(new Capture());
+		toReturn.add(new Chat());
+		toReturn.add(new CureDisease());
 		toReturn.add(new DecrementActions());
+		toReturn.add(new DecrementActionsBio());
+		toReturn.add(new EradicateDisease());
+		toReturn.add(new GiveConsent());
+		toReturn.add(new HiddenPocket());
+		toReturn.add(new MobileHospitalResponse());
+		toReturn.add(new NotifyTurnTroubleShooter());
+		toReturn.add(new Print());
+		toReturn.add(new PromptNewAssignment());
+		toReturn.add(new ReexaminedResearch());
+		toReturn.add(new RemoveCardFromStash());
+		toReturn.add(new RemoveCubeFromStash());
+		toReturn.add(new RemoveInfectionCardFromDiscard());
+		toReturn.add(new RemovePlayerCardFromDiscard());
+		toReturn.add(new RemoveResearchStation());
+		toReturn.add(new ResetActions());
+		toReturn.add(new SpecialOrdersActivate());
+		toReturn.add(new UnacceptableLoss());
+		toReturn.add(new UpdateRole());
+		toReturn.add(new VirulentStrainChosen());
+		toReturn.add(new VirulentStrainEpidemic());
 		return toReturn;
 	}
 }
