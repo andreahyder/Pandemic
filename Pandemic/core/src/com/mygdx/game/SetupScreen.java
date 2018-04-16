@@ -40,7 +40,7 @@ public class SetupScreen implements Screen {
 	private int stupidCounter = 0;
 	private String currentGame;
 	
-	private String bioterroristOpt;
+	public String bioterroristOpt;
 	private Label showBioTOpt;
 	
 	private String otbOpt;
@@ -49,12 +49,14 @@ public class SetupScreen implements Screen {
 	private String virOpt;
 	private Label virOptLabel;
 	
-	private String mutOpt;
+	public String mutOpt;
 	private Label mutOptLabel;
 	
 	private int diffOpt;
 	private String difficulty;
 	private Label diffOptLabel;
+	
+	static boolean showPurpleDisease = false;
 	
 	public void gameStringListToArray(String testGameList) {
 		String delims = "[/]";
@@ -106,8 +108,8 @@ public class SetupScreen implements Screen {
 //	    addressLabel.setAlignment(Align.center); // Align center
 //	    TextField addressText = new TextField("", skin);
 		
-		JoinGameTextInput2 listener = new JoinGameTextInput2();
-		Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
+//		JoinGameTextInput2 listener = new JoinGameTextInput2();
+//		Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
 
 	    
 	    
@@ -159,7 +161,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game1";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					ClientComm.send("ToggleSetting/ChoseSavedGame/game1");
+					ClientComm.send("ToggleSetting/ChoseSavedGame/1");
 				}
 			});
 			table.add(gameNum1).spaceRight(7).uniform();
@@ -174,7 +176,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game2";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					ClientComm.send("ToggleSetting/ChoseSavedGame/game2");
+					ClientComm.send("ToggleSetting/ChoseSavedGame/2");
 				}
 			});
 			table.add(gameNum2).spaceRight(7).uniform();
@@ -189,7 +191,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game3";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					ClientComm.send("ToggleSetting/ChoseSavedGame/game3");
+					ClientComm.send("ToggleSetting/ChoseSavedGame/3");
 				}
 			});
 			table.add(gameNum3).spaceRight(7).uniform();
@@ -204,7 +206,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game4";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					ClientComm.send("ToggleSetting/ChoseSavedGame/game4");
+					ClientComm.send("ToggleSetting/ChoseSavedGame/4");
 				}
 			});
 			table.add(gameNum4).spaceRight(7).uniform();
@@ -219,7 +221,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game5";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					ClientComm.send("ToggleSetting/ChoseSavedGame/game5");
+					ClientComm.send("ToggleSetting/ChoseSavedGame/5");
 				}
 			});
 			table.add(gameNum5).spaceRight(7).uniform();
@@ -234,7 +236,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game6";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/6");
 				}
 			});
 			table.add(gameNum6).spaceRight(7).uniform();
@@ -249,7 +251,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game7";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/7");
 				}
 			});
 			table.add(gameNum7).spaceRight(7).uniform();
@@ -264,7 +266,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game8";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/8");
 				}
 			});
 			table.add(gameNum8).spaceRight(7).uniform();
@@ -279,7 +281,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game9";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/9");
 				}
 			});
 			table.add(gameNum9).spaceRight(7).uniform();
@@ -294,7 +296,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game10";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/10");
 				}
 			});
 			table.add(gameNum10).spaceRight(7).uniform();
@@ -309,7 +311,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game11";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/11");
 				}
 			});
 			table.add(gameNum11).spaceRight(7).uniform();
@@ -324,7 +326,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game12";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/12");
 				}
 			});
 			table.add(gameNum12).spaceRight(7).uniform();
@@ -339,7 +341,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game13";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/13");
 				}
 			});
 			table.add(gameNum13).spaceRight(7).uniform();
@@ -354,7 +356,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game14";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/14");
 				}
 			});
 			table.add(gameNum14).spaceRight(7).uniform();
@@ -369,7 +371,7 @@ public class SetupScreen implements Screen {
 					gameSelected = "game15";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
-					//ClientComm.send......
+					ClientComm.send("ToggleSetting/ChoseSavedGame/15");
 				}
 			});
 			table.add(gameNum15).spaceRight(7).uniform();
@@ -448,10 +450,13 @@ public class SetupScreen implements Screen {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				stage.addActor(table);
-				bioterroristOpt = "Yes";
-				showBioTOpt.setText(bioterroristOpt);
-				// SEND SERVER MESSAGE:
-				ClientComm.send("ToggleSetting/Bio/true");
+				if (mutOpt.equals("No")) {
+					bioterroristOpt = "Yes";
+					showBioTOpt.setText(bioterroristOpt);
+					showPurpleDisease = true;
+					// SEND SERVER MESSAGE:
+					ClientComm.send("ToggleSetting/Bio/true");
+				}
 			}
 		});
 		table.add(toggleBioterroristY);
@@ -540,11 +545,14 @@ public class SetupScreen implements Screen {
 		mutY.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				stage.addActor(table);
-				mutOpt = "Yes";
-				mutOptLabel.setText(mutOpt);
-				// SEND SERVER MESSAGE:
-				ClientComm.send("ToggleSetting/Mut/true");
+				if (bioterroristOpt.equals("No")) {
+					stage.addActor(table);
+					mutOpt = "Yes";
+					mutOptLabel.setText(mutOpt);
+					showPurpleDisease = true;
+					// SEND SERVER MESSAGE:
+					ClientComm.send("ToggleSetting/Mut/true");
+				}
 			}
 		});
 		table.add(mutY);
