@@ -1,10 +1,23 @@
 package Server;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 public class GameManager {
 	//public static ArrayList<Game> games = new ArrayList<Game>();
+	static File saveFile;
+	static FileOutputStream fileOut;
+	static File[] allSavedGameFiles = new File[20];
+	static int numSavedGames = 0;
+	
+	
 	public static Game game = new Game();
 	public static ArrayList<Player> playerList = new ArrayList<Player>();
 	
@@ -26,8 +39,61 @@ public class GameManager {
 		game.players.add(t1);
 		t1.game = game;
 		
+		String plist = "";
+		String mes = "UpdateSetting/players/" + plist + "/";
+		ServerComm.sendToAllClients(mes);
+		
 		System.out.println("New player connected: " + t1.username);
 	
+	}
+	
+	public static void SaveGame() {
+		String name = "Game" + numSavedGames;
+		String mes = "SaveGame/" + name + "/";
+		ServerComm.sendToAllClients(mes);
+		
+		if (game.beenSaved == false) {
+        	try {   
+        		String saveName = "game" + (numSavedGames+1);
+        		saveFile = new File(saveName);
+        		fileOut = new FileOutputStream(saveFile);
+        		ObjectOutputStream objectStream = new ObjectOutputStream(fileOut);   
+
+                objectStream.writeObject(game); //Game state NOT window (CHANGE)
+                
+                objectStream.close();   
+                fileOut.close();   
+            }
+        	catch (Exception e) {  
+            } 
+        	game.beenSaved = true; 	//Now the Game has been saved once, so change the boolean
+        	// Now add the file to the list of savedGameFiles:
+    		allSavedGameFiles[numSavedGames] = Game.saveFile;
+    		game.posInSavedArray = numSavedGames;
+    		numSavedGames ++; 	//add 1 to number of saved games
+    		System.out.println(Game.posInSavedArray);
+    	}
+    	else {  // so if it's already been saved before:
+    		// Erase contents of saveFile before rewritting to it:
+    		String saveName = "game" + (Game.posInSavedArray+1);
+    		saveFile = new File(saveName);
+    		try {  
+    			fileOut = new FileOutputStream(saveFile);
+    			// file saved already exists then, so don't need to recreate it. Everything else is the same.
+        		ObjectOutputStream objectStream = new ObjectOutputStream(fileOut);   
+
+                objectStream.writeObject(game); //Game state NOT window (CHANGE)
+                
+                objectStream.close();   
+                fileOut.close();   
+            } 
+    		catch (Exception e) { 
+    			
+            } 
+    		// Now override the file in the list of savedGameFiles:
+    		allSavedGameFiles[Game.posInSavedArray] = saveFile;
+    		System.out.println("Overidden!");
+    	}
 	}
 	
 	public static void ChangeName(String indexs, String newname) {
@@ -46,7 +112,7 @@ public class GameManager {
 			int a = Integer.parseInt(args[3]);
 			game.Diff = a;
 			
-			mes = "UpdateSetting/Diff/" + args[3] + "/"; 
+			mes = "UpdateSetting/DiffOption/" + args[3] + "/"; 
 			for(int i = 0; i < game.players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
 			}
@@ -55,7 +121,7 @@ public class GameManager {
 			int b = Integer.parseInt(args[3]);
 			game.Num = b;
 			
-			mes = "UpdateSetting/Num/" + args[3] + "/"; 
+			mes = "UpdateSetting/NumOption/" + args[3] + "/"; 
 			for(int i = 0; i < game.players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
 			}
@@ -63,14 +129,14 @@ public class GameManager {
 		case "Otb":
 			if(args[3].equals("true")) {
 				game.Otb = true;
-				mes = "UpdateSetting/Otb/" + args[3] + "/"; 
+				mes = "UpdateSetting/OtbOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
 			}
 			else {
 				game.Otb = false;
-				mes = "UpdateSetting/Otb/" + args[3] + "/"; 
+				mes = "UpdateSetting/OtbOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
@@ -79,14 +145,14 @@ public class GameManager {
 		case "Vir":
 			if(args[3].equals("true")) {
 				game.Vir = true;
-				mes = "UpdateSetting/Vir/" + args[3] + "/"; 
+				mes = "UpdateSetting/VirOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
 			}
 			else {
 				game.Vir = false;
-				mes = "UpdateSetting/Vir/" + args[3] + "/"; 
+				mes = "UpdateSetting/VirOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
@@ -95,14 +161,14 @@ public class GameManager {
 		case "Mut":
 			if(args[3].equals("true")) {
 				game.Mut = true;
-				mes = "UpdateSetting/Mut/" + args[3] + "/"; 
+				mes = "UpdateSetting/MutOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
 			}
 			else {
 				game.Mut = false;
-				mes = "UpdateSetting/Mut/" + args[3] + "/"; 
+				mes = "UpdateSetting/MutOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
@@ -111,14 +177,14 @@ public class GameManager {
 		case "Bio":
 			if(args[3].equals("true")) {
 				game.Bio = true;
-				mes = "UpdateSetting/Bio/" + args[3] + "/"; 
+				mes = "UpdateSetting/BioOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
 			}
 			else {
 				game.Bio = false;
-				mes = "UpdateSetting/Bio/" + args[3] + "/"; 
+				mes = "UpdateSetting/BioOption/" + args[3] + "/"; 
 				for(int i = 0; i < game.players.size(); i++) {
 					ServerComm.sendMessage(mes, i);
 				}
@@ -127,9 +193,32 @@ public class GameManager {
 		case "BT":
 			int ind = Integer.parseInt(args[3]);
 			game.BT = ind;
-			mes = "UpdateSetting/BT/" + args[3] + "/"; 
+			mes = "UpdateSetting/BTOption/" + args[3] + "/"; 
 			for(int i = 0; i < game.players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
+			}
+			break;
+		case "ChoseSavedGame":
+			String mes2 = "LoadGame/" + args[3] + "/";
+			ServerComm.sendToAllClients(mes2);
+			
+			FileInputStream fileIn;
+	        Game GameFromSaved = null;
+			try {
+				int index = Integer.parseInt(args[3]);
+				fileIn = new FileInputStream(allSavedGameFiles[index]);
+	            ObjectInputStream objectStream = new ObjectInputStream(fileIn);   
+
+	            GameFromSaved = (Game) objectStream.readObject();
+			} 
+			catch (Exception e) {
+				
+			}   
+			//System.out.println(GameFromSaved.toString());
+			game = GameFromSaved;
+			game.players = new ArrayList<Player>();
+			for(Player p: playerList) {
+				game.players.add(p);
 			}
 			break;
 		default:
@@ -928,23 +1017,87 @@ public class GameManager {
 				if (game.EvCommercial == -1){
 					for(int i = 0; i < Game.infectionRate[game.infectionCount]; i++) {
 						InfectionCard t2 = game.infectionDeck.remove(0);
-						game.infectCity(t2.city, t2.city.disease.color, 1);
-						game.infectionDiscardPile.add(t2);
-						
-						String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
-						for(int j = 0; j < game.players.size(); j++) {
-							ServerComm.sendMessage(mes, j);
+						if(t2.type.equals(Type.City)) {
+							if(game.Mut && t2.city.countDiseaseCube(Color.purple) > 0) {
+								game.infectCity(t2.city, t2.city.disease.color, 1);
+								game.infectCity(t2.city, Color.purple, 1);
+								game.infectionDiscardPile.add(t2);
+								
+								String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+								for(int j = 0; j < game.players.size(); j++) {
+									ServerComm.sendMessage(mes, j);
+								}
+							}
+							else {
+								game.infectCity(t2.city, t2.city.disease.color, 1);
+								game.infectionDiscardPile.add(t2);
+								
+								String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+								for(int j = 0; j < game.players.size(); j++) {
+									ServerComm.sendMessage(mes, j);
+								}
+							}
+						}
+						else {
+							InfectionCard t3 = null;
+							while(t3 == null) {
+								t3 = game.infectionDeck.remove(game.infectionDeck.size()-1);
+								if(t3.type.equals(Type.Mutation)) {
+									game.infectionDeck.add(0,t3);
+									t3 = null;
+								}
+							}
+							game.infectCity(t3.city, Color.purple, 1);
+							game.infectionDiscardPile.add(t2);
+							game.infectionDiscardPile.add(t3);
+							
+							String mes = "AddInfectionCardToDiscard/" + t3.city.name + "/";
+							String mes2 = "AddInfectionCardToDiscard/MutationCard/";
+							ServerComm.sendToAllClients(mes);
+							ServerComm.sendToAllClients(mes2);
 						}
 					}
 				} 
 				else{
 					InfectionCard t2 = game.infectionDeck.remove(0);
-					game.infectCity(t2.city, t2.city.disease.color, 1);
-					game.infectionDiscardPile.add(t2);
-					
-					String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
-					for(int i = 0; i < game.players.size(); i++) {
-						ServerComm.sendMessage(mes, i);
+					if(t2.type.equals(Type.City)) {
+						if(game.Mut && t2.city.countDiseaseCube(Color.purple) > 0) {
+							game.infectCity(t2.city, t2.city.disease.color, 1);
+							game.infectCity(t2.city, Color.purple, 1);
+							game.infectionDiscardPile.add(t2);
+							
+							String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+							for(int j = 0; j < game.players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+						}
+						else {
+							game.infectCity(t2.city, t2.city.disease.color, 1);
+							game.infectionDiscardPile.add(t2);
+							
+							String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+							for(int j = 0; j < game.players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+						}
+					}
+					else {
+						InfectionCard t3 = null;
+						while(t3 == null) {
+							t3 = game.infectionDeck.remove(game.infectionDeck.size()-1);
+							if(t3.type.equals(Type.Mutation)) {
+								game.infectionDeck.add(0,t3);
+								t3 = null;
+							}
+						}
+						game.infectCity(t3.city, Color.purple, 1);
+						game.infectionDiscardPile.add(t2);
+						game.infectionDiscardPile.add(t3);
+						
+						String mes = "AddInfectionCardToDiscard/" + t3.city.name + "/";
+						String mes2 = "AddInfectionCardToDiscard/MutationCard/";
+						ServerComm.sendToAllClients(mes);
+						ServerComm.sendToAllClients(mes2);
 					}
 				}
 			}
@@ -956,7 +1109,7 @@ public class GameManager {
 		game.stage = Stage.Action;
 		
 		//set turn, if turn = bt turn index, keep going. If bt just finished turn, Bturn set to 0
-		if(game.Bturn == 0) {
+		if(game.Bturn == 0 && game.Bio) {
 			game.Bturn = 1;
 		}
 		else {

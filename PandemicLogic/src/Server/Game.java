@@ -9,10 +9,11 @@ import java.io.File;
 public class Game {
 	Random rand = new Random();
 	
-	protected static boolean beenSaved;
-	private static File saveFile;
-	private static FileOutputStream fileOut;
-	protected static int posInSavedArray;
+	static boolean beenSaved;
+	static File saveFile;
+	static FileOutputStream fileOut;
+	static int posInSavedArray;
+	static int numSavedGames = 0;
 	
 	ArrayList<Player> players;
 	ArrayList<Pawn> pawns;
@@ -184,6 +185,7 @@ public class Game {
 			
 			//give pawns
 			if(Bio) {
+				BT = rand.nextInt(players.size());
 				players.get(BT).givePawn(getPawn("bio"), null);
 			}
 			for(Player p: players) {
@@ -224,9 +226,13 @@ public class Game {
 			//setup mutation/bio
 			if(Mut) {
 				diseases.add(new Disease("purple"));
-				for(int i = 0; i < 3; i++) {
+				for(int i = 0; i < 2; i++) {
 					InfectionCard m = new InfectionCard(null, Type.Mutation);
 					infectionDiscardPile.add(m);
+					
+					String mes2 = "AddInfectionToDiscard/MutationCard/";
+					
+					ServerComm.sendToAllClients(mes2);
 				}
 				for(int i = 0; i < Vars.mutnames.length; i++) {
 					PlayerCard p = new PlayerCard(null, Type.Mutation, Vars.mutnames[i]);
