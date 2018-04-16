@@ -298,6 +298,9 @@ public class GameScreen implements Screen {
 			new Texture( Gdx.files.internal( "RedActiveMarker.png") ),
 			new Texture( Gdx.files.internal( "RedActiveMarker.png") ) //TODO: Use Purple image
 	};
+
+	static Texture highlight = new Texture(Gdx.files.internal( "eventcards/highlight.png"));
+
 	static Texture[] eventCardTextures = new Texture[] {
 		new Texture( Gdx.files.internal( "eventcards/"+eventCardNames[0]+".png") ),
 		new Texture( Gdx.files.internal( "eventcards/"+eventCardNames[1]+".png") ),
@@ -522,9 +525,9 @@ public class GameScreen implements Screen {
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("London" ) );
-    	players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
+/*    	players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Toronto" ) );
-    	players[0].addCardToHand( new PlayerCardInfo("Madrid" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Madrid" ) );*/
     	
 
     	players[1].addCardToHand( new PlayerCardInfo("BorrowedTime" ) );
@@ -1017,6 +1020,27 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	static void displayRoleCardHighlight(){
+
+		batch.begin();
+
+		/*Texture cardTexture	 							= highlight;
+		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );*/
+
+		/*ButtonStyle cityButtonStyle = new ButtonStyle();
+		cityButtonStyle.up			= Draw_cardTexture;
+		cityButtonStyle.down		= Draw_cardTexture;*/
+
+
+		float x = playerCardXOffset + playerCardGap + (10*(playerCardXSize+ playerCardGap) ) - pawnXSize - pawnXSize/4;
+		float y = playerCardYOffset/2;
+		batch.draw(highlight, x, y, playerCardXSize*1.4f, playerCardYSize*1.3f);
+		batch.end();
+		//button.setBounds(x, y, playerCardXSize*1.2f, playerCardYSize*1.4f);
+		//handPanelGroup.addActor(button); //Add the button to the stage to perform rendering and take input.
+	}
+
 	static void updateOnRoleCardStage() {
 		//handPanelGroup.clear();
 		if (currentPlayer.role.equalsIgnoreCase("ContingencyPlanner")) {
@@ -1031,9 +1055,9 @@ public class GameScreen implements Screen {
 			//{
 			if (card != null) {
 				int index = Arrays.asList(eventCardNames).indexOf(card.getName());
-				int handIdx = 0;
+				int handIdx = 10;
 				String name = card.getName();
-
+				displayRoleCardHighlight();
 				switch (name) {
 					case "BorrowedTime": {
 						createBorrowedTime(handIdx);
@@ -5240,7 +5264,7 @@ public class GameScreen implements Screen {
 								else{
 									playEventCardOnRoleCard = "Play Event Card";
 								}
-								String[] pickAction = {"Retrieve Card", playEventCardOnRoleCard};
+								String[] pickAction = {"Retrieve Card"};
 								selectBox.setItems(pickAction);
 								skPrompt.getContentTable().add(selectBox);
 

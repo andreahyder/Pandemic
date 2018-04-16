@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 public class PlayerCardInfo {
 	String name;
+	//Boolean isOnRoleCard = false;
 	
 	PlayerCardInfo( CityNode city )
 	{
