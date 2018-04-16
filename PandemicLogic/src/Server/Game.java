@@ -313,7 +313,6 @@ public class Game {
 				PlayerCard t1 = playerDeck.remove(0);
 				if(t1.type.equals(Type.Epidemic) || t1.type.equals(Type.Virulent)) {
 					System.out.println("Player " + p.username + " drew an EPIDEMIC card!");
-					
 					infectionCount++;
 					
 					for(int j = 0; j < players.size(); j++) {
@@ -483,6 +482,40 @@ public class Game {
 				}
 				else if(t1.type.equals(Type.Mutation)) {
 					System.out.println("Player " + p.username + " drew a MUTATION card!");
+					if(t1.name.equals("TheMutationSpreads")){
+						for(int it=0; it<3; it++){
+							InfectionCard bottomCard = infectionDeck.remove(infectionDeck.size()-1);
+							infectCity(bottomCard.city, Color.purple, 1);
+							infectionDiscardPile.add(bottomCard);
+							playerDiscardPile.add(t1);
+							//updates clients
+							ServerComm.sendToAllClients("AddDiseaseCubeToCity/"+bottomCard.city.name+"/"+Color.purple.name()+"/");
+							ServerComm.sendToAllClients("AddInfectionCardToDiscard/" + bottomCard.city.name + "/");
+							ServerComm.sendToAllClients("AddMutationCardToDiscard/"+t1.name);
+						}
+					}
+					else if(t1.name.equals("TheMutationThreatens")){
+						InfectionCard bottomCard = infectionDeck.remove(infectionDeck.size()-1);
+						infectCity(bottomCard.city, Color.purple, 3);
+						infectionDiscardPile.add(bottomCard);
+						playerDiscardPile.add(t1);
+						//updates clients
+						for(int k=0; k<3; k++){
+							ServerComm.sendToAllClients("AddDiseaseCubeToCity/"+bottomCard.city.name+"/"+Color.purple.name()+"/");
+						}
+						ServerComm.sendToAllClients("AddInfectionCardToDiscard/" + bottomCard.city.name + "/");
+						ServerComm.sendToAllClients("AddMutationCardToDiscard/"+t1.name);
+					}
+					else if (t1.name.equals("TheMutationIntensifies")){
+						for(City c: cities){
+							if(c.countDiseaseCube(Color.purple)==2){
+								c.addDiseaseCube(Color.purple);
+								ServerComm.sendToAllClients("AddDiseaseCubeToCity/"+c.name+"/"+Color.purple.name()+"/");
+							}
+						}
+						playerDiscardPile.add(t1);
+						ServerComm.sendToAllClients("AddMutationCardToDiscard/"+t1.name);
+					}
 					
 				}
 				else {
@@ -511,92 +544,97 @@ public class Game {
 				break;
 			}
 		}
-		for(int i = 0; i < count; i++) {
-			if(c.QS) {
-				
-			}
-			else if(c.quarantine != 0) {
-				c.quarantine--;
-				if(c.quarantine == 0) {
-					quarantines++;
+		if(getDisease(color).eradicated){
+			
+		}
+		else{
+			for(int i = 0; i < count; i++) {
+				if(c.QS) {
+					
 				}
-				
-				//update quarantine and quarantines for all players
-				ServerComm.sendToAllClients("UpdateQuarantine/"+c.name+"/"+c.quarantine+"/");
-			}
-			else if(hasMedic){
-				
-			}
-			else {
-				if(c.countDiseaseCube(color) != 3) {
-					c.addDiseaseCube(color);
-					
-					System.out.println("Infected " + c.name + " with a " + color.toString() + " disease cube!");
-					
-					String mes = "AddDiseaseCubeToCity/" + c.name + "/" + color.toString() + "/";	
-					for(int j = 0; j < players.size(); j++) {
-						ServerComm.sendMessage(mes, j);
+				else if(c.quarantine != 0) {
+					c.quarantine--;
+					if(c.quarantine == 0) {
+						quarantines++;
 					}
+					
+					//update quarantine and quarantines for all players
+					ServerComm.sendToAllClients("UpdateQuarantine/"+c.name+"/"+c.quarantine+"/");
+				}
+				else if(hasMedic){
+					
 				}
 				else {
-					System.out.println("OUTBREAK IN " + c + "!");
-					
-					String mes2 = "IncOutbreakCounter/";	
-					for(int j = 0; j < players.size(); j++) {
-						ServerComm.sendMessage(mes2, j);
-					}
-					
-					ArrayList<City> outbreakList = new ArrayList<City>();
-					outbreakList.add(c);
-					c.outbroken = true;
-					while(!outbreakList.isEmpty()) {
-						outbreakCount++;
-						for(City link: outbreakList.get(0).connected) {
-							if(link.QS) {
-								
-							}
-							else if(link.quarantine != 0) {
-								link.quarantine--;
-								if(link.quarantine == 0) {
-									quarantines++;
-								}
-								
-								//update quarantine and quarantines for all players
-								ServerComm.sendToAllClients("UpdateQuarantine/"+link.name+"/"+link.quarantine+"/");
-							}
-							else {
-								if(!link.outbroken) {
-									if(link.countDiseaseCube(color) != 3) {
-										System.out.println("Infected " + link.name + " with a " + color.toString() + " disease cube!");
-										
-										link.addDiseaseCube(color);
-										
-										String mes = "AddDiseaseCubeToCity/" + link.name + "/" + color.toString() + "/";	
-										for(int j = 0; j < players.size(); j++) {
-											ServerComm.sendMessage(mes, j);
-										}
-									}
-									else {
-										System.out.println("CHAIN OUTBREAK IN " + link + "!");
-										
-										String mes = "IncOutbreakCounter/";	
-										for(int j = 0; j < players.size(); j++) {
-											ServerComm.sendMessage(mes, j);
-										}
-										
-										outbreakList.add(link);
-										link.outbroken = true;
-									}
-								}
-							}
+					if(c.countDiseaseCube(color) != 3) {
+						c.addDiseaseCube(color);
+						
+						System.out.println("Infected " + c.name + " with a " + color.toString() + " disease cube!");
+						
+						String mes = "AddDiseaseCubeToCity/" + c.name + "/" + color.toString() + "/";	
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
 						}
-						outbreakList.remove(0);
 					}
-					for(City cit: cities) {
-						cit.outbroken = false;
-					}
-					if(outbreakCount>=8){
-						ServerComm.sendToAllClients("EndGame/false/");
+					else {
+						System.out.println("OUTBREAK IN " + c + "!");
+						
+						String mes2 = "IncOutbreakCounter/";	
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes2, j);
+						}
+						
+						ArrayList<City> outbreakList = new ArrayList<City>();
+						outbreakList.add(c);
+						c.outbroken = true;
+						while(!outbreakList.isEmpty()) {
+							outbreakCount++;
+							for(City link: outbreakList.get(0).connected) {
+								if(link.QS) {
+									
+								}
+								else if(link.quarantine != 0) {
+									link.quarantine--;
+									if(link.quarantine == 0) {
+										quarantines++;
+									}
+									
+									//update quarantine and quarantines for all players
+									ServerComm.sendToAllClients("UpdateQuarantine/"+link.name+"/"+link.quarantine+"/");
+								}
+								else {
+									if(!link.outbroken) {
+										if(link.countDiseaseCube(color) != 3) {
+											System.out.println("Infected " + link.name + " with a " + color.toString() + " disease cube!");
+											
+											link.addDiseaseCube(color);
+											
+											String mes = "AddDiseaseCubeToCity/" + link.name + "/" + color.toString() + "/";	
+											for(int j = 0; j < players.size(); j++) {
+												ServerComm.sendMessage(mes, j);
+											}
+										}
+										else {
+											System.out.println("CHAIN OUTBREAK IN " + link + "!");
+											
+											String mes = "IncOutbreakCounter/";	
+											for(int j = 0; j < players.size(); j++) {
+												ServerComm.sendMessage(mes, j);
+											}
+											
+											outbreakList.add(link);
+											link.outbroken = true;
+										}
+									}
+								}
+							}
+							outbreakList.remove(0);
+						}
+						for(City cit: cities) {
+							cit.outbroken = false;
+						}
+						if(outbreakCount>=8){
+							ServerComm.sendToAllClients("EndGame/false/");
+						}
 					}
 				}
 			}
