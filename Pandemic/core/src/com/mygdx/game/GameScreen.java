@@ -415,9 +415,13 @@ public class GameScreen implements Screen {
 	static List<String> chatMessageList;
 	static TextArea chatMessages;
 	
+	int numSaves = 0;
+	
 	static BitmapFont currPlayerFont0 = new BitmapFont();
 	static BitmapFont currPlayerFont1 = new BitmapFont();
 	static BitmapFont infectionRateFont = new BitmapFont();
+	
+	boolean beenSaved = false;
 	
     GameScreen( PandemicGame _parent ) //Debug Constructor
     {
@@ -4020,6 +4024,42 @@ public class GameScreen implements Screen {
         
         createCaptureAction();
         
+        TextButton SaveGame = new TextButton( "Save Game", skin );
+        SaveGame.addListener( new ChangeListener() {
+            @Override
+			public void changed(ChangeEvent event, Actor actor) {
+            	if( !waitForButton )
+            	{
+            		waitForButton = true;
+            		if( clientPlayer == currentPlayer )
+            		{
+		            	Dialog endTurnDiag = new Dialog("End Turn?" , skin ){
+		            		@Override
+		            		protected void result(Object object) {
+		            			if ( (boolean) ( object ) )
+		            			{
+		            				ClientComm.send("SaveGame/");
+		            			}
+		        				Gdx.input.setInputProcessor( buttonStage );
+		            		}
+		            	};
+		
+		        		//dialogStag/e = new Stage( parent.screen );//
+		        		dialogStage.clear();
+		        		
+		        		endTurnDiag.button( "Yes", true );
+		        		endTurnDiag.button( "No", false );
+		        		
+		                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+		                endTurnDiag.show( dialogStage );
+            		}
+	                waitForButton = false;
+            	}
+			}
+        });
+        SaveGame.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+        nextActionButtonHeight -= actionButtonYSize*1.125f;
+        buttonGroup.addActor( SaveGame );
         
         TextButton endTurn = new TextButton( "End Turn", skin );
         endTurn.addListener( new ChangeListener() {
@@ -6361,6 +6401,11 @@ public class GameScreen implements Screen {
 	public static void BorrowedTimeActivated()
 	{
 		actionsRemaining++;
+	}
+
+	public static void SaveGame(String GameName)
+	{
+		
 	}
 }
 
