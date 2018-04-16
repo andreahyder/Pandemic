@@ -401,8 +401,8 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].setCity( "Istanbul" );
-    	players[0].role = "ContingencyPlanner";
+    	players[0].setCity( "Atlanta" );
+    	players[0].role = "FieldOperative";
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -3786,18 +3786,26 @@ public class GameScreen implements Screen {
 					if( clientPlayer == currentPlayer )
 					{
 						if(  lookupCity( currentPlayer.getCity() ).hasResearchStation  ) 
-						{	
+						{
+
 							ArrayList<PlayerCardInfo> hand = currentPlayer.getHand();
 							int[] cardNumByColor = new int[5];
 							for( int i = 0; i < 5; i++ )
 								cardNumByColor[i] = 0;
+
+							if(currentPlayer.role.equalsIgnoreCase("FieldOperative")) {
+								for (DiseaseCubeInfo diseaseCube : currentPlayer.diseaseCubesOnRoleCard) {
+									DiseaseColour diseaseColour = diseaseCube.getColour();
+									cardNumByColor[ diseaseColour.ordinal() ]++;
+								}
+							}
 							
 							for( PlayerCardInfo card : hand )
 							{
 								CityNode city = lookupCity(card.getName());
 								if( city == null)
 									continue;
-								
+
 								String colourName = city.getColour();
 								int idx = DiseaseColour.lookupColourByName( colourName  ).ordinal();
 								
@@ -3806,7 +3814,7 @@ public class GameScreen implements Screen {
 								cardNumByColor[ idx ]++;
 							}
 							
-							String diseaseName = "";
+							ArrayList<String> diseaseNames = new ArrayList<>();
 							for( int i = 0; i < 5; i++ )
 							{
 								int cureMod = 0;
@@ -3816,12 +3824,12 @@ public class GameScreen implements Screen {
 									cureMod = ( (DiseaseColour.getDiseaseName( DiseaseColour.values()[i])).equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
 								
 								if( cardNumByColor[i] >= currentPlayer.cardsToCure + cureMod )
-									diseaseName = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
+									diseaseNames.add(DiseaseColour.getDiseaseName( DiseaseColour.values()[i] ));
 		 					}
 							
 							if( cardNumByColor[DiseaseColour.PURPLE.ordinal()] <= 0 )
 							{
-								if( diseaseName.equals("") )
+								if( diseaseNames.isEmpty() )
 								{
 									Dialog cdPrompt = new Dialog( "You don't have the necessary cards to cure anything", skin ){
 			    				        protected void result(Object object)
@@ -3842,7 +3850,9 @@ public class GameScreen implements Screen {
 									
 									Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
 									if( cmsStatus != null & cmsStatus != false )
-										cureMod = ( diseaseName.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
+										for(String diseaseName : diseaseNames) {
+											cureMod = (diseaseName.equalsIgnoreCase(virulentStrainDisease)) ? 1 : 0;
+										}
 									
 									possibleSelections = new ArrayList<PlayerCardInfo>();
 									selections = new ArrayList<PlayerCardInfo>();
@@ -4325,6 +4335,8 @@ public class GameScreen implements Screen {
         createEpidemiologistButton();
         
         createContingencyPlannerButton();
+
+        createFieldOperativeButton();
         
         createCaptureAction();
         
@@ -6300,7 +6312,49 @@ public class GameScreen implements Screen {
 	{
 		infectionDiscardPile.remove( CardName );
 	}
-	
+
+	static void createFieldOperativeButton() {
+		TextButton fieldOperativeButton = new TextButton("FieldOperative Action", skin);
+		fieldOperativeButton.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				if (!waitForButton) {
+					waitForButton = true;
+					if (currentPlayer == clientPlayer && actionsRemaining > 0 && !currentPlayer.roleActionUsed) {
+						CityNode city = lookupCity(clientPlayer.getCity());
+						boolean[] coloursPresent = city.getDiseaseColours();
+
+						Dialog colourSelect = new Dialog("Select Disease Colour to Remove", skin) {
+							protected void result(Object object) {
+								if (object != null) {
+									CityNode city = lookupCity(clientPlayer.getCity());
+									ClientComm.send("RoleAction/FieldOperative/Take/" + city.getColour().toLowerCase());
+									//city.removeCubeByColour( (DiseaseColour)object );
+								}
+								Gdx.input.setInputProcessor(buttonStage);
+								//dialogStage = null;
+							}
+						};
+
+						for (int i = 0; i < 5; i++) {
+							if (coloursPresent[i]) {
+								colourSelect.button(DiseaseColour.getDiseaseName(DiseaseColour.values()[i]), DiseaseColour.values()[i]);
+							}
+						}
+						colourSelect.button("Cancel", null);
+						dialogStage.clear();
+						Gdx.input.setInputProcessor(dialogStage);
+						colourSelect.show(dialogStage);
+					}
+					waitForButton = false;
+				}
+			}
+		});
+		fieldOperativeButton.setBounds(0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+		nextActionButtonHeight -= actionButtonYSize * 1.125f;
+		buttonGroup.addActor(fieldOperativeButton);
+	}
+
 }
 
 

@@ -12,7 +12,7 @@ public class PlayerInfo {
 	public int cardsToCure = 5;
 	String role;
 	public PlayerCardInfo eventCardOnRoleCard;
-	public PlayerCardInfo diseaseCubeOnRoleCard;
+	public ArrayList <DiseaseCubeInfo> diseaseCubesOnRoleCard = new ArrayList<DiseaseCubeInfo>();
 	boolean roleActionUsed = false;
 	boolean visible = true;
 	
