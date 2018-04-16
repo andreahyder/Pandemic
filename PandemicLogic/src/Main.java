@@ -10,11 +10,6 @@ import java.net.*;
 
 public class Main {
 	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException{
-		String t = null;
-		if(t == null) {
-			System.out.println("success");
-		}
-		System.out.println((int)(8.5*1));
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
