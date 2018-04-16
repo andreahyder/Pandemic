@@ -6019,12 +6019,15 @@ public class GameScreen implements Screen {
 		
 		for( int i = 0; i < players.length; i++ )
 		{
-			if(players[i].role.equalsIgnoreCase("Bioterrorist") && i > 1 )
+			if( players[i] != null )
 			{
-				playersInOrder.add(1, players[i]);
+				if(players[i].role.equalsIgnoreCase("Bioterrorist") && i > 1 )
+				{
+					playersInOrder.add(1, players[i]);
+				}
+				else
+					playersInOrder.add( players[(currPlayerIdx + i) % players.length ]);
 			}
-			else
-				playersInOrder.add( players[(currPlayerIdx + i) % players.length ]);
 		}
 		
 		
