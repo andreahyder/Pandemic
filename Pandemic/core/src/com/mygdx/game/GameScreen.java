@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -38,7 +39,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -46,6 +49,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
+//import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
+
+import javafx.scene.control.ScrollBar;
+
 import com.mygdx.game.Actions.Action;
 
 public class GameScreen implements Screen {
@@ -269,7 +276,7 @@ public class GameScreen implements Screen {
 	static Texture[] selectedCityCardTextures;
 	static Texture[] playerTextures;
 	static Texture[] diseaseCubeTextures;
-	static Texture[] markerTextures = new Texture[4];
+	static Texture[] markerTextures = new Texture[5];
 	static Texture[] cureMarkerTextures = new Texture[] {
 			new Texture( Gdx.files.internal( "BlueCureMarker.png") ),
 			new Texture( Gdx.files.internal( "YellowCureMarker.png") ),
@@ -308,6 +315,7 @@ public class GameScreen implements Screen {
 	static Texture red = new Texture(Gdx.files.internal("RedDiseaseCube.png"));
 	static Texture blue = new Texture(Gdx.files.internal("BlueDiseaseCube.png"));
 	static Texture black = new Texture(Gdx.files.internal("BlackDiseaseCube.png"));
+	static Texture purple = new Texture(Gdx.files.internal("PurpleDiseaseCube.png"));
 	static Texture researchStation = new Texture(Gdx.files.internal( "ResearchStation.png"));
 	static Texture outbreakMarker = new Texture( Gdx.files.internal("outBreakLogo.png") );
 	static Texture background;
@@ -361,6 +369,8 @@ public class GameScreen implements Screen {
     
 	static float nextActionButtonHeight;
 	
+	static boolean usePurpleDisease = true;
+	
 	static boolean waitForButton = false;
 	static boolean govtGrant = false;
 	static boolean opExpertFly = false;
@@ -390,6 +400,16 @@ public class GameScreen implements Screen {
 	static boolean isCaptured = false;
 	static boolean extraMoveActionUsed = false;
 	
+	static boolean showChatOverlay = false;
+	static ArrayList<String> messages = new ArrayList<String>();
+	static Stage chatStage;
+	static TextField chatInput;
+	static Stage lastStage;
+	static ScrollPane chatScrollPane;
+	static ScrollBar chatScrollBar;
+	static List<String> chatMessageList;
+	static TextArea chatMessages;
+	
 	static BitmapFont currPlayerFont0 = new BitmapFont();
 	static BitmapFont currPlayerFont1 = new BitmapFont();
 	static BitmapFont infectionRateFont = new BitmapFont();
@@ -402,7 +422,9 @@ public class GameScreen implements Screen {
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
     	players[0].setCity( "Atlanta" );
+
     	players[0].role = "FieldOperative";
+
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
@@ -441,20 +463,23 @@ public class GameScreen implements Screen {
 		dialogStage = new Stage( parent.screen );
 		pawnStage = new Stage( parent.screen );
 		cardSelectStage = new Stage( parent.screen );
+		chatStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
-
 		
 		initButtonStage();
 		
 		initHandButtonStage();
 
 		updatePawnStage();
+		initChatStage();
 		
 		
 
     	players[0].addCardToHand( new PlayerCardInfo("ResilientPopulation" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Tokyo" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -522,6 +547,20 @@ public class GameScreen implements Screen {
 		IncOutbreakCounter();
 		IncOutbreakCounter();
 		IncOutbreakCounter();
+		
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
+		Chat("Hello World");
 		//AirportSighting( "Your Butt" );
     }
     
@@ -544,6 +583,7 @@ public class GameScreen implements Screen {
 		dialogStage = new Stage( screen );
 		pawnStage = new Stage( screen );
 		cardSelectStage = new Stage( parent.screen );
+		chatStage = new Stage( parent.screen );
 		handPanelGroup = new Group();
 
 		updateDiseaseStage();
@@ -655,11 +695,51 @@ public class GameScreen implements Screen {
 		diseaseStatuses.put( "yellow", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "black", DiseaseStatus.ACTIVE );
 		diseaseStatuses.put( "red", DiseaseStatus.ACTIVE );
+		if( usePurpleDisease )
+			diseaseStatuses.put( "purple", DiseaseStatus.ACTIVE );
 		
 		if ( currentPlayer.role.equalsIgnoreCase( "Generalist" ) )
 			actionsRemaining = 5;
 	}
 
+	static void initChatStage()
+	{
+		chatInput = new TextField( "Enter message text", skin );
+
+		chatInput.setBounds( windWidth - 400, 100, 300, 50f );
+		chatInput.addListener( new ClickListener(){
+			public void clicked(InputEvent event, float x, float y) {
+				chatInput.setText("");;
+			};
+		} );
+		chatStage.addActor( chatInput );
+		
+		TextButton sendButton = new TextButton( "Send", skin );
+		sendButton.addListener( new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				Chat( chatInput.getText() );
+				System.out.println( chatInput.getText() );
+			}
+		});
+		chatStage.addActor( sendButton );
+		 
+		chatMessages = new TextArea("", skin);
+		chatMessages.setFillParent( true );
+		chatMessages.setBounds(windWidth - 400, 155, 300,400f);
+		chatMessages.setColor( new Color( 255, 255, 255, 50 ) );
+		/*
+		chatScrollPane = new ScrollPane( chatMessages, tempSkin );
+		chatScrollPane.setBounds( 100, 155, windWidth - 200, windWidth - 650);
+		chatScrollPane.setDebug( false );
+		chatStage.addActor( chatScrollPane );
+		*/
+		chatStage.addActor(chatMessages);
+		
+		//chatMessageList.setBounds( 100, 115, windWidth - 200, windWidth - 150);
+		//chatStage.addActor( chatMessageList );
+	}
+	
 	static void initHandButtonStage()
 	{
 		int buttNum = 0;
@@ -3784,7 +3864,7 @@ public class GameScreen implements Screen {
 				{
 					waitForButton = true;
 					if( clientPlayer == currentPlayer )
-					{
+					{	
 						if(  lookupCity( currentPlayer.getCity() ).hasResearchStation  ) 
 						{
 
@@ -3814,7 +3894,7 @@ public class GameScreen implements Screen {
 								cardNumByColor[ idx ]++;
 							}
 							
-							ArrayList<String> diseaseNames = new ArrayList<>();
+							String diseaseName = "";
 							for( int i = 0; i < 5; i++ )
 							{
 								int cureMod = 0;
@@ -3824,12 +3904,12 @@ public class GameScreen implements Screen {
 									cureMod = ( (DiseaseColour.getDiseaseName( DiseaseColour.values()[i])).equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
 								
 								if( cardNumByColor[i] >= currentPlayer.cardsToCure + cureMod )
-									diseaseNames.add(DiseaseColour.getDiseaseName( DiseaseColour.values()[i] ));
+									diseaseName = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
 		 					}
 							
 							if( cardNumByColor[DiseaseColour.PURPLE.ordinal()] <= 0 )
 							{
-								if( diseaseNames.isEmpty() )
+								if( diseaseName.equalsIgnoreCase("") )
 								{
 									Dialog cdPrompt = new Dialog( "You don't have the necessary cards to cure anything", skin ){
 			    				        protected void result(Object object)
@@ -3850,10 +3930,8 @@ public class GameScreen implements Screen {
 									
 									Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
 									if( cmsStatus != null & cmsStatus != false )
-										for(String diseaseName : diseaseNames) {
-											cureMod = (diseaseName.equalsIgnoreCase(virulentStrainDisease)) ? 1 : 0;
-										}
-									
+										cureMod = ( diseaseName.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
+
 									possibleSelections = new ArrayList<PlayerCardInfo>();
 									selections = new ArrayList<PlayerCardInfo>();
 	
@@ -4340,6 +4418,7 @@ public class GameScreen implements Screen {
         
         createCaptureAction();
         
+        
         TextButton endTurn = new TextButton( "End Turn", skin );
         endTurn.addListener( new ChangeListener() {
             @Override
@@ -4377,8 +4456,6 @@ public class GameScreen implements Screen {
         endTurn.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( endTurn );
-	
-	
 	}
 	
 	public static void createQuarantineButton()
@@ -4441,7 +4518,6 @@ public class GameScreen implements Screen {
         buttonGroup.addActor( endTurn );
 
 	}
-	
 	
 	static void createOperationExpertButton()
 	{
@@ -4985,7 +5061,7 @@ public class GameScreen implements Screen {
 					Gdx.input.setInputProcessor( buttonStage );
 					String message = "CureDisease/" + diseaseToCure + '/';
 					for( PlayerCardInfo card : selections )
-						message += card.getName();
+						message += card.getName() +',';
 					
 					selections.clear();
 					possibleSelections.clear();
@@ -5022,7 +5098,8 @@ public class GameScreen implements Screen {
 
 	public void drawMarkers()
 	{
-		for( int i = 0; i < diseaseStatuses.size(); i++ )
+		int numDiseases = ( usePurpleDisease ) ? 5 : 4;
+		for( int i = 0; i < numDiseases; i++ )
 		{
 			if( (DiseaseStatus)diseaseStatuses.values().toArray()[i] == DiseaseStatus.ACTIVE )
 			{
@@ -5035,7 +5112,7 @@ public class GameScreen implements Screen {
 		}
 		
 		batch.begin();
-		batch.draw(greyBarOfNumbers, windWidth*0.3425f-15f-4*(markerXSize+15f)+50f, windHeight-markerYSize*3.75f, 4*(markerXSize+15f)+39f, markerYSize*6.75f);
+		batch.draw(greyBarOfNumbers, windWidth*0.3425f-15f-numDiseases*(markerXSize+15f)+50f, windHeight-markerYSize*3.75f, numDiseases*(markerXSize+15f)+39f, markerYSize*6.75f);
 		for( int i = 0; i < markerTextures.length; i++ )
 		{
 			batch.draw( markerTextures[i],windWidth*0.3575f-15f-i*(markerXSize+15f), windHeight - markerYSize*1.075f, markerXSize, markerYSize );
@@ -5132,20 +5209,39 @@ public class GameScreen implements Screen {
 			dialogStage.act();
 		}
 
-		batch.begin();
-		batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 520f, 150f);
-		batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
-		batch.draw(yellow, windWidth*0.404f, windHeight*0.968f, 50f, 35f);
-		batch.draw(red, windWidth*0.444f, windHeight*0.968f, 50f, 35f);
-		batch.draw(blue, windWidth*0.484f, windHeight*0.968f, 50f, 35f);
-		batch.draw(black, windWidth*0.524f, windHeight*0.968f, 50f, 35f);
-		batch.draw(researchStation, windWidth*0.564f, windHeight*0.968f, 40f, 35f);
-		batch.end();
+		if( usePurpleDisease )
+		{
+			batch.begin();
+			batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 580f, 150f);
+			batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
+			batch.draw(yellow, windWidth*0.404f, windHeight*0.968f, 50f, 35f);
+			batch.draw(red, windWidth*0.444f, windHeight*0.968f, 50f, 35f);
+			batch.draw(blue, windWidth*0.484f, windHeight*0.968f, 50f, 35f);
+			batch.draw(black, windWidth*0.524f, windHeight*0.968f, 50f, 35f);
+			batch.draw(purple, windWidth*0.564f, windHeight*0.968f, 50f, 35f);
+			batch.draw(researchStation, windWidth*0.604f, windHeight*0.968f, 40f, 35f);
+			batch.end();
+		}
+		else
+		{
+			batch.begin();
+			batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 520f, 150f);
+			batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
+			batch.draw(yellow, windWidth*0.404f, windHeight*0.968f, 50f, 35f);
+			batch.draw(red, windWidth*0.444f, windHeight*0.968f, 50f, 35f);
+			batch.draw(blue, windWidth*0.484f, windHeight*0.968f, 50f, 35f);
+			batch.draw(black, windWidth*0.524f, windHeight*0.968f, 50f, 35f);
+			batch.draw(researchStation, windWidth*0.564f, windHeight*0.968f, 40f, 35f);
+			batch.end();
+		}
 
 		displayCurrPlayer();
 		displayInfectionRate( currentInfectionRateIdx );
 		displayOutbreakCounter( outbreaks );
-		displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remResearchStations);	// ADDED
+		if ( !usePurpleDisease )
+			displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remResearchStations);	// ADDED
+		else
+			displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remPurpleCubes, remResearchStations);	// ADDED
 		//displayNumbers( 23, 23, 23, 23, 23 );
 		displayNumberOfActionsLeft( actionsRemaining );
 		displayPlayerColours();
@@ -5161,6 +5257,8 @@ public class GameScreen implements Screen {
 		}
 		
 		displayRapidVaccineNumbers();
+		
+		displayChat();
 	}
 
 	@Override
@@ -5301,6 +5399,20 @@ public class GameScreen implements Screen {
 
 		batch.end();
 	}
+	
+	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int purpleNo, int researchNo){
+		batch.begin();
+
+		deckFont.draw(batch, Integer.toString(deckNo)+",", windWidth*0.3925f, windHeight*0.99f);
+		yellowFont.draw(batch, Integer.toString(yellowNo)+",", windWidth*0.426f, windHeight*0.99f);
+		redFont.draw(batch, Integer.toString(redNo)+",", windWidth*0.466f, windHeight*0.99f);
+		blueFont.draw(batch, Integer.toString(blueNo)+",", windWidth*0.506f, windHeight*0.99f);
+		blackFont.draw(batch, Integer.toString(blackNo)+",", windWidth*0.546f, windHeight*0.99f);
+		blackFont.draw(batch, Integer.toString(purpleNo)+",", windWidth*0.586f, windHeight*0.99f);
+		researchFont.draw(batch, Integer.toString(researchNo)+",", windWidth*0.622f, windHeight*0.99f);
+
+		batch.end();
+	}
 
 	void displayNumberOfActionsLeft(int remActions){
 		batch.begin();
@@ -5368,6 +5480,46 @@ public class GameScreen implements Screen {
 		panelText.dispose();
 	}
 
+	void displayChat()
+	{
+		if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER))
+		{
+			if( showChatOverlay )
+			{
+				Chat( chatInput.getText() );
+				ClientComm.send("Chat/"+chatInput.getText()+'/');
+			}
+			else
+			{
+				showChatOverlay = true;
+				lastStage = (Stage) Gdx.input.getInputProcessor();
+				Gdx.input.setInputProcessor( chatStage );
+				chatInput.setText("");
+				chatStage.setKeyboardFocus( chatInput );
+			}
+		}
+		
+		if( Gdx.input.isKeyPressed( Input.Keys.ESCAPE ) )
+		{
+			if( showChatOverlay )
+			{
+				showChatOverlay = false;
+				Gdx.input.setInputProcessor( lastStage );
+			}
+		}
+		if( showChatOverlay == true )
+		{	
+			String text = "";
+			for( int i = 0; i < messages.size(); i++ )
+				text += messages.get(  messages.size()-i-1 ) + '\n';
+			chatMessages.setText( text );
+			chatMessages.layout();
+
+
+			chatStage.draw();
+			chatStage.act();
+		}
+	}
 	
 	void displayRapidVaccineNumbers()
 	{
@@ -6313,6 +6465,7 @@ public class GameScreen implements Screen {
 		infectionDiscardPile.remove( CardName );
 	}
 
+
 	static void createFieldOperativeButton() {
 		TextButton fieldOperativeButton = new TextButton("FieldOperative Action", skin);
 		fieldOperativeButton.addListener(new ClickListener() {
@@ -6353,6 +6506,13 @@ public class GameScreen implements Screen {
 		fieldOperativeButton.setBounds(0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
 		nextActionButtonHeight -= actionButtonYSize * 1.125f;
 		buttonGroup.addActor(fieldOperativeButton);
+	}
+
+
+	
+	public static void Chat( String Message )
+	{
+		messages.add( Message );
 	}
 
 }
