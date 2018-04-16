@@ -19,11 +19,13 @@ import com.mygdx.game.PandemicGame.Screens;
 
 public class MenuScreen implements Screen 
 {
-
+	// And
 	private PandemicGame parent;
 	private Stage stage;
 	private Skin skin;
 	private String IP = "";
+	
+	private boolean newGameF = false;
 	
 	MenuScreen( PandemicGame _parent )
 	{
@@ -44,7 +46,12 @@ public class MenuScreen implements Screen
 		newGame.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
+				//parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
+				//parent.changeScreen( PandemicGame.Screens.SETUP );
+
+				JoinGameTextInput listener = new JoinGameTextInput();
+				Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
+				newGameF = true;
 			}
 		});
 		
@@ -140,19 +147,37 @@ public class MenuScreen implements Screen
 		
 		if ( !IP.equals( "" ) )
 		{
-			try 
+			if( newGameF )
 			{
-				ClientComm.setupConnection( IP, 6004 );
-				IP = "";
-				ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
-				parent.changeScreen( Screens.SETUP );
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				JoinGameTextInput listener = new JoinGameTextInput();
-				Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
-			} //IMPLEMENT
-			// IMPLEMENT addPlayer to Server Game 
+//				try 
+//				{
+					//ClientComm.setupConnection( IP, 6004 );
+					IP = "";
+					//ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
+					parent.changeScreen( Screens.SETUP );
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//					JoinGameTextInput listener = new JoinGameTextInput();
+//					Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
+//				} //IMPLEMENT
+				// IMPLEMENT addPlayer to Server Game 
+			}
+			else
+			{
+				try 
+				{
+					ClientComm.setupConnection( IP, 6004 );
+					IP = "";
+					ClientComm.send( "AddPlayer/"+parent.getCurrentPlayer().getName() );
+					parent.changeScreen( Screens.SETUP );
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					JoinGameTextInput listener = new JoinGameTextInput();
+					Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
+				} //IMPLEMENT
+			}
 		}
 	}
 
