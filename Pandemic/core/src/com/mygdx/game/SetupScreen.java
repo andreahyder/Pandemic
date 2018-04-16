@@ -499,7 +499,7 @@ public class SetupScreen implements Screen {
 				otbOpt = "No";
 				otbOptLabel.setText(otbOpt);
 				// SEND SERVER MESSAGE:
-				ClientComm.send("ToggleSetting/Otb/true");
+				ClientComm.send("ToggleSetting/Otb/false");
 			}
 		});
 		table.add(otbN);

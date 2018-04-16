@@ -2,17 +2,17 @@ package com.mygdx.game.Actions;
 
 import com.mygdx.game.GameScreen;
 
-public class RemoveInfectionCardFromDiscard implements Action{
+public class ForecastPrompt implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameScreen.RemoveCardFromInfectionDiscard( args[1] );			
+		GameScreen.ForecastPrompt(args[1]);
 	}
 
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "RemoveInfectionCardFromDiscard";
+		return "ForecastPrompt";
 	}
 
 }

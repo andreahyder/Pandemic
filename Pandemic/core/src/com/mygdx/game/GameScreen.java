@@ -1980,7 +1980,7 @@ public class GameScreen implements Screen {
 											@Override
 											protected void result(Object object) {
 												if( (boolean)object )
-													ClientComm.send( "EventAction/SpecialOrdersRequest/" + selector.getSelected() + '/' );
+													ClientComm.send( "EventAction/SpecialOrders/" + selector.getSelected() + '/' );
 												Gdx.input.setInputProcessor( buttonStage );
 											}
 										};
@@ -2439,7 +2439,7 @@ public class GameScreen implements Screen {
 									Dialog info = new Dialog( "Select cards in order to be drawn", skin ) {
 										@Override
 										protected void result(Object object) {
-											ClientComm.send("EventAction/ForecastRequest/"); 
+											ClientComm.send("EventAction/Forecast/"); 
 											//Forecast( new String[] { "Atlanta", "Tokyo", "Manila", "Toronto", "London", "Johannesburg" } );
 										};
 									};
@@ -2697,6 +2697,16 @@ public class GameScreen implements Screen {
 					ArrayList<CityNode> adjCities = lookupCity(player.getCity()).getConnectedCities();
 					for (CityNode curr : adjCities) {
 						cityButtons.get(lookupCityIndex(curr.getName())).setTouchable(Touchable.enabled);
+					}
+					
+
+					
+					if( lookupCity( player.getCity() ).hasResearchStation )
+					{
+						for( int i = 0; i < researchStationCityNames.size(); i++ )
+						{
+							cityButtons.get(lookupCityIndex(researchStationCityNames.get( i ))).setTouchable(Touchable.enabled);
+						}
 					}
 				}
 			}
@@ -3170,6 +3180,7 @@ public class GameScreen implements Screen {
 
 									ClientComm.send("RoleAction/Colonel/" + colonelOverseasCard + "/" + cityName + "/" );
 									colonelOverseas = false;
+									useCityButtonStage = false;
 									colonelOverseasCard = null;
 									cardToRobColonel = null;
 									Gdx.input.setInputProcessor(buttonStage);
@@ -3179,6 +3190,7 @@ public class GameScreen implements Screen {
 
 									ClientComm.send("RoleAction/Colonel/" + colonelOverseasCard + "/" + cityName + "/" + cardToRobColonel);
 									colonelOverseas = false;
+									useCityButtonStage = false;
 									colonelOverseasCard = null;
 									cardToRobColonel = null;
 									Gdx.input.setInputProcessor(buttonStage);
@@ -3186,6 +3198,7 @@ public class GameScreen implements Screen {
 								else if(localInitiativeOverseas && (cardToRobLocalInitiative == null) ){
 									String cityName = curr.getName();
 
+									useCityButtonStage = false;
 									localInitiativeOverseas = false;
 									cardToRobLocalInitiative = null;
 
@@ -3195,7 +3208,7 @@ public class GameScreen implements Screen {
 									String cityName = curr.getName();
 
 									localInitiativeOverseas = false;
-
+									useCityButtonStage = false;
 
 									ClientComm.send("EventAction/LocalInitiative/" + cityName + "/" + cardToRobLocalInitiative);
 
@@ -3252,11 +3265,25 @@ public class GameScreen implements Screen {
 									else
 									{
 										int numViable = 0;
+										
+										if( curr.hasResearchStation )
+										{
+											for( PlayerInfo player : players )
+											{
+												if( player == null )
+													continue;
+												
+												if( lookupCity( player.getCity() ).hasResearchStation )
+													numViable++;
+											}
+											
+										}
+										
 										for( CityNode adj : curr.connectedCities )
 										{
 											for( PlayerInfo player : players )
 											{
-												if( players == null )
+												if( player == null )
 													continue;
 												if( adj == null )
 													continue;
@@ -3266,6 +3293,8 @@ public class GameScreen implements Screen {
 												if( adj.getName().equals( player.getCity() ) )
 													numViable++;
 											}
+											
+											
 										}
 										
 										String[] viablePlayers = new String[ numViable ];
@@ -3274,7 +3303,7 @@ public class GameScreen implements Screen {
 										{
 											for( PlayerInfo player : players )
 											{
-												if( players == null )
+												if( player == null )
 													continue;
 												
 												if( adj.getName().equals( player.getCity() ) )
@@ -3282,6 +3311,30 @@ public class GameScreen implements Screen {
 													viablePlayers[j] = player.getName();
 													j++;
 												}
+											}
+										}
+										
+
+										if( curr.hasResearchStation )
+										{
+											for( PlayerInfo player : players )
+											{
+												if( player == null )
+													continue;
+												
+												if( curr.getName().equals( player.getCity() ) )
+													numViable++;
+												
+												boolean isPresent = false;
+												for( int k = 0; k < j; k++ )
+													isPresent |= ( viablePlayers[k] == player.getName() );
+												
+												if( !isPresent &&  lookupCity( player.getCity() ).hasResearchStation )
+												{
+													viablePlayers[j] = player.getName();
+													j++;
+												}
+													
 											}
 										}
 										final SelectBox<String> selector = new SelectBox<String>( tempSkin );
@@ -5639,9 +5692,9 @@ public class GameScreen implements Screen {
 				{
 					showCardSelectStage = false;
 					Gdx.input.setInputProcessor( buttonStage );
-					String message = "EventAction/ForecastResponse/";
+					String message = "data/";
 					for( String card : forecastSelections )
-						message += card;
+						message += card + ',';
 					
 					forecastSelections.clear();
 					possibleForecastSelections.clear();
@@ -6411,7 +6464,7 @@ public class GameScreen implements Screen {
 
 	public static void AskForConsent()
 	{
-		requestConsent("Allow share knowledge");
+		requestConsent("Give Consent?");
 	}
 
 	public static void AskForDiscard()
@@ -6714,7 +6767,7 @@ public class GameScreen implements Screen {
 
 	public static void UpdateQuarantine( String CityName, String Level )
 	{
-		int newMarker = Integer.valueOf( Level );
+		int newMarker = Integer.parseInt( Level );
 		if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
 			lookupCity(CityName).putQuarantineMarker2();
 		}
@@ -6911,11 +6964,11 @@ public class GameScreen implements Screen {
 						waitForButton = true;
 						if( !((Button)actor).isChecked() )
 						{
-							for( int i = 0; i < selections.size(); i++ )
+							for( int i = 0; i < forecastSelections.size(); i++ )
 							{
-								if( selections.get(i).getName().equals( card ) )
+								if( forecastSelections.get(i).equals( card ) )
 								{
-									selections.remove( i );
+									forecastSelections.remove( i );
 									break;
 								}
 							}
@@ -7284,6 +7337,39 @@ public class GameScreen implements Screen {
 		SaveLoadGame.saveGame( this );
 		beenSaved = true;
 		numSaves++;
+	}
+
+	public void ChooseCard( String isPlayerCard, String CardList )
+	{
+		String[] card = CardList.split("[,]");
+		if( card != null )
+		{
+			if( card.length <= 0 )
+			{
+				ClientComm.send( "data/none");
+				return;
+			}
+		}
+		else
+		{
+			ClientComm.send( "data/none");
+			return;
+		}
+		
+		final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+		
+		Dialog ccDiag = new Dialog( "Choose a card", skin ){
+			@Override
+			protected void result(Object object) {
+				ClientComm.send("data/" + selector.getSelected() );
+				Gdx.input.setInputProcessor( buttonStage );
+			}
+		};
+		ccDiag.getContentTable().add( ccDiag );
+		ccDiag.button("Select");
+		ccDiag.show( dialogStage );
+		Gdx.input.setInputProcessor( dialogStage );
+		
 	}
 }
 

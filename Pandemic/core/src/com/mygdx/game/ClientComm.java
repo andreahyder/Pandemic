@@ -108,6 +108,8 @@ public class ClientComm {
 		toReturn.add(new AddQuarantine());
 		toReturn.add(new RemoveQuarantine());
 		toReturn.add(new UpdateQuarantine());
+		toReturn.add(new MobileHospitalActivated());
+		toReturn.add(new ForecastPrompt());
 		return toReturn;
 	}
 }
