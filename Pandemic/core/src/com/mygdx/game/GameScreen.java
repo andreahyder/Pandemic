@@ -57,6 +57,8 @@ import com.mygdx.game.Actions.Action;
 
 public class GameScreen implements Screen {
 	final static float nodeSize = 17.50f;
+	final static float quarantineMarkerXSize = 21f;
+	final static float quarantineMarkerYSize = 21f;
 	final static float pawnXSize = 15.0f;
 	final static float pawnYSize = pawnXSize * 2f;
 	final static float cubeSize = 35.f;
@@ -204,6 +206,7 @@ public class GameScreen implements Screen {
 	static int remBlackCubes = 24;
 	static int remPurpleCubes = 12;
 	static int remResearchStations = 6;
+	static int remQuarantines = 4;
 
 	static int holdingPlayer = -1;
 	static int researcherPlayer = -1;
@@ -212,6 +215,8 @@ public class GameScreen implements Screen {
 	static Boolean playerHasCityCard = false;
 
 	static ArrayList<String> researchStationCityNames = new ArrayList<String>();
+
+	static ArrayList<String> quarantineMarkerCityNames = new ArrayList<>();
 	
 
 	static boolean turnEnded = false;
@@ -244,7 +249,8 @@ public class GameScreen implements Screen {
 		"GovernmentGrant",
 		"CommercialTravelBan",
 		"ReexaminedResearch",
-		"RemoteTreatment"
+		"RemoteTreatment",
+			"LocalInitiative"
 	};
 	
 	static PandemicGame parent;
@@ -305,7 +311,11 @@ public class GameScreen implements Screen {
 		new Texture( Gdx.files.internal( "eventcards/"+eventCardNames[10]+".png") ),
 		new Texture( Gdx.files.internal( "eventcards/"+eventCardNames[11]+".png") ),
 		new Texture( Gdx.files.internal( "eventcards/"+eventCardNames[12]+".png") ),
+			new Texture( Gdx.files.internal( "eventcards/"+eventCardNames[13]+".png") )
 	};
+
+	static Texture quarantineMarker1 = new Texture(Gdx.files.internal("quarantineMarker1.png"));
+	static Texture quarantineMarker2 = new Texture(Gdx.files.internal("quarantineMarker2.png"));
 	
 	
 	static Texture handPanelTexture;
@@ -332,6 +342,7 @@ public class GameScreen implements Screen {
 	static BitmapFont blueFont 			= new BitmapFont();
 	static BitmapFont blackFont 		= new BitmapFont();
 	static BitmapFont researchFont 		= new BitmapFont();
+	static BitmapFont quarantineFont	= new BitmapFont();
 	static BitmapFont numActionsFont	= new BitmapFont();
 	static BitmapFont playerColourFont0 = new BitmapFont();
 	static BitmapFont playerColourFont1 = new BitmapFont();
@@ -374,6 +385,8 @@ public class GameScreen implements Screen {
 	static boolean waitForButton = false;
 	static boolean govtGrant = false;
 	static boolean opExpertFly = false;
+	static boolean colonelOverseas = false;
+	static boolean localInitiativeOverseas = false;
 	static boolean remoteTreat = false;
 	static boolean specialOrders = false;
 	static boolean specialOrdersCharterFlight = false;
@@ -388,6 +401,10 @@ public class GameScreen implements Screen {
 	static String rvColour;
 	static String rvFirstCity;
 	static String opExpertFlyCard;
+	static String colonelOverseasCard;
+	static String localInitiativeOverseasCard;
+	static String cardToRobColonel = null;
+	static String cardToRobLocalInitiative = null;
 	static String specialOrderPlayer;
 	
 	static HashMap<String, Boolean> virulentStrainStatuses;
@@ -421,9 +438,9 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
-    	players[0].setCity( "Atlanta" );
+    	players[0].setCity( "Kinshasa" );
 
-    	players[0].role = "FieldOperative";
+    	players[0].role = "Colonel";
 
     	
     	players[1] = new PlayerInfo( "Larry", false );
@@ -475,9 +492,10 @@ public class GameScreen implements Screen {
 		updatePawnStage();
 		initChatStage();
 		
-		
+
 
     	players[0].addCardToHand( new PlayerCardInfo("ResilientPopulation" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("LocalInitiative" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
@@ -562,6 +580,14 @@ public class GameScreen implements Screen {
 		Chat("Hello World");
 		Chat("Hello World");
 		//AirportSighting( "Your Butt" );
+
+		AddQuarantineMarker("Santiago");
+		DecreaseQuarantineMarker("Santiago");
+		AddQuarantineMarker("Tokyo");
+		AddQuarantineMarker("Atlanta");
+		AddQuarantineMarker("Buenos Aires");
+		AddQuarantineMarker("Shanghai");
+		//AddQuarantineMarker("Paris");
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -658,7 +684,13 @@ public class GameScreen implements Screen {
 		virulentStrainStatuses.put( "SlipperySlope", false );
 		virulentStrainStatuses.put( "UnacceptableLoss", false );
 		virulentStrainStatuses.put( "UncountedPopulations", false );
-		
+
+		for(PlayerInfo playerss : players){
+			if (playerss.role.equalsIgnoreCase("Colonel")){
+				remQuarantines = 6;
+				break;
+			}
+		}
 		
 		for( int i = 0; i < players.length; i++ )
 		{
@@ -1435,6 +1467,12 @@ public class GameScreen implements Screen {
 						case "Forecast":
 						{
 							createForecast( handIdx );
+							handIdx++;
+						} break;
+
+						case "LocalInitiative":
+						{
+							createLocalInitiative( handIdx );
 							handIdx++;
 						} break;
 						
@@ -2215,7 +2253,156 @@ public class GameScreen implements Screen {
 		handPanelGroup.addActor(button); //Add the button to the stage to perform rendering and take input.
 	}
 
-	
+	static void createLocalInitiative( int idx ){
+		Texture cardTexture	 							= eventCardTextures[ 13 ];
+		TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+		final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+
+		ButtonStyle cityButtonStyle = new ButtonStyle();
+		cityButtonStyle.up			= Draw_cardTexture;
+		cityButtonStyle.down		= Draw_cardTexture;
+
+		button = new Button( cityButtonStyle );
+		if(  handShownPlayer == clientPlayer )
+		{
+			button.addListener( new ChangeListener(){
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{
+						waitForButton = true;
+
+						dialogStage.clear();
+						Dialog borrowedTimeDiag = new Dialog( "Do you want to play Local Initiative?", skin )
+						{
+							@Override
+							protected void result(Object object) {
+								if( (Boolean)object )
+								{
+									if( remQuarantines <= 0){
+
+										String[] list = new String[quarantineMarkerCityNames.size()];
+										for ( int i = 0; i < quarantineMarkerCityNames.size(); i++ )
+										{
+											list[ i ] = quarantineMarkerCityNames.get(i);
+										}
+										final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+
+										Dialog rsPrompt = new Dialog("Choose a Quarantine to remove",skin){
+											protected void result(Object object){
+												if( (Boolean)(object) )
+												{
+
+													dialogStage.clear();
+													final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+
+													Dialog confirmQuarantine = new Dialog("Use LocalInitiative event card to impose quarantine?", skin) {
+														@Override
+														protected void result(Object object) {
+															if ((boolean) (object)) {
+																useCityButtonStage = true;
+																localInitiativeOverseas = true;
+
+																Gdx.input.setInputProcessor(buttonStage);
+
+															}
+															Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+															//dialogStage = null;
+														}
+													};
+
+													//dialogStag/e = new Stage( parent.screen );//
+													dialogStage.clear();
+
+													confirmQuarantine.button("Yes", true);
+													confirmQuarantine.button("No", false);
+
+													Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+													confirmQuarantine.show(dialogStage);
+
+
+													//dialogStage = null;
+
+													Gdx.input.setInputProcessor(dialogStage);
+
+													String selected = selectBox.getSelected();
+
+													cardToRobLocalInitiative = selected;
+											/*useCityButtonStage = true;
+											colonelOverseas = true;
+											colonelOverseasCard = selected;*/
+
+
+											/*ClientComm.send("RemoveQuarantine/" + selected);
+											ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );*/
+												}
+												else
+												{
+													Gdx.input.setInputProcessor(buttonStage);
+												}
+											}
+										};
+
+										rsPrompt.setSize(250,150);
+										rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+										rsPrompt.button("Okay", true);
+										rsPrompt.button("Cancel", false);
+
+										selectBox.setItems( list );
+										rsPrompt.getContentTable().add(selectBox);
+
+										(rsPrompt).show(dialogStage);
+										Gdx.input.setInputProcessor(dialogStage);
+									}
+									else {
+
+										Dialog confirmQuarantine = new Dialog("Use LocalInitiative city card to impose quarantine?", skin) {
+											@Override
+											protected void result(Object object) {
+												if ((boolean) (object)) {
+													useCityButtonStage = true;
+													localInitiativeOverseas = true;
+													//colonelOverseasCard = selected;
+													Gdx.input.setInputProcessor(buttonStage);
+												}
+												else {
+													Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+													//dialogStage = null;
+												}
+											}
+										};
+
+										//dialogStag/e = new Stage( parent.screen );//
+										dialogStage.clear();
+
+										confirmQuarantine.button("Yes", true);
+										confirmQuarantine.button("No", false);
+
+										Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+										confirmQuarantine.show(dialogStage);
+
+
+									}
+								}
+								else
+									Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						borrowedTimeDiag.button("Yes", true );
+						borrowedTimeDiag.button("No", false);
+						borrowedTimeDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						waitForButton = false;
+					}
+				}
+			} );
+		}
+		float x = playerCardXOffset + playerCardGap + (idx*(playerCardXSize+ playerCardGap) );
+		float y = playerCardYOffset/2;
+		button.setBounds(x, y, playerCardXSize, playerCardYSize);
+		handPanelGroup.addActor(button); //Add the button to the stage to perform rendering and take input.
+	}
+
 	static void updateCityTouchability()
 	{
 		if( useCityButtonStage )
@@ -2330,7 +2517,7 @@ public class GameScreen implements Screen {
 		if( !clientPlayer.role.equalsIgnoreCase( "Bioterrorist" ) )
 			createActionButtons();
 		else
-			createBioterrirstActionButtons();
+			createBioterroristActionButtons();
 
 		buttonStage.addActor( buttonGroup );
 		buttonStage.addActor( cityButtonGroup );
@@ -2340,7 +2527,7 @@ public class GameScreen implements Screen {
 		Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
 	}
 
-	static void createBioterrirstActionButtons()
+	static void createBioterroristActionButtons()
 	{
         skin.getFont( "font").getData().setScale( actionButtonFontScaleFactor, actionButtonFontScaleFactor);
 
@@ -2742,6 +2929,42 @@ public class GameScreen implements Screen {
 									dispatcherCharterFlight = false;
 									Gdx.input.setInputProcessor( buttonStage );
 								}
+								else if( currentPlayer.role.equalsIgnoreCase("Colonel") && colonelOverseas && (cardToRobColonel == null) ){
+									String cityName = curr.getName();
+
+									ClientComm.send("RoleAction/Colonel/" + colonelOverseasCard + "/" + cityName + "/" );
+									colonelOverseas = false;
+									colonelOverseasCard = null;
+									cardToRobColonel = null;
+									Gdx.input.setInputProcessor(buttonStage);
+								}
+								else if( currentPlayer.role.equalsIgnoreCase("Colonel") && colonelOverseas && (cardToRobColonel != null) ){
+									String cityName = curr.getName();
+
+									ClientComm.send("RoleAction/Colonel/" + colonelOverseasCard + "/" + cityName + "/" + cardToRobColonel);
+									colonelOverseas = false;
+									colonelOverseasCard = null;
+									cardToRobColonel = null;
+									Gdx.input.setInputProcessor(buttonStage);
+								}
+								else if(localInitiativeOverseas && (cardToRobLocalInitiative == null) ){
+									String cityName = curr.getName();
+
+									localInitiativeOverseas = false;
+									cardToRobLocalInitiative = null;
+
+									ClientComm.send("EventAction/LocalInitiative/" + cityName + "/");
+								}
+								else if(localInitiativeOverseas && (cardToRobLocalInitiative != null) ){
+									String cityName = curr.getName();
+
+									localInitiativeOverseas = false;
+
+
+									ClientComm.send("EventAction/LocalInitiative/" + cityName + "/" + cardToRobLocalInitiative);
+
+									cardToRobLocalInitiative = null;
+								}
 								else
 								{
 									if( ( virulentStrainStatuses.get("GovernmentInterference") && hasTreatedVSOnCity ) || !( virulentStrainStatuses.get("GovernmentInterference") ) || currentPlayer.role.equalsIgnoreCase("Bioterrorist") )
@@ -2979,10 +3202,34 @@ public class GameScreen implements Screen {
 			CityNode city = lookupCity( station );
 			if( city.hasResearchStation )
 			{
-				float x = city.getXInWindowCoords( windWidth ) + nodeSize/2 - researchStationXSize / 2;
-				float y = city.getYInWindowCoords( windHeight ) + nodeSize/2 - researchStationYSize / 2 - researchStationYSize/4.f;
+				float x = city.getXInWindowCoords( windWidth ) - nodeSize - quarantineMarkerXSize / 2;
+				float y = city.getYInWindowCoords( windHeight ) + nodeSize/4 - quarantineMarkerYSize / 2 - quarantineMarkerYSize/4.f;
 				batch.begin();
 				batch.draw( researchStation, x, y, researchStationXSize, researchStationYSize );
+				batch.end();
+			}
+		}
+	}
+
+	static void drawQuarantineMarkers()
+	{
+		for( String station : quarantineMarkerCityNames )
+		{
+			CityNode city = lookupCity( station );
+			if( city.hasQuarantineMarker1 )
+			{
+				float x = city.getXInWindowCoords( windWidth ) + nodeSize + nodeSize/2 - quarantineMarkerXSize / 2;
+				float y = city.getYInWindowCoords( windHeight ) + nodeSize/2 - quarantineMarkerYSize / 2 - quarantineMarkerYSize/4.f;
+				batch.begin();
+				batch.draw( quarantineMarker1, x, y, quarantineMarkerXSize, quarantineMarkerYSize );
+				batch.end();
+			}
+
+			else if( city.hasQuarantineMarker2 ){
+				float x = city.getXInWindowCoords( windWidth ) + nodeSize + nodeSize/2 - quarantineMarkerXSize / 2;
+				float y = city.getYInWindowCoords( windHeight ) + nodeSize/2 - quarantineMarkerYSize / 2 - quarantineMarkerYSize/4.f;
+				batch.begin();
+				batch.draw( quarantineMarker2, x, y, quarantineMarkerXSize, quarantineMarkerYSize );
 				batch.end();
 			}
 		}
@@ -4404,6 +4651,82 @@ public class GameScreen implements Screen {
         cureDisease.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( cureDisease );
+
+		TextButton createQuarantine = new TextButton( "Impose a Quarantine", skin );
+		createQuarantine.addListener( new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				if( !waitForButton )
+				{
+					waitForButton = true;
+					if( clientPlayer == currentPlayer )
+					{
+
+						if( !lookupCity( currentPlayer.getCity() ).hasQuarantineMarker1 && !lookupCity( currentPlayer.getCity() ).hasQuarantineMarker2 )
+						{
+							if( remQuarantines > 0 )
+							{
+								ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );
+							}
+							else
+							{
+								String[] list = new String[quarantineMarkerCityNames.size()];
+								for ( int i = 0; i < quarantineMarkerCityNames.size(); i++ )
+								{
+									list[ i ] = quarantineMarkerCityNames.get(i);
+								}
+								final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+
+								Dialog rsPrompt = new Dialog("Choose a Quarantine to remove",skin){
+									protected void result(Object object){
+										if( (Boolean)(object) )
+										{
+											String selected = selectBox.getSelected();
+											ClientComm.send("RemoveQuarantine/" + selected);
+											ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );
+											Gdx.input.setInputProcessor(buttonStage);
+										}
+										else
+										{
+											Gdx.input.setInputProcessor(buttonStage);
+										}
+									}
+								};
+
+								rsPrompt.setSize(250,150);
+								rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+								rsPrompt.button("Okay", true);
+								rsPrompt.button("Cancel", false);
+
+								selectBox.setItems( list );
+								rsPrompt.getContentTable().add(selectBox);
+
+								dialogStage.addActor(rsPrompt);
+								Gdx.input.setInputProcessor(dialogStage);
+							}
+						/*else
+						{
+							Dialog rsPrompt = new Dialog("    Don't have the necessary card to build! ",skin){
+								protected void result(Object object){
+									Gdx.input.setInputProcessor(buttonStage);
+								}
+							};
+
+							rsPrompt.setSize(375,90);
+							rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+							rsPrompt.button("Okay", true);
+							dialogStage.addActor(rsPrompt);
+							Gdx.input.setInputProcessor(dialogStage);
+						}*/
+						}
+					}
+					waitForButton = false;
+				}
+			}
+		});
+		createQuarantine.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+		nextActionButtonHeight -= actionButtonYSize*1.125f;
+		buttonGroup.addActor( createQuarantine );
         
         
         createOperationExpertButton();
@@ -4417,6 +4740,8 @@ public class GameScreen implements Screen {
         createFieldOperativeButton();
         
         createCaptureAction();
+
+		createColonelAction();
         
         
         TextButton endTurn = new TextButton( "End Turn", skin );
@@ -4457,11 +4782,7 @@ public class GameScreen implements Screen {
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( endTurn );
 	}
-	
-	public static void createQuarantineButton()
-	{
-		
-	}
+
 	
 	public static void createCaptureAction() 
 	{
@@ -5040,6 +5361,263 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	static void createFieldOperativeButton() {
+		TextButton fieldOperativeButton = new TextButton("FieldOperative Action", skin);
+		fieldOperativeButton.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				if (!waitForButton) {
+					waitForButton = true;
+					if (currentPlayer == clientPlayer && actionsRemaining > 0 && !currentPlayer.roleActionUsed) {
+						CityNode city = lookupCity(clientPlayer.getCity());
+						boolean[] coloursPresent = city.getDiseaseColours();
+
+						Dialog colourSelect = new Dialog("Select Disease Colour to Remove", skin) {
+							protected void result(Object object) {
+								if (object != null) {
+									CityNode city = lookupCity(clientPlayer.getCity());
+									ClientComm.send("RoleAction/FieldOperative/Take/" + city.getColour().toLowerCase());
+									//city.removeCubeByColour( (DiseaseColour)object );
+								}
+								Gdx.input.setInputProcessor(buttonStage);
+								//dialogStage = null;
+							}
+						};
+
+						for (int i = 0; i < 5; i++) {
+							if (coloursPresent[i]) {
+								colourSelect.button(DiseaseColour.getDiseaseName(DiseaseColour.values()[i]), DiseaseColour.values()[i]);
+							}
+						}
+						colourSelect.button("Cancel", null);
+						dialogStage.clear();
+						Gdx.input.setInputProcessor(dialogStage);
+						colourSelect.show(dialogStage);
+					}
+					waitForButton = false;
+				}
+			}
+		});
+		fieldOperativeButton.setBounds(0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+		nextActionButtonHeight -= actionButtonYSize * 1.125f;
+		buttonGroup.addActor(fieldOperativeButton);
+	}
+
+	static void createColonelAction(){
+		if( clientPlayer.role.equalsIgnoreCase("Colonel") )
+		{
+			TextButton colonelAction = new TextButton( "Impose OverseasQuarantine", skin );
+			colonelAction.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton && !clientPlayer.roleActionUsed )
+					{
+						waitForButton = true;
+						if( currentPlayer == clientPlayer )
+						{
+							if( remQuarantines <= 0){
+
+								String[] list = new String[quarantineMarkerCityNames.size()];
+								for ( int i = 0; i < quarantineMarkerCityNames.size(); i++ )
+								{
+									list[ i ] = quarantineMarkerCityNames.get(i);
+								}
+								final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+
+								Dialog rsPrompt = new Dialog("Choose a Quarantine to remove",skin){
+									protected void result(Object object){
+										if( (Boolean)(object) )
+										{
+
+											dialogStage.clear();
+											final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+
+											Dialog discardPrompt = new Dialog("Choose a card to Discard", skin) {
+												protected void result(Object object) {
+													final String selected = selectBox.getSelected();
+
+													Dialog confirmQuarantine = new Dialog("Use " + selected + " city card to impose quarantine?", skin) {
+														@Override
+														protected void result(Object object) {
+															if ((boolean) (object)) {
+																useCityButtonStage = true;
+																colonelOverseas = true;
+																colonelOverseasCard = selected;
+																Gdx.input.setInputProcessor(buttonStage);
+
+															}
+															Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+															//dialogStage = null;
+														}
+													};
+
+													//dialogStag/e = new Stage( parent.screen );//
+													dialogStage.clear();
+
+													confirmQuarantine.button("Yes", true);
+													confirmQuarantine.button("No", false);
+
+													Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+													confirmQuarantine.show(dialogStage);
+
+
+													//dialogStage = null;
+												}
+											};
+
+											int noEventCards = 0;
+
+											for (int i = 0; i < currentPlayer.getHandSize(); i++) {
+
+												if (Arrays.asList(eventCardNames).contains(currentPlayer.getHand().get(i).getName())) {
+													noEventCards++;
+												}
+											}
+											//System.out.println(noEventCards);
+
+											String[] items = new String[currentPlayer.getHandSize() - noEventCards];
+											//System.out.println(items.length);
+											int secondIndex = 0;
+											for (int i = 0; i < items.length; i++) {
+												if (Arrays.asList(eventCardNames).contains(currentPlayer.getHand().get(secondIndex).getName())) {
+													i--;
+													secondIndex++;
+													continue;
+												}
+
+												PlayerCardInfo card = currentPlayer.getHand().get(secondIndex);
+												items[i] = card.getName();
+												secondIndex++;
+											}
+											//System.out.println(Arrays.toString(items));
+
+											discardPrompt.setSize(250, 150);
+											discardPrompt.setPosition(windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2);
+											discardPrompt.button("Select");
+											selectBox.setItems(items);
+											discardPrompt.getContentTable().add(selectBox);
+
+											dialogStage.addActor(discardPrompt);
+											Gdx.input.setInputProcessor(dialogStage);
+
+											String selected = selectBox.getSelected();
+
+											cardToRobColonel = selected;
+											/*useCityButtonStage = true;
+											colonelOverseas = true;
+											colonelOverseasCard = selected;*/
+
+
+											/*ClientComm.send("RemoveQuarantine/" + selected);
+											ClientComm.send( "AddQuarantine/" + currentPlayer.getCity() );*/
+										}
+										else
+										{
+											Gdx.input.setInputProcessor(buttonStage);
+										}
+									}
+								};
+
+								rsPrompt.setSize(250,150);
+								rsPrompt.setPosition( windWidth / 2 - rsPrompt.getWidth() / 2, windHeight / 2 - rsPrompt.getHeight() / 2 );
+								rsPrompt.button("Okay", true);
+								rsPrompt.button("Cancel", false);
+
+								selectBox.setItems( list );
+								rsPrompt.getContentTable().add(selectBox);
+
+								dialogStage.addActor(rsPrompt);
+								Gdx.input.setInputProcessor(dialogStage);
+							}
+							else {
+								dialogStage.clear();
+								final SelectBox<String> selectBox = new SelectBox<String>(tempSkin);
+
+								Dialog discardPrompt = new Dialog("Choose a card to Discard", skin) {
+									protected void result(Object object) {
+										final String selected = selectBox.getSelected();
+
+										Dialog confirmQuarantine = new Dialog("Use " + selected + " city card to impose quarantine?", skin) {
+											@Override
+											protected void result(Object object) {
+												if ((boolean) (object)) {
+													useCityButtonStage = true;
+													colonelOverseas = true;
+													colonelOverseasCard = selected;
+													Gdx.input.setInputProcessor(buttonStage);
+												}
+												else {
+													Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
+													//dialogStage = null;
+												}
+											}
+										};
+
+										//dialogStag/e = new Stage( parent.screen );//
+										dialogStage.clear();
+
+										confirmQuarantine.button("Yes", true);
+										confirmQuarantine.button("No", false);
+
+										Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
+										confirmQuarantine.show(dialogStage);
+
+
+										//dialogStage = null;
+									}
+								};
+
+								int noEventCards = 0;
+
+								for (int i = 0; i < currentPlayer.getHandSize(); i++) {
+
+									if (Arrays.asList(eventCardNames).contains(currentPlayer.getHand().get(i).getName())) {
+										noEventCards++;
+									}
+								}
+								//System.out.println(noEventCards);
+
+								String[] items = new String[currentPlayer.getHandSize() - noEventCards];
+								//System.out.println(items.length);
+								int secondIndex = 0;
+								for (int i = 0; i < items.length; i++) {
+									if (Arrays.asList(eventCardNames).contains(currentPlayer.getHand().get(secondIndex).getName())) {
+										i--;
+										secondIndex++;
+										continue;
+									}
+
+									PlayerCardInfo card = currentPlayer.getHand().get(secondIndex);
+									items[i] = card.getName();
+									secondIndex++;
+								}
+								//System.out.println(Arrays.toString(items));
+
+								discardPrompt.setSize(250, 150);
+								discardPrompt.setPosition(windWidth / 2 - discardPrompt.getWidth() / 2, windHeight / 2 - discardPrompt.getHeight() / 2);
+								discardPrompt.button("Select");
+								selectBox.setItems(items);
+								discardPrompt.getContentTable().add(selectBox);
+
+								dialogStage.addActor(discardPrompt);
+								Gdx.input.setInputProcessor(dialogStage);
+							}
+						}
+						else
+						{
+							Gdx.input.setInputProcessor( buttonStage );
+						}
+						waitForButton = false;
+
+					}
+				}
+			});
+			colonelAction.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
+			nextActionButtonHeight -= actionButtonYSize*1.125f;
+			buttonGroup.addActor( colonelAction );
+		}
+	}
+
 	@Override
 	public void show() {
 		// TODO Auto-generated method stub
@@ -5112,10 +5690,10 @@ public class GameScreen implements Screen {
 		}
 		
 		batch.begin();
-		batch.draw(greyBarOfNumbers, windWidth*0.3425f-15f-numDiseases*(markerXSize+15f)+50f, windHeight-markerYSize*3.75f, numDiseases*(markerXSize+15f)+39f, markerYSize*6.75f);
-		for( int i = 0; i < markerTextures.length; i++ )
+		batch.draw(greyBarOfNumbers, windWidth*0.3425f-40f-numDiseases*(markerXSize+15f)+50f, windHeight-markerYSize*3.75f, numDiseases*(markerXSize+15f)+39f, markerYSize*6.75f);
+		for( int i = 0; i < numDiseases; i++ )
 		{
-			batch.draw( markerTextures[i],windWidth*0.3575f-15f-i*(markerXSize+15f), windHeight - markerYSize*1.075f, markerXSize, markerYSize );
+			batch.draw( markerTextures[i],windWidth*0.3555f-40f-i*(markerXSize+15f), windHeight - markerYSize*1.075f, markerXSize, markerYSize );
 		}
 		batch.end();
 	}
@@ -5212,7 +5790,7 @@ public class GameScreen implements Screen {
 		if( usePurpleDisease )
 		{
 			batch.begin();
-			batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 580f, 150f);
+			batch.draw(greyBarOfNumbers, windWidth*0.34f, windHeight*0.917f, 680f, 150f);
 			batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
 			batch.draw(yellow, windWidth*0.404f, windHeight*0.968f, 50f, 35f);
 			batch.draw(red, windWidth*0.444f, windHeight*0.968f, 50f, 35f);
@@ -5220,18 +5798,20 @@ public class GameScreen implements Screen {
 			batch.draw(black, windWidth*0.524f, windHeight*0.968f, 50f, 35f);
 			batch.draw(purple, windWidth*0.564f, windHeight*0.968f, 50f, 35f);
 			batch.draw(researchStation, windWidth*0.604f, windHeight*0.968f, 40f, 35f);
+			batch.draw(quarantineMarker2, windWidth*0.644f, windHeight*0.974f, 25f, 25f);
 			batch.end();
 		}
 		else
 		{
 			batch.begin();
-			batch.draw(greyBarOfNumbers, windWidth*0.35f, windHeight*0.917f, 520f, 150f);
+			batch.draw(greyBarOfNumbers, windWidth*0.34f, windHeight*0.917f, 600f, 150f);
 			batch.draw(deck, windWidth*0.378f, windHeight*0.9735f, 20f, 25f);
 			batch.draw(yellow, windWidth*0.404f, windHeight*0.968f, 50f, 35f);
 			batch.draw(red, windWidth*0.444f, windHeight*0.968f, 50f, 35f);
 			batch.draw(blue, windWidth*0.484f, windHeight*0.968f, 50f, 35f);
 			batch.draw(black, windWidth*0.524f, windHeight*0.968f, 50f, 35f);
 			batch.draw(researchStation, windWidth*0.564f, windHeight*0.968f, 40f, 35f);
+			batch.draw(quarantineMarker2, windWidth*0.604f, windHeight*0.974f, 25f, 25f);
 			batch.end();
 		}
 
@@ -5239,13 +5819,14 @@ public class GameScreen implements Screen {
 		displayInfectionRate( currentInfectionRateIdx );
 		displayOutbreakCounter( outbreaks );
 		if ( !usePurpleDisease )
-			displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remResearchStations);	// ADDED
+			displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remResearchStations, remQuarantines);	// ADDED
 		else
-			displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remPurpleCubes, remResearchStations);	// ADDED
+			displayNumbers( remCardsDeck, remYellowCubes, remRedCubes, remBlueCubes, remBlackCubes, remPurpleCubes, remResearchStations, remQuarantines);	// ADDED
 		//displayNumbers( 23, 23, 23, 23, 23 );
 		displayNumberOfActionsLeft( actionsRemaining );
 		displayPlayerColours();
 		drawResearchStations();
+		drawQuarantineMarkers();
 		drawMarkers();
 		
 		updateCardShowPanelStage();
@@ -5387,7 +5968,7 @@ public class GameScreen implements Screen {
 		batch.end();
 	}
 
-	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int researchNo){
+	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int researchNo, int quarantineNo){
 		batch.begin();
 
 		deckFont.draw(batch, Integer.toString(deckNo)+",", windWidth*0.3925f, windHeight*0.99f);
@@ -5396,11 +5977,13 @@ public class GameScreen implements Screen {
 		blueFont.draw(batch, Integer.toString(blueNo)+",", windWidth*0.506f, windHeight*0.99f);
 		blackFont.draw(batch, Integer.toString(blackNo)+",", windWidth*0.546f, windHeight*0.99f);
 		researchFont.draw(batch, Integer.toString(researchNo)+",", windWidth*0.582f, windHeight*0.99f);
+		quarantineFont.draw(batch, Integer.toString(quarantineNo)+",", windWidth*0.618f, windHeight*0.99f);
+
 
 		batch.end();
 	}
 	
-	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int purpleNo, int researchNo){
+	void displayNumbers(int deckNo, int yellowNo, int redNo, int blueNo, int blackNo, int purpleNo, int researchNo, int quarantineNo){
 		batch.begin();
 
 		deckFont.draw(batch, Integer.toString(deckNo)+",", windWidth*0.3925f, windHeight*0.99f);
@@ -5410,6 +5993,7 @@ public class GameScreen implements Screen {
 		blackFont.draw(batch, Integer.toString(blackNo)+",", windWidth*0.546f, windHeight*0.99f);
 		blackFont.draw(batch, Integer.toString(purpleNo)+",", windWidth*0.586f, windHeight*0.99f);
 		researchFont.draw(batch, Integer.toString(researchNo)+",", windWidth*0.622f, windHeight*0.99f);
+		quarantineFont.draw(batch, Integer.toString(quarantineNo)+",", windWidth*0.658f, windHeight*0.99f);
 
 		batch.end();
 	}
@@ -5614,7 +6198,7 @@ public class GameScreen implements Screen {
 		return null;
 	}
 
-	public static void updateBioterroristVisibility() 
+	public static void updateBioterroristVisibility()
 	{
 		PlayerInfo btPlayer = null;
 		for( int i = 0; i < players.length; i++ )
@@ -5924,7 +6508,7 @@ public class GameScreen implements Screen {
 		currentInfectionRateIdx++;
 	}
 
-	public static void IncActionsRememaining()
+	public static void IncActionsRemaining()
 	{
 		actionsRemaining++;
 	}
@@ -5975,7 +6559,7 @@ public class GameScreen implements Screen {
 		specialOrderPlayer = null;
 	}
 	
-	public static void NotifyTurnTroubleshoorter( String PlayerName, final String[] InfectionCards )
+	public static void NotifyTurnTroubleshooter( String PlayerName, final String[] InfectionCards )
 	{
 		PlayerInfo player = lookupPlayer( PlayerName );
 
@@ -6067,13 +6651,44 @@ public class GameScreen implements Screen {
 		lookupCity( CityName ).removeResearchStation();
 	}
 
+	public static void DecreaseQuarantineMarker( String CityName ){
+    	if( lookupCity( CityName ).hasQuarantineMarker2 ){
+    		lookupCity( CityName ).decQuarantineMarker();
+		}
+	}
+
+	public static void IncreaseQuarantineMarker( String CityName ){
+		if( lookupCity( CityName ).hasQuarantineMarker1 ){
+			lookupCity( CityName ).incQuarantineMarker();
+		}
+	}
+
+	public static void RemoveQuarantineMarker( String CityName ){
+		remQuarantines++;
+		for( int i = 0; i < quarantineMarkerCityNames.size(); i++ )
+		{
+			if( quarantineMarkerCityNames.get( i ).equals( CityName ) )
+			{
+				quarantineMarkerCityNames.remove( i );
+				break;
+			}
+		}
+		lookupCity( CityName ).removeQuarantineMarker();
+	}
+
 	public static void AddResearchStation( String CityName )
 	{
 		remResearchStations--;
 		researchStationCityNames.add(CityName);
 		lookupCity( CityName ).putResearchStation();
 	}
-	
+
+	public static void AddQuarantineMarker( String CityName ){
+    	remQuarantines--;
+    	quarantineMarkerCityNames.add(CityName);
+    	lookupCity( CityName ).putQuarantineMarker2();
+	}
+
 	public static void CureDisease( final String DiseaseColor )
 	{
 		diseaseStatuses.remove( DiseaseColor );
@@ -6464,51 +7079,6 @@ public class GameScreen implements Screen {
 	{
 		infectionDiscardPile.remove( CardName );
 	}
-
-
-	static void createFieldOperativeButton() {
-		TextButton fieldOperativeButton = new TextButton("FieldOperative Action", skin);
-		fieldOperativeButton.addListener(new ClickListener() {
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				if (!waitForButton) {
-					waitForButton = true;
-					if (currentPlayer == clientPlayer && actionsRemaining > 0 && !currentPlayer.roleActionUsed) {
-						CityNode city = lookupCity(clientPlayer.getCity());
-						boolean[] coloursPresent = city.getDiseaseColours();
-
-						Dialog colourSelect = new Dialog("Select Disease Colour to Remove", skin) {
-							protected void result(Object object) {
-								if (object != null) {
-									CityNode city = lookupCity(clientPlayer.getCity());
-									ClientComm.send("RoleAction/FieldOperative/Take/" + city.getColour().toLowerCase());
-									//city.removeCubeByColour( (DiseaseColour)object );
-								}
-								Gdx.input.setInputProcessor(buttonStage);
-								//dialogStage = null;
-							}
-						};
-
-						for (int i = 0; i < 5; i++) {
-							if (coloursPresent[i]) {
-								colourSelect.button(DiseaseColour.getDiseaseName(DiseaseColour.values()[i]), DiseaseColour.values()[i]);
-							}
-						}
-						colourSelect.button("Cancel", null);
-						dialogStage.clear();
-						Gdx.input.setInputProcessor(dialogStage);
-						colourSelect.show(dialogStage);
-					}
-					waitForButton = false;
-				}
-			}
-		});
-		fieldOperativeButton.setBounds(0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
-		nextActionButtonHeight -= actionButtonYSize * 1.125f;
-		buttonGroup.addActor(fieldOperativeButton);
-	}
-
-
 	
 	public static void Chat( String Message )
 	{
