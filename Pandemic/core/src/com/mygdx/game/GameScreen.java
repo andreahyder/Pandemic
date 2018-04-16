@@ -400,6 +400,7 @@ public class GameScreen implements Screen {
 	static boolean hasSabotaged = false;
 	static boolean isCaptured = false;
 	static boolean extraMoveActionUsed = false;
+	static boolean btInitialCitySet = false;
 	
 	static boolean showChatOverlay = false;
 	static ArrayList<String> messages = new ArrayList<String>();
@@ -422,9 +423,9 @@ public class GameScreen implements Screen {
     	players = new PlayerInfo[5];
     	players[0] = new PlayerInfo( "Barry", true );
     	players[0].colour = PawnColour.values()[0];
+    	players[0].role = "Bioterrorist";
     	players[0].setCity( "Atlanta" );
 
-    	players[0].role = "FieldOperative";
     	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
     	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
     	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
@@ -438,7 +439,7 @@ public class GameScreen implements Screen {
     	
     	players[1] = new PlayerInfo( "Larry", false );
     	players[1].colour = PawnColour.values()[1];
-    	players[1].role = "Medic";
+    	players[1].role = "Bioterrorist";
     	players[1].setCity( "Tokyo" );
     	
     	players[2] = new PlayerInfo( "Carrie", false );
@@ -548,10 +549,6 @@ public class GameScreen implements Screen {
 		updateBioterroristVisibility();
 		ResetActions();
 		
-		IncInfectionRate();
-		IncOutbreakCounter();
-		IncOutbreakCounter();
-		IncOutbreakCounter();
 		
 		Chat("Hello World");
 		Chat("Hello World");
@@ -567,6 +564,7 @@ public class GameScreen implements Screen {
 		Chat("Hello World");
 		Chat("Hello World");
 		//AirportSighting( "Your Butt" );
+		initBioterroristLocation();
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players )
@@ -598,8 +596,27 @@ public class GameScreen implements Screen {
 
 		updatePawnStage();
 		handShownPlayer = clientPlayer;
+		
+		initBioterroristLocation();
 	}
 
+	static void initBioterroristLocation()
+	{
+		if( clientPlayer.role.equalsIgnoreCase("Bioterrorist") )
+		{
+			Dialog btDiag = new Dialog( "Select initial city", skin ){
+				@Override
+				protected void result(Object object) {
+					useCityButtonStage = true;
+					Gdx.input.setInputProcessor( buttonStage );
+				};
+			};
+			btDiag.button("Okay");
+			btDiag.show( dialogStage );
+			Gdx.input.setInputProcessor( dialogStage );
+		}
+	}
+	
 	static void initGeneralTextures()
 	{
 		background 	= new Texture(Gdx.files.internal( "board.png" ) );
@@ -2250,6 +2267,12 @@ public class GameScreen implements Screen {
 				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
 			}
 		}
+		else if ( !btInitialCitySet && clientPlayer.role.equalsIgnoreCase("Bioterrorist") )
+		{
+			for ( CityNode curr : cityNodes){
+				cityButtons.get(lookupCityIndex(curr.getName())).setTouchable( Touchable.enabled );
+			}
+		}
 		else if( rapidVaccine )
 		{
 			if( rvFirstCity == null || rvFirstCity.equals("") )
@@ -2546,7 +2569,16 @@ public class GameScreen implements Screen {
 						if ( actionsRemaining > 0 && clientPlayer == currentPlayer || ( currentPlayer.role.equalsIgnoreCase( "Bioterrorist" )) && !extraMoveActionUsed ) {
 							
 							if( useCityButtonStage ){
-								if( opExpertFly )
+								if( !btInitialCitySet && clientPlayer.role.equalsIgnoreCase("Bioterrorist") )
+								{
+									String cityName = curr.getName();
+									ClientComm.send("RoleAction/Bioterrorist/SetInitialLocation/" + cityName + '/');
+									btInitialCitySet = true;
+									useCityButtonStage = false;
+									Gdx.input.setInputProcessor( buttonStage );
+									
+								}
+								else if( opExpertFly )
 								{
 									String cityName = curr.getName();
 									ClientComm.send("RoleAction/OperationsExpertAction/Move/" + cityName + '/' + opExpertFlyCard );
