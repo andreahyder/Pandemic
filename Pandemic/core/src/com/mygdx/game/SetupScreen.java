@@ -670,7 +670,7 @@ public class SetupScreen implements Screen {
 			if ( ClientComm.messageQueue.size() > 0  ) {
 				//Eat message
 				if ( ClientComm.possibleActions != null ) {
-					String[] message = ClientComm.messageQueue.get(0);
+					String[] message = ClientComm.messageQueue.remove(0);
 					if ( message != null ) {
 						if ( message.length > 0 ) {
 							if( message[0].equals( "StartGame" ) ) {
