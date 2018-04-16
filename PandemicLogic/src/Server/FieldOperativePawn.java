@@ -13,8 +13,12 @@ public class FieldOperativePawn extends Pawn {
 			if(cube.disease.color==c){
 				FOStash.add(cube);
 				super.city.cubes.remove(cube);
-				ServerComm.sendToAllClients("RemoveCube/" + super.city.name + "/" + c + "/" + 1 + "/");
-				ServerComm.sendToAllClients("AddCubeToStash/" + c.name());
+				for(int j = 0; j< player.game.players.size(); j++){
+					ServerComm.sendMessage("RemoveCube/" + super.city.name + "/" + c + "/" + 1 + "/", j);
+				}
+				for(int j = 0; j< player.game.players.size(); j++){
+					ServerComm.sendMessage("AddCubeToStash/" + c.name(), j);
+				}
 			}
 		}
 	}
@@ -25,7 +29,9 @@ public class FieldOperativePawn extends Pawn {
 			for(DiseaseCube c: FOStash){
 				if(c.disease.color==Color.valueOf(args[4])){
 					FOStash.remove(c);
-					ServerComm.sendToAllClients("RemoveCubeFromStash/"+args[4]);
+					for(int j = 0; j< player.game.players.size(); j++){
+					ServerComm.sendMessage("RemoveCubeFromStash/"+args[4], j);
+				}
 					c.disease.cubes.add(c);
 					break;
 				}
@@ -36,7 +42,9 @@ public class FieldOperativePawn extends Pawn {
 				if(c.city.name.equals(s)){
 					super.player.hand.remove(c);
 					GameManager.game.playerDiscardPile.add(c);
-					ServerComm.sendToAllClients("RemoveCardFromHand"+super.player.username+"/"+c.city.name+"/true/");
+					for(int j = 0; j< player.game.players.size(); j++){
+					ServerComm.sendMessage("RemoveCardFromHand"+super.player.username+"/"+c.city.name+"/true/", j);
+				}
 				}
 			}
 		}

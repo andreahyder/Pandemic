@@ -6,7 +6,13 @@ public class BuildQuarantine implements Action{
 
 	@Override
 	public void execute(String[] args) {
-		GameManager.BuildQuarantine(args[2]);
+		if(args.length < 3){
+			GameManager.BuildQuarantine("none");
+		}
+		else{
+			GameManager.BuildQuarantine(args[2]);
+		}
+		
 	}
 
 	@Override

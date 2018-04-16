@@ -83,8 +83,8 @@ public class ServerComm {
 		}
 	}
 	static void sendToAllClients(String message){
-		for (ClientThread t: clientList){
-			t.send(message);
+		for (int i = 0; i<clientList.size(); i++){
+			sendMessage(message,i);
 		}
 	}
 	public static void addToActionQueue(String pString, int client){
@@ -129,9 +129,11 @@ public class ServerComm {
 		toReturn.add(new AddPlayer());
 		toReturn.add(new Drive());
 		toReturn.add(new DirectFlight());
+		toReturn.add(new CharterFlight());
 		toReturn.add(new TreatDisease());
 		toReturn.add(new ShareKnowledge());
 		toReturn.add(new ToggleReady());
+		toReturn.add(new ToggleSetting());
 		toReturn.add(new ChangeName());
 		toReturn.add(new EndTurn());
 		toReturn.add(new EventAction());

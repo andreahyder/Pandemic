@@ -60,15 +60,17 @@ public class Pawn {
 				city.quarantine = 2;
 				
 				//update quarantine count for all players
-				ServerComm.sendToAllClients("UpdateQuarantine/"+city.name+"/2/");
+				for(int j = 0; j< player.game.players.size(); j++){
+					ServerComm.sendMessage("UpdateQuarantine/"+city.name+"/2/", j);
+				}
 			}
 		}
 		if(role==Role.Medic){
 			//Check for cured diseases and remove their cubes. If all removed turn on eradicated
-			for(Color color:Color.values()){
-				if(GameManager.game.getDisease(color).cured){
-					int noCubesToRemove = city.countDiseaseCube(color);
-					treat(color, noCubesToRemove, true);
+			for(Disease d: GameManager.game.diseases){
+				if(d.cured){
+					int noCubesToRemove = city.countDiseaseCube(d.color);
+					treat(d.color, noCubesToRemove, true);
 				}
 			}
 		}
@@ -127,5 +129,5 @@ public class Pawn {
 }
 
 enum Role{
-	Archivist, Bioterrorist, Colonel, ContainmentSpecialist, ContingencyPlanner, Dispatcher, Epidemiologist, FieldOperative, Generalist, Medic, OperationsExpert, QuarantineSpecialist, FirstResponder, Scientist, Troubleshooter
+	Archivist, Bioterrorist, Colonel, ContainmentSpecialist, ContingencyPlanner, Dispatcher, Epidemiologist, FieldOperative, Generalist, Medic, OperationsExpert, QuarantineSpecialist, Scientist, Troubleshooter
 }

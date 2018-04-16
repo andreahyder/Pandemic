@@ -132,9 +132,9 @@ public class Game {
 				y = false;
 			}
 		}
-		if(players.size() == 1) {
+		/*if(players.size() == 1) {
 			y = false;
-		}
+		}*/
 		return y;
 	}
 	
@@ -144,14 +144,12 @@ public class Game {
 		}
 		else {
 			//add relevant pawns
-			pawns.add(new Pawn(Role.Bioterrorist));
+			pawns.add(new Pawn(Role.Dispatcher));
 			pawns.add(new Pawn(Role.Colonel));
 			pawns.add(new ContingencyPlannerPawn(Role.ContingencyPlanner));
-			pawns.add(new Pawn(Role.Dispatcher));
 			pawns.add(new Pawn(Role.Medic));
 			pawns.add(new Pawn(Role.OperationsExpert));
 			pawns.add(new Pawn(Role.QuarantineSpecialist));
-			pawns.add(new Pawn(Role.FirstResponder));
 			pawns.add(new Pawn(Role.Scientist));
 			
 			if(Otb) {
@@ -165,6 +163,7 @@ public class Game {
 			if(Bio) {
 				pawns.add(new Pawn(Role.Bioterrorist));
 			}
+			//Collections.shuffle(pawns);
 			
 			//add event cards
 			if(Otb) {
@@ -186,13 +185,26 @@ public class Game {
 			//give pawns
 			if(Bio) {
 				BT = rand.nextInt(players.size());
-				players.get(BT).givePawn(getPawn("bio"), null);
+				players.get(BT).givePawn(getPawn("Bioterrorist"), null);
+				String mes = "UpdateSetting/UpdateRole/"+ players.get(BT).username + "/" + players.get(BT).pawn.role.toString() + "/";
+				for(int i = 0; i< players.size(); i++){
+					ServerComm.sendMessage(mes, i);
+				}
+				for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage(mes, j);
+				}
 			}
 			for(Player p: players) {
-				Collections.shuffle(pawns);
 				if(p.pawn == null) {
-					Pawn paw = pawns.remove(0);
-					p.givePawn(paw, getCity("Atlanta"));
+				Pawn paw = pawns.remove(0);
+				p.givePawn(paw, getCity("Atlanta"));
+				String mes = "UpdateSetting/UpdateRole/"+ p.username + "/" + p.pawn.role.toString() + "/";
+				for(int i = 0; i< players.size(); i++){
+					ServerComm.sendMessage(mes, i);
+				}
+				for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage(mes, j);
+				}
 				}
 			}
 			
@@ -207,6 +219,14 @@ public class Game {
 				ServerComm.sendMessage(mes, i);
 			}
 			
+			//cheat draw
+			for(int i = 0; i < playerDeck.size(); i++){
+				if(playerDeck.get(i).type == Type.Event){
+					PlayerCard lol = playerDeck.remove(i);
+					playerDeck.add(0, lol);
+				}
+			}
+			
 			//deal cards
 			int numcard = 6 - players.size();
 			if(BT != -1) {
@@ -215,7 +235,7 @@ public class Game {
 			if(numcard > 4) {
 				numcard = 4;
 			}
-			
+			numcard = 7;
 			for(int i = 0; i < players.size(); i++) {
 				if(i != BT) {
 					drawCard(players.get(i), numcard);
@@ -230,9 +250,11 @@ public class Game {
 					InfectionCard m = new InfectionCard(null, Type.Mutation);
 					infectionDiscardPile.add(m);
 					
-					String mes2 = "AddInfectionToDiscard/MutationCard/";
+					String mes2 = "AddInfectionCardToDiscard/MutationCard/";
 					
-					ServerComm.sendToAllClients(mes2);
+					for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage(mes2, j);
+				}
 				}
 				for(int i = 0; i < Vars.mutnames.length; i++) {
 					PlayerCard p = new PlayerCard(null, Type.Mutation, Vars.mutnames[i]);
@@ -250,22 +272,29 @@ public class Game {
 				ArrayList<String> names = new ArrayList<String>(Arrays.asList(Vars.virnames));
 				Collections.shuffle(names);
 				for(int i = 0; i < epi; i++) {
-					int r1 = i * (playerDeck.size()/epi);
+					/*int r1 = i * (playerDeck.size()/epi);
 					int r2 = (i+1) * (playerDeck.size()/epi);
-					int r = rand.nextInt(r2-r1) + r1 + i;
+					int r = rand.nextInt(r2-r1) + r1 + i;*/
 					PlayerCard p = new PlayerCard(null, Type.Virulent, names.get(i));
-					playerDeck.add(r,p);
+					playerDeck.add(p);
 				}
 			}
 			else {
 				for(int i = 0; i < epi; i++) {
-					int r1 = i * (playerDeck.size()/epi);
+					/*int r1 = i * (playerDeck.size()/epi);
 					int r2 = (i+1) * (playerDeck.size()/epi);
 					int r = rand.nextInt(r2-r1) + r1 + i;
+					if(r != 0){
+						r--;
+					}
 					PlayerCard p = new PlayerCard(null, Type.Epidemic, null);
-					playerDeck.add(r,p);;
+					playerDeck.add(r,p);;*/
+					PlayerCard p = new PlayerCard(null, Type.Epidemic, null);
+					playerDeck.add(p);
 				}
 			}
+			
+			Collections.shuffle(playerDeck);
 			
 			//place initial diseases
 			for(int i = 0; i < 3; i++) {
@@ -502,9 +531,15 @@ public class Game {
 							infectionDiscardPile.add(bottomCard);
 							playerDiscardPile.add(t1);
 							//updates clients
-							ServerComm.sendToAllClients("AddDiseaseCubeToCity/"+bottomCard.city.name+"/"+Color.purple.name()+"/");
-							ServerComm.sendToAllClients("AddInfectionCardToDiscard/" + bottomCard.city.name + "/");
-							ServerComm.sendToAllClients("AddMutationCardToDiscard/"+t1.name);
+							for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddDiseaseCubeToCity/"+bottomCard.city.name+"/"+Color.purple.name()+"/", j);
+				}
+							for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddInfectionCardToDiscard/" + bottomCard.city.name + "/", j);
+				}
+							for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddMutationCardToDiscard/"+t1.name, j);
+				}
 						}
 					}
 					else if(t1.name.equals("TheMutationThreatens")){
@@ -514,27 +549,49 @@ public class Game {
 						playerDiscardPile.add(t1);
 						//updates clients
 						for(int k=0; k<3; k++){
-							ServerComm.sendToAllClients("AddDiseaseCubeToCity/"+bottomCard.city.name+"/"+Color.purple.name()+"/");
+							for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddDiseaseCubeToCity/"+bottomCard.city.name+"/"+Color.purple.name()+"/", j);
+				}
 						}
-						ServerComm.sendToAllClients("AddInfectionCardToDiscard/" + bottomCard.city.name + "/");
-						ServerComm.sendToAllClients("AddMutationCardToDiscard/"+t1.name);
+						for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddInfectionCardToDiscard/" + bottomCard.city.name + "/", j);
+				}
+						for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddMutationCardToDiscard/"+t1.name, j);
+				}
 					}
 					else if (t1.name.equals("TheMutationIntensifies")){
 						for(City c: cities){
 							if(c.countDiseaseCube(Color.purple)==2){
 								c.addDiseaseCube(Color.purple);
-								ServerComm.sendToAllClients("AddDiseaseCubeToCity/"+c.name+"/"+Color.purple.name()+"/");
+								for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddDiseaseCubeToCity/"+c.name+"/"+Color.purple.name()+"/", j);
+				}
 							}
 						}
 						playerDiscardPile.add(t1);
-						ServerComm.sendToAllClients("AddMutationCardToDiscard/"+t1.name);
+						for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("AddMutationCardToDiscard/"+t1.name, j);
+				}
 					}
 					
 				}
-				else {
+				else if(t1.type.equals(Type.Event)){
+					System.out.println("Player " + p.username + " drew " + t1.name + ".");
+					
+					p.hand.add(t1);
+					
+					
+					String mes = "AddCardToHand/" + p.username + "/" + t1.name + "/true/";
+					for(int j = 0; j < players.size(); j++) {
+						ServerComm.sendMessage(mes, j);
+					}
+				}
+				else{
 					System.out.println("Player " + p.username + " drew " + t1.city.name + ".");
 					
 					p.hand.add(t1);
+					
 					
 					String mes = "AddCardToHand/" + p.username + "/" + t1.city.name + "/true/";
 					for(int j = 0; j < players.size(); j++) {
@@ -543,7 +600,9 @@ public class Game {
 				}
 			}
 			else{
-				ServerComm.sendToAllClients("EndGame/false/");
+				for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("EndGame/false/", j);
+				}
 			}
 		}
 	}
@@ -572,7 +631,9 @@ public class Game {
 					}
 					
 					//update quarantine and quarantines for all players
-					ServerComm.sendToAllClients("UpdateQuarantine/"+c.name+"/"+c.quarantine+"/");
+					for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("UpdateQuarantine/"+c.name+"/"+c.quarantine+"/", j);
+				}
 				}
 				else if(hasMedic){
 					
@@ -612,7 +673,9 @@ public class Game {
 									}
 									
 									//update quarantine and quarantines for all players
-									ServerComm.sendToAllClients("UpdateQuarantine/"+link.name+"/"+link.quarantine+"/");
+									for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("UpdateQuarantine/"+link.name+"/"+link.quarantine+"/", j);
+				}
 								}
 								else {
 									if(!link.outbroken) {
@@ -646,7 +709,9 @@ public class Game {
 							cit.outbroken = false;
 						}
 						if(outbreakCount>=8){
-							ServerComm.sendToAllClients("EndGame/false/");
+							for(int j = 0; j< players.size(); j++){
+					ServerComm.sendMessage("EndGame/false/", j);
+				}
 						}
 					}
 				}
@@ -755,6 +820,11 @@ public class Game {
 			}
 		}
 		return null;
+	}
+	public void sendAll(String s){
+		for(int i = 0; i< players.size(); i++){
+			ServerComm.sendMessage(s, i);
+		}
 	}
 }
 

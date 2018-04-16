@@ -18,7 +18,9 @@ public class ContingencyPlannerPawn extends Pawn {
 	//index/RoleAction/ContingencyPlanner/Take or Play/targetCard/args for target card
 	//params: PlayerIndex/EventAction/Forecast
 	public void playEvent(String[] args){
-		ServerComm.sendToAllClients("RemoveCardFromStash/");
+		for(int j = 0; j< player.game.players.size(); j++){
+					ServerComm.sendMessage("RemoveCardFromStash/", j);
+				}
 		heldEvent = null;
 		String[] newargs = new String[args.length];
 		newargs[0] = args[0];
@@ -30,7 +32,9 @@ public class ContingencyPlannerPawn extends Pawn {
 		for(PlayerCard c: GameManager.game.playerDiscardPile){
 			if(c.name.equals(args[4])){
 				GameManager.game.playerDiscardPile.remove(c);
-				ServerComm.sendToAllClients("RemoveCardFromPlayerDiscard/" + args[4] + "/");
+				for(int j = 0; j< player.game.players.size(); j++){
+					ServerComm.sendMessage("RemoveCardFromPlayerDiscard/" + args[4] + "/", j);
+				}
 				break;
 			}
 		}
