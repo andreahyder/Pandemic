@@ -6045,7 +6045,7 @@ public class GameScreen implements Screen {
 		playerColourFont0.getData().setScale( 1.25f );
 		playerColourFont0.draw( batch, "Turn Order:", 15f, localheight );
 		localheight -= 25f;
-		for(int i = 0; i < players.length; i++){
+		for(int i = 0; i < playersInOrder.size(); i++){
 			if(playersInOrder.get(i) != null){
 				if( playersInOrder.get(i).role.equalsIgnoreCase( "Bioterrorist" ) || true ){
 				playerColourFont1.setColor(colors[playersInOrder.get(i).getColour().ordinal()]);
