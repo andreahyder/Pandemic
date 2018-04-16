@@ -23,23 +23,41 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.graphics.Color;
 
 public class SetupScreen implements Screen {
+	
+	private String testGameList = "UpdateSetting/ReceiveGames/game0/game1/game2"; //This will be a message from server
+	private String[] savedGames = new String[20];
+	private int numSavedGames=0;
 
 	private PandemicGame parent;
 	private Stage stage;
 	private Skin skin;
 	
-	String bioterroristOpt;
-	Label showBioTOpt;
+	private String gameSelected;
+	private Label showGameSelected;
+	private int stupidCounter = 0;
+	private String currentGame;
 	
-	String otbOpt;
-	Label otbOptLabel;
+	private String bioterroristOpt;
+	private Label showBioTOpt;
 	
-	String virOpt;
-	Label virOptLabel;
+	private String otbOpt;
+	private Label otbOptLabel;
 	
-	int diffOpt;
-	String difficulty;
-	Label diffOptLabel;
+	private String virOpt;
+	private Label virOptLabel;
+	
+	private int diffOpt;
+	private String difficulty;
+	private Label diffOptLabel;
+	
+	public void gameStringListToArray(String testGameList) {
+		String delims = "[/]";
+		String[] tokens = testGameList.split(delims);
+		for (int i=2; i<tokens.length; i++) {
+			numSavedGames ++;
+			savedGames[i-2] = tokens[i];
+		}
+	}
 	
 	SetupScreen( PandemicGame _parent )
 	{
@@ -59,6 +77,9 @@ public class SetupScreen implements Screen {
 		stage.addActor(table);
 		Gdx.input.setInputProcessor(stage);
 		
+		this.gameSelected = "None";
+		this.showGameSelected = new Label(gameSelected, skin);;
+		
 		this.bioterroristOpt = "No";
 		this.showBioTOpt = new Label(bioterroristOpt, skin);
 		
@@ -77,10 +98,48 @@ public class SetupScreen implements Screen {
 	    TextField addressText = new TextField("", skin);
 	    
 	    table.add(addressLabel).width(100);
-	    table.add(addressText).width(100).spaceBottom(10);;
+	    table.add(addressText).width(180).spaceBottom(10).colspan(2);
 	    
 	    table.setDebug(false); // Show or hide ugly red and blue lines.
 	    
+	    
+	    
+	    gameStringListToArray(testGameList);
+	    table.row();
+	    Label selectLabel = new Label("Select Saved Game:", skin);
+	    selectLabel.setAlignment(Align.center); // Align center
+		table.add(selectLabel).spaceBottom(10);
+		table.add(showGameSelected);
+		// "None" button: 
+		TextButton none = new TextButton("NONE", skin);
+		none.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				gameSelected = "None";
+				showGameSelected.setText(gameSelected);
+				// SEND SERVER MESSAGE:
+				//ClientComm.send......
+			}
+		});
+		table.add(none);
+		if (0<=numSavedGames-1) {
+			//System.out.println(savedGames[i]);
+			TextButton gameNum0 = new TextButton(savedGames[0], skin);
+			currentGame = "game0";
+			gameNum0.addListener(new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					stage.addActor(table);
+					gameSelected = currentGame;
+					showGameSelected.setText(gameSelected);
+					// SEND SERVER MESSAGE:
+					//ClientComm.send......
+				}
+			});
+			table.add(gameNum0).spaceRight(7).uniform();
+		}
+
 	    
 	    
 	    table.row();
@@ -96,7 +155,8 @@ public class SetupScreen implements Screen {
 				diffOpt = 0;
 				difficulty = diffOpt + "";
 				diffOptLabel.setText(difficulty);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Diff/0");
 			}
 		});
 		table.add(diff0).spaceRight(7).uniform() ;
@@ -108,7 +168,8 @@ public class SetupScreen implements Screen {
 				diffOpt = 1;
 				difficulty = diffOpt + "";
 				diffOptLabel.setText(difficulty);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Diff/1");
 			}
 		});
 		table.add(diff1).uniform();
@@ -120,7 +181,8 @@ public class SetupScreen implements Screen {
 				diffOpt = 2;
 				difficulty = diffOpt + "";
 				diffOptLabel.setText(difficulty);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Diff/2");
 			}
 		});
 		table.add(diff2).uniform();
@@ -132,7 +194,8 @@ public class SetupScreen implements Screen {
 				diffOpt = 3;
 				difficulty = diffOpt + "";
 				diffOptLabel.setText(difficulty);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Diff/3");
 			}
 		});
 		table.add(diff3).uniform();
@@ -152,7 +215,8 @@ public class SetupScreen implements Screen {
 				stage.addActor(table);
 				bioterroristOpt = "Yes";
 				showBioTOpt.setText(bioterroristOpt);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Bio/true");
 			}
 		});
 		table.add(toggleBioterroristY);
@@ -163,7 +227,8 @@ public class SetupScreen implements Screen {
 				stage.addActor(table);
 				bioterroristOpt = "No";
 				showBioTOpt.setText(bioterroristOpt);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Bio/false");
 			}
 		});
 		table.add(toggleBioterroristN);
@@ -181,7 +246,8 @@ public class SetupScreen implements Screen {
 				stage.addActor(table);
 				otbOpt = "Yes";
 				otbOptLabel.setText(otbOpt);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Otb/true");
 			}
 		});
 		table.add(otbY);
@@ -192,7 +258,8 @@ public class SetupScreen implements Screen {
 				stage.addActor(table);
 				otbOpt = "No";
 				otbOptLabel.setText(otbOpt);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Otb/true");
 			}
 		});
 		table.add(otbN);
@@ -210,7 +277,8 @@ public class SetupScreen implements Screen {
 				stage.addActor(table);
 				virOpt = "Yes";
 				virOptLabel.setText(virOpt);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Vir/true");
 			}
 		});
 		table.add(virY);
@@ -221,7 +289,8 @@ public class SetupScreen implements Screen {
 				stage.addActor(table);
 				virOpt = "No";
 				virOptLabel.setText(virOpt);
-				// SEND SERVER MESSAGE
+				// SEND SERVER MESSAGE:
+				//ClientComm.send("ToggleSetting/Vir/false");
 			}
 		});
 		table.add(virN);
@@ -238,10 +307,7 @@ public class SetupScreen implements Screen {
 		    table.row();
 
 		    table.add(labelL).width(150).height(55).spaceBottom(10);;
-//		    table.add(labelR).width(100).height(55);
-//		    labelR.setText( Boolean.toString(players[i].getReady())) ;
 		    table.setFillParent(true);
-		    //table.debugAll();
 		    
 		    Label labelR = new Label( "" ,skin );
 		    labelR.setAlignment(Align.center); // Align
@@ -265,7 +331,6 @@ public class SetupScreen implements Screen {
 				PlayerInfo currentPlayer = parent.getCurrentPlayer();		
 				currentPlayer.toggleReady();
 				//ClientComm.send("ToggleReady");
-				// HAVE TO TAKE OFF ALL MESSAGES FOR NOW ^^^^^^^^^
 				
 				stage.clear();
 				Table table = new Table();
@@ -347,7 +412,17 @@ public class SetupScreen implements Screen {
 								}
 								//parent.changeScreen( Screens.GAME );
 								parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
-							} 
+							}
+							else if ( message[0].equalsIgnoreCase( "UpdateSetting") )
+							{
+								if( message[1].equalsIgnoreCase( "ReceiveGames" )  )
+								{
+									for( int i = 2; i < message.length; i++ )
+									{
+										//each i is a game
+									}
+								}
+							}
 						}
 					}
 				}
