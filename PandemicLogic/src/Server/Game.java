@@ -316,190 +316,195 @@ public class Game {
 	//helper function that is used to draw count number of cards for player p. Epidemic included
 	void drawCard(Player p, int count) {
 		for(int i = 0; i < count; i++) {
-			PlayerCard t1 = playerDeck.remove(0);
-			if(t1.type.equals(Type.Epidemic) || t1.type.equals(Type.Virulent)) {
-				System.out.println("Player " + p.username + " drew an EPIDEMIC card!");
-				
-				infectionCount++;
-				
-				for(int j = 0; j < players.size(); j++) {
-					ServerComm.sendMessage("IncInfectionRate/", j);
-				}
-				
-				
-				InfectionCard t2 = infectionDeck.remove(infectionDeck.size()-1);
-				int c = t2.city.countDiseaseCube(t2.city.disease.color);
-				if(c == 0) {
-					infectCity(t2.city, t2.city.disease.color, 3);
-					infectionDiscardPile.add(t2);
+			if(!playerDeck.isEmpty()){
+				PlayerCard t1 = playerDeck.remove(0);
+				if(t1.type.equals(Type.Epidemic) || t1.type.equals(Type.Virulent)) {
+					System.out.println("Player " + p.username + " drew an EPIDEMIC card!");
 					
-					String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
-					for(int j = 0; j < players.size(); j++) {
-						ServerComm.sendMessage(mes, j);
-					}
-				}
-				else {
-					infectCity(t2.city, t2.city.disease.color, 4-c);
-					infectionDiscardPile.add(t2);
+					infectionCount++;
 					
-					String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
 					for(int j = 0; j < players.size(); j++) {
-						ServerComm.sendMessage(mes, j);
+						ServerComm.sendMessage("IncInfectionRate/", j);
 					}
-				}
-				
-				Boolean unaccept = false;
-				Boolean unaccount = false;
-				
-				if(t1.type.equals(Type.Virulent)) {
-					if(VS == -1) {
-						int cub = 25;
-						int d = -1;
-						for(int j = 0; j < 4; j++) {
-							if(diseases.get(j).cubes.size() < cub) {
-								cub = diseases.get(j).cubes.size();
-								d = j;
+					
+					
+					InfectionCard t2 = infectionDeck.remove(infectionDeck.size()-1);
+					int c = t2.city.countDiseaseCube(t2.city.disease.color);
+					if(c == 0) {
+						infectCity(t2.city, t2.city.disease.color, 3);
+						infectionDiscardPile.add(t2);
+						
+						String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+					}
+					else {
+						infectCity(t2.city, t2.city.disease.color, 4-c);
+						infectionDiscardPile.add(t2);
+						
+						String mes = "AddInfectionCardToDiscard/" + t2.city.name + "/";	
+						for(int j = 0; j < players.size(); j++) {
+							ServerComm.sendMessage(mes, j);
+						}
+					}
+					
+					Boolean unaccept = false;
+					Boolean unaccount = false;
+					
+					if(t1.type.equals(Type.Virulent)) {
+						if(VS == -1) {
+							int cub = 25;
+							int d = -1;
+							for(int j = 0; j < 4; j++) {
+								if(diseases.get(j).cubes.size() < cub) {
+									cub = diseases.get(j).cubes.size();
+									d = j;
+								}
+							}
+							diseases.get(d).virulent = true;
+							VS = d;
+							
+							String mes = "VirulentStrainChosen/" + diseases.get(d).color.toString();
+							for(int j = 0; j < players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
 							}
 						}
-						diseases.get(d).virulent = true;
-						VS = d;
 						
-						String mes = "VirulentStrainChosen/" + diseases.get(d).color.toString();
-						for(int j = 0; j < players.size(); j++) {
-							ServerComm.sendMessage(mes, j);
+						if(t1.name.equals("ChronicEffect")) {
+							VirChronic = true;
+							
+							String mes = "VirulentStrainEpidemic/ChronicEffect/";
+							for(int j = 0; j < players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+							//TODO update
 						}
-					}
-					
-					if(t1.name.equals("ChronicEffect")) {
-						VirChronic = true;
-						
-						String mes = "VirulentStrainEpidemic/ChronicEffect/";
-						for(int j = 0; j < players.size(); j++) {
-							ServerComm.sendMessage(mes, j);
+						else if(t1.name.equals("ComplexMolecularStructure")) {
+							VirComplex = true;
+							
+							String mes = "VirulentStrainEpidemic/ChronicEffect/";
+							for(int j = 0; j < players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+							//TODO update
 						}
-						//TODO update
-					}
-					else if(t1.name.equals("ComplexMolecularStructure")) {
-						VirComplex = true;
-						
-						String mes = "VirulentStrainEpidemic/ChronicEffect/";
-						for(int j = 0; j < players.size(); j++) {
-							ServerComm.sendMessage(mes, j);
+						else if(t1.name.equals("GovernmentInterference")) {
+							VirGov = true;
+							
+							String mes = "VirulentStrainEpidemic/GovernmentInterference/";
+							for(int j = 0; j < players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+							//TODO update
 						}
-						//TODO update
-					}
-					else if(t1.name.equals("GovernmentInterference")) {
-						VirGov = true;
-						
-						String mes = "VirulentStrainEpidemic/GovernmentInterference/";
-						for(int j = 0; j < players.size(); j++) {
-							ServerComm.sendMessage(mes, j);
-						}
-						//TODO update
-					}
-					else if(t1.name.equals("HiddenPocket")) {
-						if(diseases.get(VS).eradicated) {
-							boolean found = false;
-							for(InfectionCard inf:infectionDiscardPile) {
-								if(inf.type.equals(Type.City)) {
-									if(diseases.get(VS).color.equals(inf.city.disease.color)) {
-										found = true;
-										inf.city.addDiseaseCube(inf.city.disease.color);
-										
-										String mes = "AddDiseaseCubeToCity/" + inf.city.name + "/" + inf.city.disease.color.toString() + "/";	
-										for(int j = 0; j < players.size(); j++) {
-											ServerComm.sendMessage(mes, j);
+						else if(t1.name.equals("HiddenPocket")) {
+							if(diseases.get(VS).eradicated) {
+								boolean found = false;
+								for(InfectionCard inf:infectionDiscardPile) {
+									if(inf.type.equals(Type.City)) {
+										if(diseases.get(VS).color.equals(inf.city.disease.color)) {
+											found = true;
+											inf.city.addDiseaseCube(inf.city.disease.color);
+											
+											String mes = "AddDiseaseCubeToCity/" + inf.city.name + "/" + inf.city.disease.color.toString() + "/";	
+											for(int j = 0; j < players.size(); j++) {
+												ServerComm.sendMessage(mes, j);
+											}
 										}
 									}
 								}
+								
+								if(found) {
+									String mes = "HiddenPocket/" + diseases.get(VS).color.toString() + "/";	
+									for(int j = 0; j < players.size(); j++) {
+										ServerComm.sendMessage(mes, j);
+									}
+								}
 							}
+						}
+						else if(t1.name.equals("RateEffect")) {
+							VirRate = true;
 							
-							if(found) {
-								String mes = "HiddenPocket/" + diseases.get(VS).color.toString() + "/";	
+							String mes = "VirulentStrainEpidemic/RateEffect/";
+							for(int j = 0; j < players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+							//TODO update
+						}
+						else if(t1.name.equals("SlipperySlope")) {
+							VirSlip = true;
+							
+							String mes = "VirulentStrainEpidemic/SlipperySlope/";
+							for(int j = 0; j < players.size(); j++) {
+								ServerComm.sendMessage(mes, j);
+							}
+							//TODO update
+						}
+						else if(t1.name.equals("UnacceptableLoss")) {
+							unaccept = true;
+						}
+						else if(t1.name.equals("UnacountedPopulations")) {
+							unaccount = true;
+						}
+						else {
+							
+						}
+					}
+					
+					Collections.shuffle(infectionDiscardPile);
+					for(int j = 0; j < infectionDiscardPile.size(); j++) {
+						InfectionCard d = infectionDiscardPile.remove(0);
+						infectionDeck.add(0,d);
+					}
+					
+					for(int j = 0; j < players.size(); j++) {
+						ServerComm.sendMessage("ClearInfectionDiscard/", j);
+					}
+					
+					if(unaccept) {
+						int unacceptcount = 4;
+						int unacceptSize = diseases.get(VS).cubes.size();
+						if(unacceptSize < 4) {
+							unacceptcount = unacceptSize;
+						}
+						for(int j = 0; j < unacceptcount; j++) {
+							diseases.get(VS).cubes.remove(0);
+						}
+						
+						String mes = "UnacceptableLoss/" + String.valueOf(unacceptcount) + "/";
+					}
+					
+					if(unaccount) {
+						for(City cit: cities) {
+							if(cit.countDiseaseCube(diseases.get(VS).color) == 1) {
+								cit.addDiseaseCube(diseases.get(VS).color);
+								
+								String mes = "AddDiseaseCubeToCity/" + cit.name + "/" + diseases.get(VS).color.toString() + "/";	
 								for(int j = 0; j < players.size(); j++) {
 									ServerComm.sendMessage(mes, j);
 								}
 							}
 						}
 					}
-					else if(t1.name.equals("RateEffect")) {
-						VirRate = true;
-						
-						String mes = "VirulentStrainEpidemic/RateEffect/";
-						for(int j = 0; j < players.size(); j++) {
-							ServerComm.sendMessage(mes, j);
-						}
-						//TODO update
-					}
-					else if(t1.name.equals("SlipperySlope")) {
-						VirSlip = true;
-						
-						String mes = "VirulentStrainEpidemic/SlipperySlope/";
-						for(int j = 0; j < players.size(); j++) {
-							ServerComm.sendMessage(mes, j);
-						}
-						//TODO update
-					}
-					else if(t1.name.equals("UnacceptableLoss")) {
-						unaccept = true;
-					}
-					else if(t1.name.equals("UnacountedPopulations")) {
-						unaccount = true;
-					}
-					else {
-						
-					}
 				}
-				
-				Collections.shuffle(infectionDiscardPile);
-				for(int j = 0; j < infectionDiscardPile.size(); j++) {
-					InfectionCard d = infectionDiscardPile.remove(0);
-					infectionDeck.add(0,d);
-				}
-				
-				for(int j = 0; j < players.size(); j++) {
-					ServerComm.sendMessage("ClearInfectionDiscard/", j);
-				}
-				
-				if(unaccept) {
-					int unacceptcount = 4;
-					int unacceptSize = diseases.get(VS).cubes.size();
-					if(unacceptSize < 4) {
-						unacceptcount = unacceptSize;
-					}
-					for(int j = 0; j < unacceptcount; j++) {
-						diseases.get(VS).cubes.remove(0);
-					}
+				else if(t1.type.equals(Type.Mutation)) {
+					System.out.println("Player " + p.username + " drew a MUTATION card!");
 					
-					String mes = "UnacceptableLoss/" + String.valueOf(unacceptcount) + "/";
 				}
-				
-				if(unaccount) {
-					for(City cit: cities) {
-						if(cit.countDiseaseCube(diseases.get(VS).color) == 1) {
-							cit.addDiseaseCube(diseases.get(VS).color);
-							
-							String mes = "AddDiseaseCubeToCity/" + cit.name + "/" + diseases.get(VS).color.toString() + "/";	
-							for(int j = 0; j < players.size(); j++) {
-								ServerComm.sendMessage(mes, j);
-							}
-						}
+				else {
+					System.out.println("Player " + p.username + " drew " + t1.city.name + ".");
+					
+					p.hand.add(t1);
+					
+					String mes = "AddCardToHand/" + p.username + "/" + t1.city.name + "/true/";
+					for(int j = 0; j < players.size(); j++) {
+						ServerComm.sendMessage(mes, j);
 					}
 				}
 			}
-			else if(t1.type.equals(Type.Mutation)) {
-				System.out.println("Player " + p.username + " drew a MUTATION card!");
-				
-			}
-			else {
-				System.out.println("Player " + p.username + " drew " + t1.city.name + ".");
-				
-				p.hand.add(t1);
-				
-				String mes = "AddCardToHand/" + p.username + "/" + t1.city.name + "/true/";
-				for(int j = 0; j < players.size(); j++) {
-					ServerComm.sendMessage(mes, j);
-				}
+			else{
+				ServerComm.sendToAllClients("EndGame/false/");
 			}
 		}
 	}
@@ -510,6 +515,7 @@ public class Game {
 		for(Pawn p: c.pawns){
 			if(p.role==Role.Medic && getDisease(color).cured){
 				hasMedic = true;
+				break;
 			}
 		}
 		for(int i = 0; i < count; i++) {
@@ -522,7 +528,8 @@ public class Game {
 					quarantines++;
 				}
 				
-				//TODO update quarantine and quarantines for all players
+				//update quarantine and quarantines for all players
+				ServerComm.sendToAllClients("UpdateQuarantine/"+c.name+"/"+c.quarantine+"/");
 			}
 			else if(hasMedic){
 				
@@ -561,7 +568,8 @@ public class Game {
 									quarantines++;
 								}
 								
-								//TODO update quarantine and quarantines for all players
+								//update quarantine and quarantines for all players
+								ServerComm.sendToAllClients("UpdateQuarantine/"+link.name+"/"+link.quarantine+"/");
 							}
 							else {
 								if(!link.outbroken) {
@@ -593,6 +601,9 @@ public class Game {
 					}
 					for(City cit: cities) {
 						cit.outbroken = false;
+					}
+					if(outbreakCount>=8){
+						ServerComm.sendToAllClients("EndGame/false/");
 					}
 				}
 			}
@@ -679,7 +690,16 @@ public class Game {
 				v = false;
 			}
 		}
-		return v;
+		boolean allCuredNoPurple = true;
+		for (Disease d: diseases){
+			if(d.color!=Color.purple && !d.cured){
+				allCuredNoPurple = false;
+			}
+			if(d.color==Color.purple && d.cubes.size()!=d.max){
+				allCuredNoPurple = false;
+			}
+		}
+		return v || allCuredNoPurple;
 	}
 	
 	Pawn getPawn(String r) {
