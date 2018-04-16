@@ -34,6 +34,13 @@ public class SetupScreen implements Screen {
 	String otbOpt;
 	Label otbOptLabel;
 	
+	String virOpt;
+	Label virOptLabel;
+	
+	int diffOpt;
+	String difficulty;
+	Label diffOptLabel;
+	
 	SetupScreen( PandemicGame _parent )
 	{
 		parent = _parent;
@@ -58,28 +65,84 @@ public class SetupScreen implements Screen {
 		this.otbOpt = "No";
 		this.otbOptLabel = new Label(otbOpt, skin);
 		
-		Label nameLabel = new Label("Name:", skin);
-		nameLabel.setAlignment(Align.center); // Align center
-	    TextField nameText = new TextField("", skin);
+		this.virOpt = "No";
+		this.virOptLabel = new Label(virOpt, skin);
+		
+		this.diffOpt = 0;
+		difficulty = diffOpt + "";
+		this.diffOptLabel = new Label(difficulty, skin);
+		
 	    Label addressLabel = new Label("IP Address:", skin);
 	    addressLabel.setAlignment(Align.center); // Align center
 	    TextField addressText = new TextField("", skin);
 	    
-	    //Table table = new Table();
-	    table.add(nameLabel).width(100).spaceBottom(10);
-	    table.add(nameText).width(100);
-	    table.row();
-	    table.add(addressLabel);
+	    table.add(addressLabel).width(100);
 	    table.add(addressText).width(100).spaceBottom(10);;
 	    
 	    table.setDebug(false); // Show or hide ugly red and blue lines.
 	    
 	    
+	    
+	    table.row();
+		Label diffLabel = new Label("Difficulty Level:", skin);
+		diffLabel.setAlignment(Align.center); // Align center
+		table.add(diffLabel).spaceBottom(10);
+		table.add(diffOptLabel);
+		TextButton diff0 = new TextButton("0", skin);
+		diff0.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				diffOpt = 0;
+				difficulty = diffOpt + "";
+				diffOptLabel.setText(difficulty);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(diff0).spaceRight(7).uniform() ;
+		TextButton diff1 = new TextButton("1", skin);
+		diff1.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				diffOpt = 1;
+				difficulty = diffOpt + "";
+				diffOptLabel.setText(difficulty);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(diff1).uniform();
+		TextButton diff2 = new TextButton("2", skin);
+		diff2.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				diffOpt = 2;
+				difficulty = diffOpt + "";
+				diffOptLabel.setText(difficulty);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(diff2).uniform();
+		TextButton diff3 = new TextButton("3", skin);
+		diff3.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				diffOpt = 3;
+				difficulty = diffOpt + "";
+				diffOptLabel.setText(difficulty);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(diff3).uniform();
+		
+	    
 		
 		
 		table.row();
 		Label bioTLabel = new Label("Bioterrorist Expansion:", skin);
-		nameLabel.setAlignment(Align.center); // Align center
+		bioTLabel.setAlignment(Align.center); // Align center
 		table.add(bioTLabel).spaceBottom(10);
 		table.add(showBioTOpt);
 		TextButton toggleBioterroristY = new TextButton("YES", skin);
@@ -133,6 +196,35 @@ public class SetupScreen implements Screen {
 			}
 		});
 		table.add(otbN);
+		
+		
+		table.row();
+		Label virLabel = new Label("Virulent Strain Expansion:", skin);
+		virLabel.setAlignment(Align.center); // Align center
+		table.add(virLabel).spaceBottom(10);
+		table.add(virOptLabel);
+		TextButton virY = new TextButton("YES", skin);
+		virY.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				virOpt = "Yes";
+				virOptLabel.setText(virOpt);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(virY);
+		TextButton virN = new TextButton("NO", skin);
+		virN.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				virOpt = "No";
+				virOptLabel.setText(virOpt);
+				// SEND SERVER MESSAGE
+			}
+		});
+		table.add(virN);
 		
 		
 		
