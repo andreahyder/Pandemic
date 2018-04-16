@@ -50,6 +50,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MenuScreen.JoinGameTextInput;
 //import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
+import com.sun.corba.se.impl.encoding.CodeSetConversion.BTCConverter;
 
 import javafx.scene.control.ScrollBar;
 
@@ -424,6 +425,15 @@ public class GameScreen implements Screen {
     	players[0].setCity( "Atlanta" );
 
     	players[0].role = "FieldOperative";
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
+    	players[0].diseaseCubesOnRoleCard.add( new DiseaseCubeInfo( DiseaseColour.BLUE ) );
 
     	
     	players[1] = new PlayerInfo( "Larry", false );
@@ -482,19 +492,14 @@ public class GameScreen implements Screen {
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Tokyo" ) );
-    	players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("London" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
     	players[0].addCardToHand( new PlayerCardInfo("Toronto" ) );
-    	players[0].addCardToHand( new PlayerCardInfo("London" ) );
-    	players[0].addCardToHand( new PlayerCardInfo("Johannesburg" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("London" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Toronto" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Madrid" ) );
+    	players[0].addCardToHand( new PlayerCardInfo("Madrid" ) );
     	
 
     	players[1].addCardToHand( new PlayerCardInfo("BorrowedTime" ) );
@@ -3863,540 +3868,73 @@ public class GameScreen implements Screen {
 				if( !waitForButton )
 				{
 					waitForButton = true;
-					if( clientPlayer == currentPlayer )
-					{	
-						if(  lookupCity( currentPlayer.getCity() ).hasResearchStation  ) 
-						{
-
-							ArrayList<PlayerCardInfo> hand = currentPlayer.getHand();
-							int[] cardNumByColor = new int[5];
-							for( int i = 0; i < 5; i++ )
-								cardNumByColor[i] = 0;
-
-							if(currentPlayer.role.equalsIgnoreCase("FieldOperative")) {
-								for (DiseaseCubeInfo diseaseCube : currentPlayer.diseaseCubesOnRoleCard) {
-									DiseaseColour diseaseColour = diseaseCube.getColour();
-									cardNumByColor[ diseaseColour.ordinal() ]++;
-								}
-							}
-							
-							for( PlayerCardInfo card : hand )
-							{
-								CityNode city = lookupCity(card.getName());
-								if( city == null)
-									continue;
-
-								String colourName = city.getColour();
-								int idx = DiseaseColour.lookupColourByName( colourName  ).ordinal();
-								
-								if( city.getCubesByColor( DiseaseColour.getDiseaseName( DiseaseColour.PURPLE ) ).size() > 0 )
-									cardNumByColor[ DiseaseColour.PURPLE.ordinal() ]++;
-								cardNumByColor[ idx ]++;
-							}
-							
-							String diseaseName = "";
-							for( int i = 0; i < 5; i++ )
-							{
-								int cureMod = 0;
-								
-								Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
-								if( cmsStatus != null & cmsStatus != false )
-									cureMod = ( (DiseaseColour.getDiseaseName( DiseaseColour.values()[i])).equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
-								
-								if( cardNumByColor[i] >= currentPlayer.cardsToCure + cureMod )
-									diseaseName = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
-		 					}
-							
-							if( cardNumByColor[DiseaseColour.PURPLE.ordinal()] <= 0 )
-							{
-								if( diseaseName.equalsIgnoreCase("") )
+					
+					String[] curableDiseases = currentPlayer.getCurableDiseases();
+					if( curableDiseases.length > 0 )
+					{
+						final SelectBox<String> selector = new SelectBox<String>( tempSkin );
+						selector.setItems( curableDiseases );
+						
+						Dialog cdDiag = new Dialog( "Select disease to cure", skin ){
+							@Override
+							protected void result(Object object) {
+								if( (boolean)object )
 								{
-									Dialog cdPrompt = new Dialog( "You don't have the necessary cards to cure anything", skin ){
-			    				        protected void result(Object object)
-			    				        {
-			    				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-			    				            //dialogStage = null;
-			    				        }
-			    					};
-			
-			    					cdPrompt.button("Okay");
-			    					dialogStage.clear();;
-			    					cdPrompt.show( dialogStage );
-			    					Gdx.input.setInputProcessor(dialogStage);
-								}
-								else
-								{
-									int cureMod = 0;
-									
-									Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
-									if( cmsStatus != null & cmsStatus != false )
-										cureMod = ( diseaseName.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
-
-									possibleSelections = new ArrayList<PlayerCardInfo>();
-									selections = new ArrayList<PlayerCardInfo>();
-	
-									for( final PlayerCardInfo card : hand )
+									final String disease = selector.getSelected();
+									if( !disease.equalsIgnoreCase( "purple") )
 									{
-										if ( lookupCity(card.getName()) == null )
-											continue;
-										
-										if( lookupCity(card.getName()).getColour().equalsIgnoreCase( diseaseName ) )
-										{
-											possibleSelections.add( card );
-										}
+										buildCureDiseaseCardPanel(disease);
 									}
-									
-									float cardSizeX = playerCardXSize*1.5f;
-									float cardSizeY = playerCardYSize*1.5f;
-									float cardOffset = playerCardXOffset*1.5f;
-									float cardPosX = windWidth / 2 - possibleSelections.size()*( cardSizeX + cardOffset ) / 2; 
-									float cardPosY = windHeight / 2 - cardSizeY / 2;
-									for( final PlayerCardInfo card : possibleSelections )
+									else
 									{
-										Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
-										TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
-										final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+										ArrayList<String> purpleCardsAList = currentPlayer.getCardNamesByColour( DiseaseColour.PURPLE );
+										String[] purpleCards = purpleCardsAList.toArray( new String[ purpleCardsAList.size() ]);
+										final SelectBox<String> purpSelector = new SelectBox<String>( tempSkin );
+										purpSelector.setItems( purpleCards );
 										
-										Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card.getName() ) ];
-										TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
-										final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
-										
-										ButtonStyle cityButtonStyle = new ButtonStyle();
-										cityButtonStyle.up			= Draw_cardTexture;
-										cityButtonStyle.down		= Draw_cardTexture;
-										cityButtonStyle.checked		= Draw_selectedCardTexture;
-										
-								        button = new Button( cityButtonStyle );
-								        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
-								        
-								        cardSelectStage.addActor( button );
-								        
-								        button.addListener( new ChangeListener() {
+										Dialog purpDiag = new Dialog( "Select Purple card for cure", skin ){
 											@Override
-											public void changed(ChangeEvent event, Actor actor) {
-												if( !waitForButton )
-												{	
-													waitForButton = true;
-													if( !((Button)actor).isChecked() )
-													{
-														for( int i = 0; i < selections.size(); i++ )
-														{
-															if( selections.get(i).getName().equals( card.getName() ) )
-															{
-																selections.remove( i );
-																break;
-															}
-														}
-														cardsToSelect++;
-													}
-													else
-													{
-														selections.add(card);
-														cardsToSelect--;
-													}
-													waitForButton = false;
-												}
-											}
-										});
-								        cardPosX += cardSizeX + cardOffset;
-									}
-									showCardSelectStage = true;
-									Gdx.input.setInputProcessor( cardSelectStage );
-									cardsToSelect = currentPlayer.cardsToCure + cureMod;
-									diseaseToCure = diseaseName;
-									showCardSelectAction = "DiscardForCure";
-								}
-							}
-							else
-							{
-								if( diseaseName.equals("") && currentPlayer.hand.size() < currentPlayer.cardsToCure )
-								{
-									Dialog purpDialog = new Dialog( "You don't have the necessary cards to cure anything", skin ){
-			    				        protected void result(Object object)
-			    				        {
-			    				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-			    				            //dialogStage = null;
-			    				        }
-			    					};
-			
-			    					purpDialog.button("Okay");
-			    					dialogStage.clear();;
-			    					purpDialog.show( dialogStage );
-			    					Gdx.input.setInputProcessor(dialogStage);
-								}
-								
-								if( diseaseName.equals("") )
-								{
-									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
-									
-									ArrayList<String> alData = new ArrayList<String>();
-									for( int i = 0; i < currentPlayer.getHandSize(); i++ )
-									{
-										CityNode city = lookupCity( currentPlayer.hand.get( i ).getName() );
-										
-										if( city == null )
-											continue;
-										
-										if( city.getCubesByColor( DiseaseColour.getDiseaseName( DiseaseColour.PURPLE ) ).size() > 0 )
-											alData.add( city.getName() );
-									}
-									
-									String[] data = new String[ alData.size() ];
-									for( int i = 0; i < alData.size(); i++ )
-										data[i] = alData.get(i);
-									
-									selector.setItems( data );
-									
-									Dialog cdDialog = new Dialog( "Pick one of these cards for the cure", skin ){
-										@Override
-										protected void result(Object object) {
-											if( (boolean)object )
-											{
-												possibleSelections = new ArrayList<PlayerCardInfo>();
-												selections = new ArrayList<PlayerCardInfo>();
-												
-												String selected = selector.getSelected();
-												
-												for( final PlayerCardInfo card : currentPlayer.hand )
+											protected void result(Object object) {
+												if( (boolean)object )
 												{
-													if ( lookupCity(card.getName()) == null )
-														continue;
-													
-													if( !card.getName().equalsIgnoreCase( selected ) )
-													{
-														if( lookupCity( card.getName() ) != null )
-															possibleSelections.add( card );
-													}
-												}
-												
-												float cardSizeX = playerCardXSize*1.5f;
-												float cardSizeY = playerCardYSize*1.5f;
-												float cardOffset = playerCardXOffset*1.5f;
-												float cardPosX = windWidth / 2 - possibleSelections.size()*( cardSizeX + cardOffset ) / 2; 
-												float cardPosY = windHeight / 2 - cardSizeY / 2;
-												for( final PlayerCardInfo card : possibleSelections )
-												{
-													Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
-													TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
-													final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
-													
-													Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card.getName() ) ];
-													TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
-													final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
-													
-													ButtonStyle cityButtonStyle = new ButtonStyle();
-													cityButtonStyle.up			= Draw_cardTexture;
-													cityButtonStyle.down		= Draw_cardTexture;
-													cityButtonStyle.checked		= Draw_selectedCardTexture;
-													
-											        button = new Button( cityButtonStyle );
-											        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
-											        
-											        cardSelectStage.addActor( button );
-											        
-											        button.addListener( new ChangeListener() {
-														@Override
-														public void changed(ChangeEvent event, Actor actor) {
-															if( !waitForButton )
-															{	
-																waitForButton = true;
-																if( !((Button)actor).isChecked() )
-																{
-																	for( int i = 0; i < selections.size(); i++ )
-																	{
-																		if( selections.get(i).getName().equals( card.getName() ) )
-																		{
-																			selections.remove( i );
-																			break;
-																		}
-																	}
-																	cardsToSelect++;
-																}
-																else
-																{
-																	selections.add(card);
-																	cardsToSelect--;
-																}
-																waitForButton = false;
-															}
-														}
-													});
-											        cardPosX += cardSizeX + cardOffset;
-												}
-												showCardSelectStage = true;
-												Gdx.input.setInputProcessor( cardSelectStage );
-												cardsToSelect = currentPlayer.cardsToCure - 1;
-												diseaseToCure = "purple";
-												showCardSelectAction = "DiscardForCure";
-											}
-											else
-												Gdx.input.setInputProcessor( buttonStage );
-										};
-									};
-									cdDialog.getContentTable().add( selector );
-									cdDialog.button("Select", true );
-									cdDialog.button("Cancel", false );
-									cdDialog.show( dialogStage );
-									Gdx.input.setInputProcessor( dialogStage );
-								}
-								else
-								{
-									int numValid = 1;
-									for( int i = 0; i < cardNumByColor.length - 1; i++ )
-									{
-										String disease = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
-										int mod = ( disease.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
-										if( cardNumByColor[i] >= currentPlayer.cardsToCure + mod )
-											numValid++;
-									}
-									
-									String[] diseases = new String[numValid];
-									diseases[0] = "Purple";
-									numValid = 1;
-									for( int i = 0; i < cardNumByColor.length - 1; i++ )
-									{
-										String disease = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
-										int mod = ( disease.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
-										if( cardNumByColor[i] >= currentPlayer.cardsToCure + mod )
-										{
-											diseases[numValid] = disease;
-											numValid++;
-										}
-									}
-									
-									final SelectBox<String> selector = new SelectBox<String>( tempSkin );
-									selector.setItems( diseases );
-									Dialog dsDiag = new Dialog( "Select a disease to cure", skin ) {
-										@Override
-										protected void result(Object object) {
-											if( (boolean)object )
-											{
-												String disease = selector.getSelected();
-												
-												if( disease.equalsIgnoreCase("Purple") )
-												{
-													final SelectBox<String> selector = new SelectBox<String>( tempSkin );
-													
-													ArrayList<String> alData = new ArrayList<String>();
-													for( int i = 0; i < currentPlayer.getHandSize(); i++ )
-													{
-														CityNode city = lookupCity( currentPlayer.hand.get( i ).getName() );
-														
-														if( city == null )
-															continue;
-														
-														if( city.getCubesByColor( DiseaseColour.getDiseaseName( DiseaseColour.PURPLE ) ).size() > 0 )
-															alData.add( city.getName() );
-													}
-													
-													String[] data = new String[ alData.size() ];
-													for( int i = 0; i < alData.size(); i++ )
-														data[i] = alData.get(i);
-													
-													selector.setItems( data );
-													
-													Dialog cdDialog = new Dialog( "Pick one of these cards for the cure", skin ){
-														@Override
-														protected void result(Object object) {
-															if( (boolean)object )
-															{
-																possibleSelections = new ArrayList<PlayerCardInfo>();
-																selections = new ArrayList<PlayerCardInfo>();
-																
-																String selected = selector.getSelected();
-																
-																for( final PlayerCardInfo card : currentPlayer.hand )
-																{
-																	if ( lookupCity(card.getName()) == null )
-																		continue;
-																	
-																	if( !card.getName().equalsIgnoreCase( selected ) )
-																	{
-																		if( lookupCity( card.getName() ) != null )
-																			possibleSelections.add( card );
-																	}
-																}
-																
-																float cardSizeX = playerCardXSize*1.5f;
-																float cardSizeY = playerCardYSize*1.5f;
-																float cardOffset = playerCardXOffset*1.5f;
-																float cardPosX = windWidth / 2 - possibleSelections.size()*( cardSizeX + cardOffset ) / 2; 
-																float cardPosY = windHeight / 2 - cardSizeY / 2;
-																for( final PlayerCardInfo card : possibleSelections )
-																{
-																	Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
-																	TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
-																	final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
-																	
-																	Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card.getName() ) ];
-																	TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
-																	final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
-																	
-																	ButtonStyle cityButtonStyle = new ButtonStyle();
-																	cityButtonStyle.up			= Draw_cardTexture;
-																	cityButtonStyle.down		= Draw_cardTexture;
-																	cityButtonStyle.checked		= Draw_selectedCardTexture;
-																	
-															        button = new Button( cityButtonStyle );
-															        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
-															        
-															        cardSelectStage.addActor( button );
-															        
-															        button.addListener( new ChangeListener() {
-																		@Override
-																		public void changed(ChangeEvent event, Actor actor) {
-																			if( !waitForButton )
-																			{	
-																				waitForButton = true;
-																				if( !((Button)actor).isChecked() )
-																				{
-																					for( int i = 0; i < selections.size(); i++ )
-																					{
-																						if( selections.get(i).getName().equals( card.getName() ) )
-																						{
-																							selections.remove( i );
-																							break;
-																						}
-																					}
-																					cardsToSelect++;
-																				}
-																				else
-																				{
-																					selections.add(card);
-																					cardsToSelect--;
-																				}
-																				waitForButton = false;
-																			}
-																		}
-																	});
-															        cardPosX += cardSizeX + cardOffset;
-																}
-																showCardSelectStage = true;
-																Gdx.input.setInputProcessor( cardSelectStage );
-																cardsToSelect = currentPlayer.cardsToCure - 1;
-																diseaseToCure = "purple";
-																showCardSelectAction = "DiscardForCure";
-															}
-															else
-																Gdx.input.setInputProcessor( buttonStage );
-														};
-													};
-													cdDialog.getContentTable().add( selector );
-													cdDialog.button("Select", true );
-													cdDialog.button("Cancel", false );
-													cdDialog.show( dialogStage );
-													Gdx.input.setInputProcessor( dialogStage );
+													String firstCard = purpSelector.getSelected();
+													buildPurpleCureDiseaseCardPanel(firstCard);
 												}
 												else
-												{
-													possibleSelections = new ArrayList<PlayerCardInfo>();
-													selections = new ArrayList<PlayerCardInfo>();
-													
-													String selected = disease;
-													
-													for( final PlayerCardInfo card : currentPlayer.hand )
-													{
-														if ( lookupCity(card.getName()) == null )
-															continue;
-														
-														if( lookupCity( card.getName() ).getColour().equalsIgnoreCase( selected ) )
-														{
-															if( lookupCity( card.getName() ) != null )
-																possibleSelections.add( card );
-														}
-													}
-													
-													float cardSizeX = playerCardXSize*1.5f;
-													float cardSizeY = playerCardYSize*1.5f;
-													float cardOffset = playerCardXOffset*1.5f;
-													float cardPosX = windWidth / 2 - possibleSelections.size()*( cardSizeX + cardOffset ) / 2; 
-													float cardPosY = windHeight / 2 - cardSizeY / 2;
-													for( final PlayerCardInfo card : possibleSelections )
-													{
-														Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
-														TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
-														final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
-														
-														Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card.getName() ) ];
-														TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
-														final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
-														
-														ButtonStyle cityButtonStyle = new ButtonStyle();
-														cityButtonStyle.up			= Draw_cardTexture;
-														cityButtonStyle.down		= Draw_cardTexture;
-														cityButtonStyle.checked		= Draw_selectedCardTexture;
-														
-												        button = new Button( cityButtonStyle );
-												        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
-												        
-												        cardSelectStage.addActor( button );
-												        
-												        button.addListener( new ChangeListener() {
-															@Override
-															public void changed(ChangeEvent event, Actor actor) {
-																if( !waitForButton )
-																{	
-																	waitForButton = true;
-																	if( !((Button)actor).isChecked() )
-																	{
-																		for( int i = 0; i < selections.size(); i++ )
-																		{
-																			if( selections.get(i).getName().equals( card.getName() ) )
-																			{
-																				selections.remove( i );
-																				break;
-																			}
-																		}
-																		cardsToSelect++;
-																	}
-																	else
-																	{
-																		selections.add(card);
-																		cardsToSelect--;
-																	}
-																	waitForButton = false;
-																}
-															}
-														});
-												        cardPosX += cardSizeX + cardOffset;
-													}
-													showCardSelectStage = true;
-													Gdx.input.setInputProcessor( cardSelectStage );
-													int mod = ( selected.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
-													cardsToSelect = currentPlayer.cardsToCure + mod;
-													diseaseToCure = selected;
-													showCardSelectAction = "DiscardForCure";
-												}
-											}
-											else
-												Gdx.input.setInputProcessor( buttonStage );
-											
+													Gdx.input.setInputProcessor( buttonStage );
+											};
 										};
-									};
-									dsDiag.getContentTable().add( selector );
-									dsDiag.button( "Select", true );
-									dsDiag.button( "Cancel", false );
-									dsDiag.show( dialogStage );
-									Gdx.input.setInputProcessor( dialogStage );
+										purpDiag.getContentTable().add( purpSelector );
+										purpDiag.button( "Select", true );
+										purpDiag.button( "Cancel", false );
+										purpDiag.show( dialogStage );
+										Gdx.input.setInputProcessor( dialogStage );
+									}
 								}
-							}
-						}
-						else
-						{
-							Dialog cdPrompt = new Dialog( "You need to be in a city with a research station", skin ){
-	    				        protected void result(Object object)
-	    				        {
-	    				            Gdx.input.setInputProcessor(buttonStage); //Start taking input from the ui
-	    				            //dialogStage = null;
-	    				        }
-	    					};
-	
-	    					cdPrompt.button("Okay");
-	    					dialogStage.clear();;
-	    					cdPrompt.show( dialogStage );
-	    					Gdx.input.setInputProcessor(dialogStage);
-						}
+								else
+									Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						cdDiag.getContentTable().add( selector );
+						cdDiag.button("Select", true );
+						cdDiag.button("Cancel", false );
+						cdDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
 					}
+					else
+					{
+						Dialog cdDiag = new Dialog( "You don't have the cards to cure any diseases", skin ){
+							@Override
+							protected void result(Object object) {
+								Gdx.input.setInputProcessor( buttonStage );
+							};
+						};
+						cdDiag.button("Okay");
+						cdDiag.show( dialogStage );
+						Gdx.input.setInputProcessor( dialogStage );
+						
+					}
+					
 					waitForButton = false;
 				}
 			}
@@ -4457,6 +3995,169 @@ public class GameScreen implements Screen {
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( endTurn );
 	}
+	
+	public static void buildCureDiseaseCardPanel( String disease )
+	{
+		int cureMod = 0;
+		
+		Boolean cmsStatus = virulentStrainStatuses.get( "ComplexMolecularStructure" );
+		if( cmsStatus != null & cmsStatus != false )
+			cureMod = ( disease.equalsIgnoreCase( virulentStrainDisease ) ) ? 1 : 0;
+
+		possibleSelections = new ArrayList<PlayerCardInfo>();
+		selections = new ArrayList<PlayerCardInfo>();
+
+		for( final PlayerCardInfo card : currentPlayer.hand )
+		{
+			if ( lookupCity(card.getName()) == null )
+				continue;
+			
+			if( lookupCity(card.getName()).getColour().equalsIgnoreCase( disease ) )
+			{
+				possibleSelections.add( card );
+			}
+		}
+		
+		float cardSizeX = playerCardXSize*1.5f;
+		float cardSizeY = playerCardYSize*1.5f;
+		float cardOffset = playerCardXOffset*1.5f;
+		float cardPosX = windWidth / 2 - possibleSelections.size()*( cardSizeX + cardOffset ) / 2; 
+		float cardPosY = windHeight / 2 - cardSizeY / 2;
+		for( final PlayerCardInfo card : possibleSelections )
+		{
+			Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
+			TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+			final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+			
+			Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card.getName() ) ];
+			TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
+			final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
+			
+			ButtonStyle cityButtonStyle = new ButtonStyle();
+			cityButtonStyle.up			= Draw_cardTexture;
+			cityButtonStyle.down		= Draw_cardTexture;
+			cityButtonStyle.checked		= Draw_selectedCardTexture;
+			
+	        button = new Button( cityButtonStyle );
+	        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
+	        
+	        cardSelectStage.addActor( button );
+	        
+	        button.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{	
+						waitForButton = true;
+						if( !((Button)actor).isChecked() )
+						{
+							for( int i = 0; i < selections.size(); i++ )
+							{
+								if( selections.get(i).getName().equals( card.getName() ) )
+								{
+									selections.remove( i );
+									break;
+								}
+							}
+							cardsToSelect++;
+						}
+						else
+						{
+							selections.add(card);
+							cardsToSelect--;
+						}
+						waitForButton = false;
+					}
+				}
+			});
+	        cardPosX += cardSizeX + cardOffset;
+		}
+		showCardSelectStage = true;
+		Gdx.input.setInputProcessor( cardSelectStage );
+		cardsToSelect = currentPlayer.cardsToCure + cureMod - currentPlayer.getNumCureCardReducedByStoredCubes(disease);
+		diseaseToCure = disease;
+		showCardSelectAction = "DiscardForCure";
+	}
+	
+	public static void buildPurpleCureDiseaseCardPanel( String firstCard )
+	{
+		possibleSelections = new ArrayList<PlayerCardInfo>();
+		selections = new ArrayList<PlayerCardInfo>();
+		
+		
+		for( final PlayerCardInfo card : currentPlayer.hand )
+		{
+			if ( lookupCity(card.getName()) == null )
+				continue;
+			
+			if( !card.getName().equalsIgnoreCase( firstCard ) )
+			{
+				if( lookupCity( card.getName() ) != null )
+					possibleSelections.add( card );
+			}
+		}
+		
+		float cardSizeX = playerCardXSize*1.5f;
+		float cardSizeY = playerCardYSize*1.5f;
+		float cardOffset = playerCardXOffset*1.5f;
+		float cardPosX = windWidth / 2 - possibleSelections.size()*( cardSizeX + cardOffset ) / 2; 
+		float cardPosY = windHeight / 2 - cardSizeY / 2;
+		for( final PlayerCardInfo card : possibleSelections )
+		{
+			Texture cardTexture	 							= cityCardTextures[ lookupCityIndex( card.getName() ) ];
+			TextureRegion TR_cardTexture 					= new TextureRegion( cardTexture );
+			final TextureRegionDrawable Draw_cardTexture 	= new TextureRegionDrawable( TR_cardTexture );
+			
+			Texture selectedCardTexture	 							= selectedCityCardTextures[ lookupCityIndex( card.getName() ) ];
+			TextureRegion TR_selectedCardTexture 					= new TextureRegion( selectedCardTexture );
+			final TextureRegionDrawable Draw_selectedCardTexture 	= new TextureRegionDrawable( TR_selectedCardTexture );
+			
+			ButtonStyle cityButtonStyle = new ButtonStyle();
+			cityButtonStyle.up			= Draw_cardTexture;
+			cityButtonStyle.down		= Draw_cardTexture;
+			cityButtonStyle.checked		= Draw_selectedCardTexture;
+			
+	        button = new Button( cityButtonStyle );
+	        button.setBounds( cardPosX, cardPosY, cardSizeX, cardSizeY );
+	        
+	        cardSelectStage.addActor( button );
+	        
+	        button.addListener( new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					if( !waitForButton )
+					{	
+						waitForButton = true;
+						if( !((Button)actor).isChecked() )
+						{
+							for( int i = 0; i < selections.size(); i++ )
+							{
+								if( selections.get(i).getName().equals( card.getName() ) )
+								{
+									selections.remove( i );
+									break;
+								}
+							}
+							cardsToSelect++;
+						}
+						else
+						{
+							selections.add(card);
+							cardsToSelect--;
+						}
+						waitForButton = false;
+					}
+				}
+			});
+	        cardPosX += cardSizeX + cardOffset;
+		}
+		showCardSelectStage = true;
+		Gdx.input.setInputProcessor( cardSelectStage );
+		cardsToSelect = currentPlayer.cardsToCure - 1 - currentPlayer.getNumCureCardReducedByStoredCubes("purple");
+		diseaseToCure = "purple";
+		showCardSelectAction = "DiscardForCure";
+	}
+	
 	
 	public static void createQuarantineButton()
 	{
@@ -5437,7 +5138,7 @@ public class GameScreen implements Screen {
 				Color.BROWN
 		};
 //		String.valueOf(color.getRGB())
-		PlayerInfo[] playersInOrder = new PlayerInfo[ players.length ];
+		ArrayList<PlayerInfo> playersInOrder = new ArrayList<PlayerInfo>();
 		int currPlayerIdx = 0;
 		for( int i = 0; i < players.length; i++ )
 		{
@@ -5447,32 +5148,42 @@ public class GameScreen implements Screen {
 		
 		for( int i = 0; i < players.length; i++ )
 		{
-			playersInOrder[i] = players[(currPlayerIdx + i) % players.length];
+			if(players[i].role.equalsIgnoreCase("Bioterrorist") && i > 1 )
+			{
+				playersInOrder.add(1, players[i]);
+			}
+			else
+				playersInOrder.add( players[(currPlayerIdx + i) % players.length ]);
 		}
 		
 		
-		Pixmap panel = new Pixmap( 150, 25*(players.length+2), Format.RGB888 );
+		Pixmap panel = new Pixmap( 250, 25*(players.length+2), Format.RGB888 );
 		panel.setColor( Color.GRAY );
-		panel.fillRectangle(0, 0, 150, 25*(players.length+2) );
+		panel.fillRectangle(0, 0, 250, 25*(players.length+2) );
 		Texture panelText = new Texture( panel );
 		
 		float localheight = nextActionButtonHeight;
 		localheight += actionButtonYSize*1.125 - 15f;
 		batch.begin();
-		batch.draw( panelText, 0, localheight - 25*(players.length+2), 150, 25*(players.length+2) );
+		batch.draw( panelText, 0, localheight - 25*(players.length+2), 250, 25*(players.length+2) );
 		localheight -= 15f;
 		playerColourFont0.setColor( Color.WHITE );
 		playerColourFont0.getData().setScale( 1.25f );
 		playerColourFont0.draw( batch, "Turn Order:", 15f, localheight );
 		localheight -= 25f;
 		for(int i = 0; i < players.length; i++){
-			if(playersInOrder[i] != null){
-				playerColourFont1.setColor(colors[playersInOrder[i].getColour().ordinal()]);
+			if(playersInOrder.get(i) != null){
+				if( playersInOrder.get(i).role.equalsIgnoreCase( "Bioterrorist" ) || true ){
+				playerColourFont1.setColor(colors[playersInOrder.get(i).getColour().ordinal()]);
 				playerColourFont1.getData().setScale(1.25f);
-				playerColourFont1.draw(batch, playersInOrder[i].getName(), windWidth * 0.025f, localheight );
+				String out = playersInOrder.get(i).getName() +": " + playersInOrder.get(i).role;
+				if( playersInOrder.get(i).role.equalsIgnoreCase("Bioterrorist") )
+					out += ( isCaptured ) ? " (Captured)" : " (Free)";
+				playerColourFont1.draw(batch, out, windWidth * 0.01f, localheight );
 				localheight -= 25f;
 				//playersColores.getData().setScale(1.25f);
 				//playersColores.draw( batch, players[i].getName() + " is ", windWidth * 0.01f, windHeight - (50f * 1.125f * 4f) - (float)((i+2) * 25f));
+				}
 			}
 		}
 		batch.end();

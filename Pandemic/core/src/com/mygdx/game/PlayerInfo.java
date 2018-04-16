@@ -124,5 +124,79 @@ public class PlayerInfo {
 
 		return handStrings;
 	}
+	
+	public ArrayList<String> getCardNamesByColour( DiseaseColour color )
+	{
+		ArrayList<String> retArr = new ArrayList<String>();
+		
+		for( PlayerCardInfo card : hand )
+		{
+			if( GameScreen.lookupCity( card.getName() ) == null )
+				continue;
+			
+			if( color == DiseaseColour.PURPLE )
+			{	
+				if( GameScreen.lookupCity( card.getName() ).getCubesByColor( DiseaseColour.getDiseaseName( color ) ).size() > 0  )
+					retArr.add( card.getName() );
+			}
+			else
+			{
+				if( GameScreen.lookupCity( card.getName() ).getColour().equalsIgnoreCase( DiseaseColour.getDiseaseName( color )) )
+					retArr.add( card.getName() );
+			}
+		}
+		
+		return retArr;
+	}
+	
+	public String[] getCurableDiseases( )
+	{
+		ArrayList<String> curableDiseases = new ArrayList<String>();
+		for( int i = 0; i < 5; i++ )
+		{
+			String diseaseName = DiseaseColour.getDiseaseName( DiseaseColour.values()[i] );
+			if( !diseaseName.equalsIgnoreCase("purple") )
+			{
+				int vsMod = ( GameScreen.virulentStrainStatuses.get("ComplexMolecularStructure") && diseaseName.equalsIgnoreCase( GameScreen.virulentStrainDisease ) ) ? 1 : 0; 
+				int foMod = ( getNumStoredCubes( DiseaseColour.values()[i] ) );
+				foMod = foMod / 3;
+				foMod = -Math.min(foMod, 2);
+				
+				if( getCardNamesByColour( DiseaseColour.values()[i] ).size() >= cardsToCure + vsMod + foMod )
+					curableDiseases.add( diseaseName );
+			}
+			else
+			{
+				if( getCardNamesByColour( DiseaseColour.values()[i] ).size() > 0 && hand.size() >= cardsToCure )
+					curableDiseases.add( diseaseName );
+			}
+		}
+		
+		return curableDiseases.toArray( new String[ curableDiseases.size() ] );
+	}
+	
+	public int getNumStoredCubes( DiseaseColour colour )
+	{
+		if( !role.equalsIgnoreCase( "FieldOperative" ) )
+			return 0;
+		
+		int numCubes = 0;
+		for( DiseaseCubeInfo cube : diseaseCubesOnRoleCard )
+			if( cube.getColour() == colour )
+				numCubes++;
+		
+		return numCubes;
+	}
+	
+	public int getNumCureCardReducedByStoredCubes( String disease )
+	{
+		if( !role.equalsIgnoreCase( "FieldOperative" ) )
+			return 0;
+	
+		int foMod = ( getNumStoredCubes( DiseaseColour.lookupColourByName( disease ) ) );
+		foMod = foMod / 3;
+		foMod = Math.min(foMod, 2);
+		return foMod;
+	}
 
 }
