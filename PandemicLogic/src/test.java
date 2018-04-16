@@ -450,7 +450,16 @@ public class GameScreen implements Screen {
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
-    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" ) );
+    	//players[0].addCardToHand( new PlayerCardInfo("Atlanta" )
+		//params:PlayerIndex/EventAction/RVD/Color/ListOfCities <- separated by ,
+		else if(args[2].equals("RapidVaccine")) {
+			//prompt client to play RVD after curing sth (done in client)
+			String[] citiesList = args[4].split(",");
+			Color z = Color.valueOf(args[3]);
+			for(String s:citiesList){
+				City c = game.getCity(s);
+				c.removeDiseaseCube(z);
+				ServerComm.sendToAllClients("RemoveCube/" + c + "/" + z + "/" + 1 + "/"); );
     	//players[0].addCardToHand( new PlayerCardInfo("London" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Essen" ) );
     	//players[0].addCardToHand( new PlayerCardInfo("Toronto" ) );

@@ -21,10 +21,10 @@ public class Game {
 	//settings
 	int Diff;
 	int Num;
-	Boolean Otb;
-	Boolean Vir;
-	Boolean Mut;
-	Boolean Bio;
+	boolean Otb;
+	boolean Vir;
+	boolean Mut;
+	boolean Bio;
 	int BT;
 	int VS;
 	
@@ -41,6 +41,7 @@ public class Game {
 	//event flags
 	boolean EvMobile = false;
 	int EvCommercial = -1;
+	boolean oneQuietNightFlag;
 	
 	//virulent flags
 	boolean VirChronic = false;
@@ -49,7 +50,6 @@ public class Game {
 	boolean VirRate = false;
 	boolean VirSlip = false;
 
-	boolean oneQuietNightFlag;
 	
 	//initializes game, initializes alot of things.
 	Game(){
@@ -136,26 +136,26 @@ public class Game {
 		}
 		else {
 			//add relevant pawns
-			pawns.add(new Pawn(Role.Bio));
-			pawns.add(new Pawn(Role.Col));
-			pawns.add(new Pawn(Role.ContP));
-			pawns.add(new Pawn(Role.Disp));
-			pawns.add(new Pawn(Role.Med));
-			pawns.add(new Pawn(Role.Op));
-			pawns.add(new Pawn(Role.Qua));
-			pawns.add(new Pawn(Role.Res));
-			pawns.add(new Pawn(Role.Sci));
+			pawns.add(new Pawn(Role.Bioterrorist));
+			pawns.add(new Pawn(Role.Colonel));
+			pawns.add(new ContingencyPlannerPawn(Role.ContingencyPlanner));
+			pawns.add(new Pawn(Role.Dispatcher));
+			pawns.add(new Pawn(Role.Medic));
+			pawns.add(new Pawn(Role.OperationsExpert));
+			pawns.add(new Pawn(Role.QuarantineSpecialist));
+			pawns.add(new Pawn(Role.FirstResponder));
+			pawns.add(new Pawn(Role.Scientist));
 			
 			if(Otb) {
-				pawns.add(new Pawn(Role.Arch));
-				pawns.add(new Pawn(Role.ContS));
-				pawns.add(new Pawn(Role.Epi));
-				pawns.add(new Pawn(Role.Field));
-				pawns.add(new Pawn(Role.Gen));
-				pawns.add(new Pawn(Role.Troub));
+				pawns.add(new Pawn(Role.Archivist));
+				pawns.add(new Pawn(Role.ContainmentSpecialist));
+				pawns.add(new Pawn(Role.Epidemiologist));
+				pawns.add(new FieldOperativePawn(Role.FieldOperative));
+				pawns.add(new Pawn(Role.Generalist));
+				pawns.add(new Pawn(Role.Troubleshooter));
 			}
 			if(Bio) {
-				pawns.add(new Pawn(Role.Bio));
+				pawns.add(new Pawn(Role.Bioterrorist));
 			}
 			
 			//add event cards
@@ -288,7 +288,7 @@ public class Game {
 			
 			//setup quarantine spec
 			for(Player p: players) {
-				if(p.pawn.role.equals(Role.Qua)) {
+				if(p.pawn.role.equals(Role.QuarantineSpecialist)) {
 					p.pawn.move(getCity("Atlanta"), true);
 				}
 			}
@@ -499,6 +499,12 @@ public class Game {
 	
 	//helper function that is used to infect city of c with count number of disease cubes. Outbreak included
 	void infectCity(City c, Color color, int count) {
+		boolean hasMedic = false;
+		for(Pawn p: c.pawns){
+			if(p.role==Role.Medic && getDisease(color).cured){
+				hasMedic = true;
+			}
+		}
 		for(int i = 0; i < count; i++) {
 			if(c.QS) {
 				
@@ -510,6 +516,9 @@ public class Game {
 				}
 				
 				//TODO update quarantine and quarantines for all players
+			}
+			else if(hasMedic){
+				
 			}
 			else {
 				if(c.countDiseaseCube(color) != 3) {

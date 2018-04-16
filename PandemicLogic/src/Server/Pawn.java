@@ -21,10 +21,10 @@ public class Pawn {
 		role = r;
 		actions = 4;
 		roleactions = 1;
-		if(role.compareTo(Role.Gen) == 0) {
+		if(role.compareTo(Role.Generalist) == 0) {
 			actions = 5;
 		}
-		if(role.compareTo(Role.Bio) == 0) {
+		if(role.compareTo(Role.Bioterrorist) == 0) {
 			actions = 2;
 		}
 		player = null;
@@ -32,15 +32,15 @@ public class Pawn {
 	}
 	
 	void move(City c, Boolean free) {
-		boolean Q = (role.compareTo(Role.Qua) == 0);
-		boolean C = (role.compareTo(Role.Col) == 0);
+		
+		boolean Q = (role.compareTo(Role.QuarantineSpecialist) == 0);
+		boolean C = (role.compareTo(Role.Colonel) == 0);
 		if(Q) {
 			city.QS = false;
 			for(City t: city.connected) {
 				t.QS = false;
 			}
 		}
-		
 		city.pawns.remove(this);
 		city = c;
 		city.pawns.add(this);
@@ -60,6 +60,23 @@ public class Pawn {
 				city.quarantine = 2;
 				
 				//TODO update quarantine count for all players
+			}
+		}
+		if(role==Role.Medic){
+			//Check for cured diseases and remove their cubes. If all removed turn on eradicated
+			for(Color color:Color.values()){
+				if(GameManager.game.getDisease(color).cured){
+					int noCubesToRemove = city.countDiseaseCube(color);
+					treat(color, noCubesToRemove, true);
+				}
+			}
+		}
+		if(role==Role.ContainmentSpecialist){
+			for(Color color: Color.values()){
+				int cubeCount = city.countDiseaseCube(color);
+				if (cubeCount>=2){
+					treat(color, 1, true);
+				}
 			}
 		}
 	}
@@ -96,7 +113,6 @@ public class Pawn {
 					player.game.getDisease(c).cubes.add(stash.remove(i));
 					if(player.game.getDisease(c).cubes.size() == player.game.getDisease(c).max && player.game.getDisease(c).cured) {
 						player.game.getDisease(c).eradicated = true;
-						
 						String mes = "EradicateDisease/" + c + "/";
 						for(int j = 0; j < player.game.players.size(); j++) {
 							ServerComm.sendMessage(mes, j);
@@ -110,5 +126,5 @@ public class Pawn {
 }
 
 enum Role{
-	Arch, Bio, Col, ContS, ContP, Disp, Epi, Field, Gen, Med, Op, Qua, Res, Sci, Troub
+	Archivist, Bioterrorist, Colonel, ContainmentSpecialist, ContingencyPlanner, Dispatcher, Epidemiologist, FieldOperative, Generalist, Medic, OperationsExpert, QuarantineSpecialist, FirstResponder, Scientist, Troubleshooter
 }

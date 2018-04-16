@@ -129,7 +129,7 @@ public class GameManager {
 	//drive
 	public static void Drive(String city) {
 		Player t1 = game.getCurrentPlayer();
-		if(t1.pawn.role.equals(Role.Bio)) {
+		if(t1.pawn.role.equals(Role.Bioterrorist)) {
 			City t2 = game.getCity(city);
 			t1.pawn.move(t2, false);
 			
@@ -196,7 +196,7 @@ public class GameManager {
 	//directFlight
 	public static void DirectFlight(String city) {
 		Player t1 = game.getCurrentPlayer();
-		if(t1.pawn.role.equals(Role.Bio)) {
+		if(t1.pawn.role.equals(Role.Bioterrorist)) {
 			City t2 = game.getCity(city); 
 			t1.pawn.move(t2, false);
 			InfectionCard t3 = t1.Bhand.remove(t1.getBCard(city));
@@ -228,10 +228,16 @@ public class GameManager {
 		else {
 			City t2 = game.getCity(city); 
 			t1.pawn.move(t2, false);
-			PlayerCard t3 = t1.hand.remove(t1.getCard(city));
-			
-			game.playerDiscardPile.add(t3);
-			
+			//Troubleshooter flies for free provided she has the card
+			if(t1.pawn.role!=Role.Troubleshooter){
+				PlayerCard t3 = t1.hand.remove(t1.getCard(city));
+				game.playerDiscardPile.add(t3);
+				String mes2 = "RemoveCardFromHand/" + t1.username + "/" + city + "/true/";
+				ServerComm.sendToAllClients(mes2);
+			}
+			String mes1 = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
+			ServerComm.sendToAllClients(mes1);
+			ServerComm.sendToAllClients("DecrementActions/");
 			if(game.EvMobile){
 				ServerComm.sendMessage("AskForTreat/",game.turn);
 				while(ServerComm.response == null) {
@@ -256,25 +262,14 @@ public class GameManager {
 			}
 			
 			System.out.println(t1.username + " directly flew to " + city + ".");
-			
-			String mes = "UpdatePlayerLocation/" + t1.username + "/" + city + "/";
-			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + city + "/true/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes, i);
-				ServerComm.sendMessage(mes2, i);
-			}
-			
-			mes = "DecrementActions/";
-			for(int i = 0; i < game.players.size(); i++) {
-				ServerComm.sendMessage(mes, i);
-			}
+		
 		}
 	}
 	
 	//charterFlight
 	public static void CharterFlight(String city) {
 		Player t1 = game.getCurrentPlayer();
-		if(t1.pawn.role.equals(Role.Bio)) {
+		if(t1.pawn.role.equals(Role.Bioterrorist)) {
 			InfectionCard t3 = t1.Bhand.remove(t1.getBCard(t1.pawn.city.name));
 			City t2 = game.getCity(city); 
 			t1.pawn.move(t2, false);
@@ -415,7 +410,7 @@ public class GameManager {
 		int count = 1;
 		Player t1 = game.getCurrentPlayer();
 		Color c = Color.valueOf(color);
-		if(t1.pawn.role.equals(Role.Med) || game.getDisease(c).cured) {
+		if(t1.pawn.role.equals(Role.Medic) || game.getDisease(c).cured) {
 			count = t1.pawn.city.countDiseaseCube(c);
 		}
 		t1.pawn.treat(c, count, false);
@@ -506,7 +501,7 @@ public class GameManager {
 		if(game.getDisease(c).virulent) {
 			extra = 1;
 		}
-		if(t1.pawn.role.equals(Role.Sci)) {
+		if(t1.pawn.role.equals(Role.Scientist)) {
 			for(int i = 0; i < 4 + extra; i++) {
 				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
 				game.playerDiscardPile.add(card);
@@ -516,7 +511,7 @@ public class GameManager {
 				}
 			}
 		}
-		else if(t1.pawn.role.equals(Role.Field)) {
+		else if(t1.pawn.role.equals(Role.FieldOperative)) {
 			for(int i = 0; i < 3 + extra; i++) {
 				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
 				game.playerDiscardPile.add(card);
@@ -575,19 +570,6 @@ public class GameManager {
 			
 			while(t1.hand.size() > 8) {
 				
-				/*ServerComm.sendMessage("AskForDiscard/",game.turn);
-				while(ServerComm.response == null) {
-					try {
-						Thread.sleep(1);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				String s = ServerComm.response;
-				System.out.println(s);
-				ServerComm.response = null;*/
-				
 				String s = ServerComm.getResponse("AskForDiscard/",game.turn);
 				PlayerCard t3 = t1.hand.remove(t1.getCard(s));
 				game.playerDiscardPile.add(t3);
@@ -616,7 +598,7 @@ public class GameManager {
 				ServerComm.sendMessage(mes2, j);
 			}
 		}
-		else if(args[2].equals("ContingencyPlanner")) {//index/RoleAction/ContingencyPlanner/Take/eventname
+		/*else if(args[2].equals("ContingencyPlanner")) {//index/RoleAction/ContingencyPlanner/Take-Play/eventname
 			if(args[3].equals("Take")) {
 				int ind = 0;
 				for(int i = 0; i < game.playerDiscardPile.size(); i++) {
@@ -657,19 +639,118 @@ public class GameManager {
 					ServerComm.sendMessage(mes2, i);
 				}
 			}
-		}
-		else if(args[2].equals("FieldOperative")) {//index/RoleAction/FieldOperative/color/
+		}*/
+		else if(args[2].equals("FieldOperative")) {//index/RoleAction/FieldOperative/Add-Cure/Color/Cards,List
+			FieldOperativePawn p = (FieldOperativePawn)game.getCurrentPlayer().pawn;
+			if(args[3].equals("Add")){
+				p.addToStash(Color.valueOf(args[4]));
+			}
+			else if (args[3].equals("Cure")){
+				p.discoverCure(args);
+			}
 			//AddCubeToStash/color
 			//RemoveCubeFromStash/color
 		}
-		else if(args[2].equals("bioterrorist")) {
-			
+		//index/RoleAction/Epidemiologist/targetPlayer/TargetCard
+		else if(args[2].equals("Epidemiologist")) {
+			Player targetPlayer = game.getPlayer(args[3]);
+			String consent = ServerComm.getResponse("AskForConsent/", targetPlayer.ID);
+			if(consent.equals("true")){
+				for(PlayerCard c: targetPlayer.hand){
+					if(c.city.name.equals(args[4])){
+						targetPlayer.hand.remove(c);
+						game.getCurrentPlayer().hand.add(c);
+						ServerComm.sendToAllClients("RemoveCardFromHand/" + targetPlayer.username + "/" + args[4] + "/false/");
+						ServerComm.sendToAllClients("AddCardToHand/" + game.getCurrentPlayer().username + "/" + args[4] + "/false/");
+						break;
+					}
+				}
+			}
 		}
-		else if(args[2].equals("bioterrorist")) {
-			
+		//index/RoleAction/ContingencyPlanner/Take or Play/targetCard/args for target card
+		else if(args[2].equals("ContingencyPlanner")) {
+			ContingencyPlannerPawn p = (ContingencyPlannerPawn)game.getCurrentPlayer().getPawn();
+			if(args[3].equals("Take")){
+				for(PlayerCard c:game.playerDiscardPile){
+					if(c.name.equals(args[4])){
+						game.playerDiscardPile.remove(c);
+						p.takeEvent(c);
+						ServerComm.sendToAllClients("RemoveCardFromPlayerDiscard/"+args[4]);
+						ServerComm.sendToAllClients("AddCardToStash/" + game.getCurrentPlayer().username + "/" + args[4] + "/false/");
+						break;
+					}
+				}
+			}
+			else if(args[3].equals("Play")){
+				p.playEvent(args);
+			}
 		}
-		else if(args[2].equals("bioterrorist")) {
-			
+		//index/RoleAction/OperationsExpert/Build or Move/CityToMoveTo(or CityToTakeRSFrom in Build case)/CardToDiscard
+		else if(args[2].equals("OperationsExpert")) {
+			Pawn p = game.getCurrentPlayer().getPawn();
+			if(args[3].equals("Build")){
+				if(args.length<=4){
+					//BRS already sends updates
+					BuildResearchStation("");
+				}
+				else{
+					BuildResearchStation(args[4]);
+				}
+			}
+			else if (args[3].equals("Move")){
+				p.move(game.getCity(args[4]), false);
+				ServerComm.sendToAllClients("UpdatePlayerLocation/" + game.getCurrentPlayer().username + "/" + args[4] + "/");
+				for(PlayerCard c:p.player.hand){
+					if(p.city.name.equals(args[5])){
+						p.player.hand.remove(c);
+						game.playerDiscardPile.add(c);
+						ServerComm.sendToAllClients("RemoveCardFromHand/" + args[5] + "/true/");
+						break;
+					}
+				}
+			}
+		}
+		//index/RoleAction/Dispatcher/Drive-Fly/TargetPlayer/normal args
+		//index/EventAction/SpecialOrdersMove/(Drive/Flight etc)/targetPlayerToMove/normal args
+		else if(args[2].equals("Dispatcher")){
+			Player targetPlayer = game.getPlayer(args[4]);
+			Pawn targetPawn = targetPlayer.getPawn();
+			Player currentPlayer = game.getCurrentPlayer();
+			City destination = game.getCity(args[5]);
+			String consent = ServerComm.getResponse("AskForConsent/", targetPlayer.ID);
+			if(consent.equals("true")){
+				if(args[3].equals("Drive")){
+					targetPawn.move(destination, true);
+				}
+				else if(args[3].equals("DirectFlight")){
+					targetPawn.move(destination, true);
+					for (PlayerCard c: currentPlayer.hand){
+						if(c.city==destination){
+							currentPlayer.hand.remove(c);
+							game.playerDiscardPile.add(c);
+							ServerComm.sendToAllClients("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/");
+							break;
+						}
+					}
+				}
+				else if(args[3].equals("CharterFlight")){
+					for (PlayerCard c: currentPlayer.hand){
+						if(c.city==targetPawn.city){
+							currentPlayer.hand.remove(c);
+							game.playerDiscardPile.add(c);
+							ServerComm.sendToAllClients("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/");
+							break;
+						}
+					}
+					targetPawn.move(destination, true);
+				}
+				ServerComm.sendToAllClients("UpdatePlayerLocation/" + targetPlayer.username + "/" + destination.name + "/");
+				currentPlayer.pawn.actions--;
+				ServerComm.sendToAllClients("DecrementActions/");
+			}
+			else{
+				
+			}
 		}
 	}
 	
@@ -774,14 +855,14 @@ public class GameManager {
 	public static void EndTurn(){
 		Player t1 = game.getCurrentPlayer();
 		t1.pawn.actions = 4;
-		if(t1.pawn.role.compareTo(Role.Gen) == 0) {
+		if(t1.pawn.role.compareTo(Role.Generalist) == 0) {
 			t1.pawn.actions = 5;
 		}
 		
 		game.drawCard(t1, 2);
 		
 		int maxhand = 7;
-		if(t1.pawn.role.equals(Role.Arch)) {
+		if(t1.pawn.role.equals(Role.Archivist)) {
 			maxhand++;
 		}
 		
@@ -856,11 +937,22 @@ public class GameManager {
 			
 			//TODO update flag for everyone
 		}
-		
-		String mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
-		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
+		if(game.getCurrentPlayer().pawn.role==Role.Troubleshooter){
+			String infectionCardsToLookAt = "";
+			for(int i=0; i<game.infectionRate[game.infectionCount]; i++){
+				InfectionCard c = game.infectionDeck.get(i);
+				if(c.city!=null){
+					infectionCardsToLookAt = infectionCardsToLookAt + c.city.name + ",";
+				}
+				else{
+					infectionCardsToLookAt = infectionCardsToLookAt + "Mutation" + ",";
+				}
+			}
+			ServerComm.sendMessage("NotifyTurnTroubleShooter/" + infectionCardsToLookAt, game.turn);
 		}
+		//Client resets flag on NotifyTurn
+		String mes = "NotifyTurn/" + game.players.get(game.turn).username + "/";
+		ServerComm.sendToAllClients(mes);
 	}
 	
 	public static void EventAction(String[] args){
@@ -953,7 +1045,6 @@ public class GameManager {
 				targetCity.addResearchStation();
 				ServerComm.sendToAllClients("RemoveResearchStation/"+cityToRemoveRSFrom.name+"/");
 				ServerComm.sendToAllClients("AddResearchStation/"+targetCity.name+"/");
-				//TODO send info to clients
 			}
 		}
 		else if(args[2].equals("LocalInitiative")) {
@@ -974,7 +1065,7 @@ public class GameManager {
 		}
 		else if(args[2].equals("MobileHospital")) {
 			game.EvMobile = true;
-			//TODO send to client, turn on flag in client
+			ServerComm.sendMessage("MobileHospitalActivated/", game.turn);
 		}
 		//params: PlayerIndex/EventAction/NA/targetPlayer
 		else if(args[2].equals("NewAssignmentRequest")) {
@@ -1036,7 +1127,8 @@ public class GameManager {
 				targetPlayer.hand.add(targetCard);
 				game.playerDiscardPile.remove(targetCard);
 			}
-			//TODO update clients
+			ServerComm.sendToAllClients("AddCardToHand/" + targetPlayer.username + "/" + cityCardToAddToHand + "/false/");
+			ServerComm.sendToAllClients("RemoveCardFromPlayerDiscard/"+cityCardToAddToHand);
 		}
 		//params:PlayerIndex/EventAction/RT/CitiesList(max 2, separa 	ted by ,)/ColorsList(max 2 separated by ,)
 		else if(args[2].equals("RemoteTreatment")) {
@@ -1046,8 +1138,9 @@ public class GameManager {
 				City targetCity = game.getCity(citiesList[i]);
 				Color targetColor = Color.valueOf(colorsList[i]);
 				targetCity.removeDiseaseCube(targetColor);
+				ServerComm.sendToAllClients("RemoveCube/" + citiesList[i] + "/" + targetColor.name() + "/" + 1 + "/");
 			}
-			//TODO update clients
+			
 		}
 		//params:PlayerIndex/EventAction/RP/CardToRemove
 		else if(args[2].equals("ResilientPopulation")) {
@@ -1131,8 +1224,15 @@ public class GameManager {
 				player.hand.remove(toRemove);
 				
 			}
+			//will send discarded card to DP
 			ServerComm.sendToAllClients("RemoveCardFromHand/"+player.username+"/"+toRemove.name+"/true/");
-			
+		}
+	}
+	public static void chat(String[] args){
+		for(ClientThread t:ServerComm.clientList){
+			if(t.getClientNumber()!=Integer.parseInt(args[0])){
+				ServerComm.sendMessage("Chat/"+args[2], t.getClientNumber());
+			}
 		}
 	}
 }

@@ -120,7 +120,7 @@ public class ServerComm {
 		toReturn.add(new InfectLocally());
 		toReturn.add(new Sabotage());
 		toReturn.add(new Capture());
-		
+		toReturn.add(new Chat());
 		toReturn.add(new BuildQuarantine());
 		toReturn.add(new BuildResearchStation());
 		toReturn.add(new CureDisease());
