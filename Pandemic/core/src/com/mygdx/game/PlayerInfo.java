@@ -11,6 +11,8 @@ public class PlayerInfo {
 	String currCity = "Atlanta";
 	public int cardsToCure = 5;
 	String role;
+	public PlayerCardInfo eventCardOnRoleCard;
+	public PlayerCardInfo diseaseCubeOnRoleCard;
 	boolean roleActionUsed = false;
 	boolean visible = true;
 	
@@ -112,5 +114,15 @@ public class PlayerInfo {
 	{
 		return hand;
 	}
-	
+
+	public String[] getHandOfStrings(){
+
+		String[] handStrings = new String[hand.size()];
+		for(int i = 0; i < handStrings.length; i++){
+			handStrings[i] = hand.get(i).getName();
+		}
+
+		return handStrings;
+	}
+
 }
