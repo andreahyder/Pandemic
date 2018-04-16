@@ -767,6 +767,20 @@ public class SetupScreen implements Screen {
 										}
 									}
 								}
+								else if( message[1].equalsIgnoreCase("UpdateRole") )
+								{
+									for( PlayerInfo player : parent.getPlayers() )
+									{
+										if( player != null )
+										{
+											if( player.getName().equalsIgnoreCase( message[2] ) )
+											{
+												player.role = message[3];
+											}
+										}
+										
+									}
+								}
 							}
 						}
 					}

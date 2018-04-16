@@ -742,9 +742,15 @@ public class GameScreen implements Screen {
 		virulentStrainStatuses.put( "UncountedPopulations", false );
 
 		for(PlayerInfo playerss : players){
-			if (playerss.role.equalsIgnoreCase("Colonel")){
-				remQuarantines = 6;
-				break;
+			if(playerss != null ){
+				if( playerss.role != null )
+					if (playerss.role.equalsIgnoreCase("Colonel")){
+						remQuarantines = 6;
+						break;
+					}
+				if( playerss != null )
+					if( playerss.role == null )
+						playerss.role = "Colonel";
 			}
 		}
 		

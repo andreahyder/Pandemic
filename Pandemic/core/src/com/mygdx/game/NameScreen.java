@@ -97,6 +97,7 @@ public class NameScreen implements Screen {
 		if ( !name.equals( "" ) )
 		{
 			PlayerInfo newPlayer = new PlayerInfo( name, true );
+			newPlayer.role = "Colonel";
 			newPlayer.setColour(PawnColour.values()[5]);
 			parent.setCurrentPlayer( newPlayer );
 			parent.addPlayer( newPlayer );
