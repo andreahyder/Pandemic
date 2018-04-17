@@ -6360,7 +6360,7 @@ public class GameScreen implements Screen, Serializable {
 				return DiseaseColour.BLUE;
 
 			case "red":
-				return DiseaseColour.BLUE;
+				return DiseaseColour.RED;
 
 			case "yellow":
 				return DiseaseColour.YELLOW;
