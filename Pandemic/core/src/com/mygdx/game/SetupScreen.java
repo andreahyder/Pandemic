@@ -119,24 +119,24 @@ public class SetupScreen implements Screen {
 	    
 	    gameStringListToArray(testGameList);
 	    table.row();
-	    Label selectLabel = new Label("Select Saved Game:", skin);
+	    Label selectLabel = new Label("Optional Saved Game To Load:", skin);
 	    selectLabel.setAlignment(Align.center); // Align center
-		table.add(selectLabel).spaceBottom(10);
-		table.add(showGameSelected);
+		table.add(selectLabel).spaceBottom(10).spaceRight(10);
+		TextField gameFileNameText = new TextField("", skin);
+		table.add(gameFileNameText);
+		//table.add(showGameSelected);
 		// "None" button: 
-		TextButton none = new TextButton("NONE", skin);
-		none.addListener(new ChangeListener() {
+		TextButton ok = new TextButton("OK", skin);
+		ok.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				stage.addActor(table);
-				gameSelected = "None";
-				showGameSelected.setText(gameSelected);
 				// SEND SERVER MESSAGE:
-				ClientComm.send("ToggleSetting/ChoseSavedGame/null");
+				ClientComm.send("ToggleSetting/ChoseSavedGame/" + gameFileNameText.getText());
 			}
 		});
-		table.add(none);
-		if (0<=numSavedGames-1) {
+		table.add(ok);
+		/*if (0<=numSavedGames-1) {
 			//System.out.println(savedGames[i]);
 			TextButton gameNum0 = new TextButton(savedGames[0], skin);
 			gameNum0.addListener(new ChangeListener() {
@@ -375,7 +375,7 @@ public class SetupScreen implements Screen {
 				}
 			});
 			table.add(gameNum15).spaceRight(7).uniform();
-		}
+		}*/
 
 	    
 	    
