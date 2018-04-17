@@ -1165,10 +1165,13 @@ public class GameScreen implements Screen, Serializable {
 	static void updateHandPanelStage()
 	{
 		handPanelGroup.clear();
-
+		
+		
 		if ( handShownPlayer == null )
 			return;
 
+		updateOnRoleCardStage();
+		
 		ArrayList<PlayerCardInfo> playerHand = handShownPlayer.getHand();
 		int handIdx = 0;
 		for( final PlayerCardInfo card : playerHand )
@@ -4575,9 +4578,25 @@ public class GameScreen implements Screen, Serializable {
 
 		createColonelAction();
         
-        
-
-        /*TextButton SaveGame = new TextButton( "Save Game", skin );
+		/*table.row();
+	    Label selectLabel = new Label("Optional Saved Game To Load:", skin);
+	    selectLabel.setAlignment(Align.center); // Align center
+		table.add(selectLabel).spaceBottom(10).spaceRight(10);
+		TextField gameFileNameText = new TextField("", skin);
+		table.add(gameFileNameText);
+		//table.add(showGameSelected);
+		// "None" button: 
+		TextButton ok = new TextButton("OK", skin);
+		ok.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				stage.addActor(table);
+				// SEND SERVER MESSAGE:
+				ClientComm.send("ToggleSetting/ChoseSavedGame/" + gameFileNameText.getText());
+			}
+		});*/
+		
+        TextButton SaveGame = new TextButton( "Save Game", skin );
         SaveGame.addListener( new ChangeListener() {
             @Override
 			public void changed(ChangeEvent event, Actor actor) {
@@ -4585,13 +4604,16 @@ public class GameScreen implements Screen, Serializable {
             	{
             		waitForButton = true;
             		if( clientPlayer == currentPlayer )
-            		{
+            		{	
+            			TextField gameFileNameText = new TextField("", skin);
 		            	Dialog endTurnDiag = new Dialog("SaveGame?" , skin ){
 		            		@Override
 		            		protected void result(Object object) {
+		            			//TextField gameFileNameText = new TextField("", skin);
+		            			String saveGame = gameFileNameText.getText();
 		            			if ( (boolean) ( object ) )
 		            			{
-		            				ClientComm.send("SaveGame/" );
+		            				ClientComm.send("SaveGame/" + saveGame);
 		            			}
 		        				Gdx.input.setInputProcessor( buttonStage );
 		            		}
@@ -4600,8 +4622,9 @@ public class GameScreen implements Screen, Serializable {
 		        		//dialogStag/e = new Stage( parent.screen );//
 		        		dialogStage.clear();
 		        		
-		        		endTurnDiag.button( "Yes", true );
-		        		endTurnDiag.button( "No", false );
+		        		endTurnDiag.add(gameFileNameText);
+		        		endTurnDiag.button( "Ok", true );
+		        		endTurnDiag.button( "Cancel", false );
 		        		
 		                Gdx.input.setInputProcessor(dialogStage); //Start taking input from the ui
 		                endTurnDiag.show( dialogStage );
@@ -4613,7 +4636,7 @@ public class GameScreen implements Screen, Serializable {
         SaveGame.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( SaveGame );
-		*/
+		
 		
 		
         TextButton endTurn = new TextButton( "End Turn", skin );
@@ -5792,7 +5815,7 @@ public class GameScreen implements Screen, Serializable {
 
 		updateHandPanelStage();
 
-		updateOnRoleCardStage();
+		//updateOnRoleCardStage();
 
 		
 		if ( currentPlayer == clientPlayer && actionsRemaining <= 0 )
