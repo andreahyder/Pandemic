@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import java.io.Serializable;
 import java.security.DigestInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +57,7 @@ import javafx.scene.control.ScrollBar;
 
 import com.mygdx.game.Actions.Action;
 
-public class GameScreen implements Screen {
+public class GameScreen implements Screen, Serializable {
 	final static float nodeSize = 17.50f;
 	final static float quarantineMarkerXSize = 21f;
 	final static float quarantineMarkerYSize = 21f;
@@ -614,6 +615,8 @@ public class GameScreen implements Screen {
 		AddQuarantineMarker("Shanghai");*/
 		//AddQuarantineMarker("Paris");
 		initBioterroristLocation();
+		
+		UpdateQuarantine( "Tokyo", "2" );
     }
     
 	GameScreen( PandemicGame _parent, PlayerInfo[] _players, boolean _usePurpleDisease )
@@ -6768,11 +6771,34 @@ public class GameScreen implements Screen {
 	public static void UpdateQuarantine( String CityName, String Level )
 	{
 		int newMarker = Integer.parseInt( Level );
-		if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
+		
+		if(newMarker == 2 ){
+	    	if( !quarantineMarkerCityNames.contains(CityName) )
+	    		quarantineMarkerCityNames.add(CityName);
+	    	else
+		    	remQuarantines--;
+			lookupCity(CityName).putQuarantineMarker2();
+		}
+		else if(newMarker == 1){
+	    	if( !quarantineMarkerCityNames.contains(CityName) )
+	    		quarantineMarkerCityNames.add(CityName);
+	    	else
+		    	remQuarantines--;
+			lookupCity(CityName).putQuarantineMarker1();
+		}
+		else{
+	    	if( quarantineMarkerCityNames.contains(CityName) )
+	    		quarantineMarkerCityNames.remove(CityName);
+	    	else
+		    	remQuarantines++;
+			lookupCity(CityName).removeQuarantineMarker();
+		}
+		
+		/*if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
 			lookupCity(CityName).putQuarantineMarker2();
 		}
 		else if(newMarker == 2 && lookupCity(CityName).hasQuarantineMarker1 && !lookupCity(CityName).hasQuarantineMarker2){
-			lookupCity(CityName).incQuarantineMarker();
+			lookupCity(CityName).put();
 		}
 		else if(newMarker == 2 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
 			return;
@@ -6794,7 +6820,7 @@ public class GameScreen implements Screen {
 		}
 		else if(newMarker == 0 && !lookupCity(CityName).hasQuarantineMarker1 && lookupCity(CityName).hasQuarantineMarker2){
 			lookupCity(CityName).removeQuarantineMarker();
-		}
+		}*/
 	}
 	
 	public static void AddResearchStation( String CityName )
@@ -7124,6 +7150,7 @@ public class GameScreen implements Screen {
 			
 			case "Colonel":
 			{
+				remQuarantines+=2;
 			} break;
 			
 			case "Dispatcher":

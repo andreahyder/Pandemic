@@ -110,6 +110,7 @@ public class ClientComm {
 		toReturn.add(new UpdateQuarantine());
 		toReturn.add(new MobileHospitalActivated());
 		toReturn.add(new ForecastPrompt());
+		toReturn.add(new SaveGame());
 		return toReturn;
 	}
 }

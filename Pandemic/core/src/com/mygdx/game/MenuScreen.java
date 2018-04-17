@@ -48,10 +48,14 @@ public class MenuScreen implements Screen
 			public void changed(ChangeEvent event, Actor actor) {
 				//parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
 				//parent.changeScreen( PandemicGame.Screens.SETUP );
-
+				
+				//parent.changeScreen( Screens.GAME_DEBUG );
+				
+				
 				JoinGameTextInput listener = new JoinGameTextInput();
 				Gdx.input.getTextInput(listener, "Please enter the IP", "", "Host IP");
 				newGameF = true;
+				
 			}
 		});
 		

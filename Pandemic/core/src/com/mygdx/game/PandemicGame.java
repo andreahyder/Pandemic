@@ -20,7 +20,7 @@ public class PandemicGame extends Game {
 	private SetupScreen	setupScreen;
 	//private JoinScreen joinScreen;
 	private MenuScreen menuScreen;
-	private GameScreen gameScreen;
+	public static GameScreen gameScreen;
 	private NameScreen nameScreen;
 	
 	private PlayerInfo[] players;

@@ -143,7 +143,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game0";
+					gameSelected = "Game0";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/game0");
@@ -158,7 +158,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game1";
+					gameSelected = "Game1";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/1");
@@ -173,7 +173,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game2";
+					gameSelected = "Game2";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/2");
@@ -188,7 +188,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game3";
+					gameSelected = "Game3";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/3");
@@ -203,7 +203,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game4";
+					gameSelected = "Game4";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/4");
@@ -218,7 +218,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game5";
+					gameSelected = "Game5";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/5");
@@ -233,7 +233,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game6";
+					gameSelected = "Game6";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/6");
@@ -248,7 +248,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game7";
+					gameSelected = "Game7";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/7");
@@ -263,7 +263,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game8";
+					gameSelected = "Game8";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/8");
@@ -278,7 +278,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game9";
+					gameSelected = "Game9";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/9");
@@ -293,7 +293,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game10";
+					gameSelected = "Game10";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/10");
@@ -308,7 +308,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game11";
+					gameSelected = "Game11";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/11");
@@ -323,7 +323,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game12";
+					gameSelected = "Game12";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/12");
@@ -338,7 +338,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game13";
+					gameSelected = "Game13";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/13");
@@ -353,7 +353,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game14";
+					gameSelected = "Game14";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/14");
@@ -368,7 +368,7 @@ public class SetupScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					stage.addActor(table);
-					gameSelected = "game15";
+					gameSelected = "Game15";
 					showGameSelected.setText(gameSelected);
 					// SEND SERVER MESSAGE:
 					ClientComm.send("ToggleSetting/ChoseSavedGame/15");
@@ -780,6 +780,26 @@ public class SetupScreen implements Screen {
 										}
 										
 									}
+								}
+								else if( message[1].equalsIgnoreCase("UpdateRole") )
+								{
+									for( PlayerInfo player : parent.getPlayers() )
+									{
+										if( player != null )
+										{
+											if( player.getName().equalsIgnoreCase( message[2] ) )
+											{
+												player.role = message[3];
+											}
+										}
+										
+									}
+								}
+								else if( message[1].equalsIgnoreCase("LoadGame") )
+								{
+									java.io.File file = new java.io.File("Game"+message[2] );
+									GameScreen game = SaveLoadGame.loadGameFromFile( file );
+									PandemicGame.gameScreen = game;
 								}
 							}
 						}

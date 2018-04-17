@@ -43,7 +43,7 @@ public class SaveLoadGame {
 	public static File saveGame(GameScreen Game) {
     	if (Game.beenSaved == false) {
         	try {   
-        		String saveName = "Game" + (numSavedGames+1);
+        		String saveName = "Game" + (numSavedGames);
         		saveFile = new File(saveName);
         		fileOut = new FileOutputStream(saveFile);
         		ObjectOutputStream objectStream = new ObjectOutputStream(fileOut);   
@@ -54,7 +54,7 @@ public class SaveLoadGame {
                 fileOut.close();   
 
             } catch (Exception e) {   
-                
+               e.printStackTrace(); 
             } 
         	Game.beenSaved = true; 	//Now the Game has been saved once, so change the boolean
         	// Now add the file to the list of savedGameFiles:
