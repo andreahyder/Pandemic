@@ -800,6 +800,32 @@ public class SetupScreen implements Screen {
 									java.io.File file = new java.io.File("Game"+message[2] );
 									GameScreen game = SaveLoadGame.loadGameFromFile( file );
 									PandemicGame.gameScreen = game;
+								} 
+								else if( message[1].equalsIgnoreCase( "players" ) )
+								{
+									String pList = message[2];
+									String[] playNames = pList.split("[,]");
+									for( String name : playNames )
+									{
+										boolean present = false;
+										for( int i = 0; i < parent.getPlayers().length; i++ )
+										{
+											if( parent.getPlayers()[i] != null )
+												present |= ( parent.getPlayers()[i].getName().equalsIgnoreCase( name ));
+										}
+										
+										if( present )
+											continue;
+										
+										for( int i = 0; i < parent.getPlayers().length; i++ )
+										{
+											if( parent.getPlayers()[i] == null )
+											{
+												parent.getPlayers()[i] = new PlayerInfo( name, PawnColour.values()[i], false );
+												break;
+											}
+										}
+									}
 								}
 							}
 						}
