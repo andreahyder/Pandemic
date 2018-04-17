@@ -821,7 +821,7 @@ public class SetupScreen implements Screen {
 										{
 											if( parent.getPlayers()[i] == null )
 											{
-												parent.getPlayers()[i] = new PlayerInfo( name, PawnColour.values()[i], false );
+												parent.addPlayer( new PlayerInfo( name, PawnColour.values()[i], false ) );
 												break;
 											}
 										}
