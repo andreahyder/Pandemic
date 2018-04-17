@@ -114,6 +114,7 @@ public class ServerComm {
 	
 	static ArrayList<Action> initializePossibleActions(){
 		ArrayList<Action> toReturn = new ArrayList<Action>();
+		toReturn.add(new SaveGame());
 		toReturn.add(new BioterroristStart());
 		toReturn.add(new InfectRemotely());
 		toReturn.add(new BioterroristDraw());

@@ -58,7 +58,7 @@ public class GameManager {
 		
 		if (game.beenSaved == false) {
         	try {   
-        		String saveName = "game" + (numSavedGames+1);
+        		String saveName = "game" + (numSavedGames);
         		saveFile = new File(saveName);
         		fileOut = new FileOutputStream(saveFile);
         		ObjectOutputStream objectStream = new ObjectOutputStream(fileOut);   
@@ -718,7 +718,7 @@ public class GameManager {
 			t3.quarantine = 2;
 			game.quarantines--;
 			for(int i =0; i<game.players.size(); i++){
-				ServerComm.sendMessage("UpdateQuarantine/"+t3.name+"/2/", i);
+				ServerComm.sendMessage("AddQuarantine/"+t3.name, i);
 			}
 			
 			String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t3.name + "/true/";

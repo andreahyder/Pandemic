@@ -1,12 +1,13 @@
 package Server;
 import java.io.FileOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 import java.io.File;
 
-public class Game {
+public class Game implements Serializable{
 	Random rand = new Random();
 	
 	static boolean beenSaved;
@@ -219,13 +220,13 @@ public class Game {
 				ServerComm.sendMessage(mes, i);
 			}
 			
-			//cheat draw
+			/*//cheat draw
 			for(int i = 0; i < playerDeck.size(); i++){
 				if(playerDeck.get(i).type == Type.Event){
 					PlayerCard lol = playerDeck.remove(i);
 					playerDeck.add(0, lol);
 				}
-			}
+			}*/
 			
 			//deal cards
 			int numcard = 6 - players.size();
@@ -632,8 +633,8 @@ public class Game {
 					
 					//update quarantine and quarantines for all players
 					for(int j = 0; j< players.size(); j++){
-					ServerComm.sendMessage("UpdateQuarantine/"+c.name+"/"+c.quarantine+"/", j);
-				}
+						ServerComm.sendMessage("UpdateQuarantine/"+c.name+"/"+c.quarantine+"/", j);
+					}
 				}
 				else if(hasMedic){
 					
