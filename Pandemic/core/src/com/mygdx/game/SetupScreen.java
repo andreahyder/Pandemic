@@ -674,6 +674,7 @@ public class SetupScreen implements Screen {
 					if ( message != null ) {
 						if ( message.length > 0 ) {
 							if( message[0].equals( "StartGame" ) ) {
+								/*
 								String[] pNames = message[1].split("[,]");
 								for( int i = 0; i < pNames.length; i++ ) {
 									if( !parent.getCurrentPlayer().getName().equals(pNames[i]) ) {
@@ -683,7 +684,8 @@ public class SetupScreen implements Screen {
 										parent.getCurrentPlayer().setColour( PawnColour.values()[i] );
 									}
 									parent.gameScreen.currentPlayer = parent.getPlayers()[0];
-								}
+								}*/
+								parent.gameScreen.currentPlayer = parent.getPlayers()[0];
 								parent.changeScreen( Screens.GAME );
 								//parent.changeScreen( PandemicGame.Screens.GAME_DEBUG );	
 							}
