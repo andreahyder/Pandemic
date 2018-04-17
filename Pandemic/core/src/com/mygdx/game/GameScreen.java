@@ -2980,7 +2980,7 @@ public class GameScreen implements Screen, Serializable {
 								else if( opExpertFly )
 								{
 									String cityName = curr.getName();
-									ClientComm.send("RoleAction/OperationsExpertAction/Move/" + cityName + '/' + opExpertFlyCard );
+									ClientComm.send("RoleAction/OperationsExpert/Move/" + cityName + '/' + opExpertFlyCard );
 									clientPlayer.roleActionUsed = true;
 									useCityButtonStage = false;
 									opExpertFly = false;
@@ -4938,7 +4938,7 @@ public class GameScreen implements Screen, Serializable {
 			            				}
 			            				else if( remResearchStations > 0 )
 			            				{
-											ClientComm.send( "RoleAction/OperationsExpertAction/Build/" );
+											ClientComm.send( "RoleAction/OperationsExpert/Build/" );
 											clientPlayer.roleActionUsed = true;
 			            				}
 			            				else
@@ -4956,7 +4956,7 @@ public class GameScreen implements Screen, Serializable {
 						        					if( (Boolean)(object) )
 						        					{
 						            					String selected = selectBox.getSelected();
-						            					ClientComm.send( "RoleAction/OperationsExpertAction/Build/"+selected );
+						            					ClientComm.send( "RoleAction/OperationsExpert/Build/"+selected );
 						            		            Gdx.input.setInputProcessor(buttonStage);
 						        					}
 						        					else
