@@ -2965,7 +2965,7 @@ public class GameScreen implements Screen, Serializable {
 					if( !waitForButton )
 					{
 						waitForButton = true;
-						if ( actionsRemaining > 0 || clientPlayer == currentPlayer && ( currentPlayer.role.equalsIgnoreCase( "Bioterrorist" )) && !extraMoveActionUsed ) {
+						if ( actionsRemaining > 0 && clientPlayer == currentPlayer || ( currentPlayer.role.equalsIgnoreCase( "Bioterrorist" )) && !extraMoveActionUsed ) {
 							
 							if( useCityButtonStage ){
 								if( !btInitialCitySet && clientPlayer.role.equalsIgnoreCase("Bioterrorist") )
@@ -2977,7 +2977,7 @@ public class GameScreen implements Screen, Serializable {
 									Gdx.input.setInputProcessor( buttonStage );
 									
 								}
-								else if( opExpertFly && clientPlayer == currentPlayer )
+								else if( opExpertFly )
 								{
 									String cityName = curr.getName();
 									ClientComm.send("RoleAction/OperationsExpertAction/Move/" + cityName + '/' + opExpertFlyCard );
@@ -2987,7 +2987,7 @@ public class GameScreen implements Screen, Serializable {
 									opExpertFlyCard = null;
 									Gdx.input.setInputProcessor( buttonStage );
 								}
-								else if( cityButtonsToAirlift  )
+								else if( cityButtonsToAirlift )
 								{
 									String cityName = curr.getName();
 									ClientComm.send("EventAction/Airlift/" + airliftedPlayer + '/' + cityName + '/');
@@ -3170,7 +3170,7 @@ public class GameScreen implements Screen, Serializable {
 									specialOrdersCharterFlight = false;
 									Gdx.input.setInputProcessor( buttonStage );
 								}
-								else if ( currentPlayer.role.equalsIgnoreCase( "Dispatcher" ) && dispatcherCharterFlight && !currentPlayer.getName().equalsIgnoreCase( dispatcherChartferFlightPlayer ) && clientPlayer == currentPlayer )
+								else if ( currentPlayer.role.equalsIgnoreCase( "Dispatcher" ) && dispatcherCharterFlight && !currentPlayer.getName().equalsIgnoreCase( dispatcherChartferFlightPlayer ) )
 								{
 									String cityName = curr.getName();
 									ClientComm.send("RoleAction/Dispatcher/CharterFlight/" + dispatcherChartferFlightPlayer +'/' + cityName);
@@ -3178,7 +3178,7 @@ public class GameScreen implements Screen, Serializable {
 									dispatcherCharterFlight = false;
 									Gdx.input.setInputProcessor( buttonStage );
 								}
-								else if( currentPlayer.role.equalsIgnoreCase("Colonel") && colonelOverseas && (cardToRobColonel == null) && clientPlayer == currentPlayer){
+								else if( currentPlayer.role.equalsIgnoreCase("Colonel") && colonelOverseas && (cardToRobColonel == null) ){
 									String cityName = curr.getName();
 
 									ClientComm.send("RoleAction/Colonel/" + colonelOverseasCard + "/" + cityName + "/" );
@@ -3188,7 +3188,7 @@ public class GameScreen implements Screen, Serializable {
 									cardToRobColonel = null;
 									Gdx.input.setInputProcessor(buttonStage);
 								}
-								else if( currentPlayer.role.equalsIgnoreCase("Colonel") && colonelOverseas && (cardToRobColonel != null) && clientPlayer == currentPlayer){
+								else if( currentPlayer.role.equalsIgnoreCase("Colonel") && colonelOverseas && (cardToRobColonel != null) ){
 									String cityName = curr.getName();
 
 									ClientComm.send("RoleAction/Colonel/" + colonelOverseasCard + "/" + cityName + "/" + cardToRobColonel);

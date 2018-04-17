@@ -2,7 +2,7 @@ package com.mygdx.game.Actions;
 
 import com.mygdx.game.GameScreen;
 
-public class RemovePlayerCardFromDiscard implements Action{
+public class RemoveCardFromInfectionDiscard implements Action{
 
 	@Override
 	public void execute(String[] args) {
@@ -12,7 +12,7 @@ public class RemovePlayerCardFromDiscard implements Action{
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "RemoveCardFromInfectionDiscard";
+		return "RemoveInfectionCardFromDiscard";
 	}
 
 }

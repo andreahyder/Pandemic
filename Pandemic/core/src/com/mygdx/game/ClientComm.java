@@ -96,8 +96,8 @@ public class ClientComm {
 		toReturn.add(new ReexaminedResearch());
 		toReturn.add(new RemoveCardFromStash());
 		toReturn.add(new RemoveCubeFromStash());
-		toReturn.add(new RemoveInfectionCardFromDiscard());
-		toReturn.add(new RemovePlayerCardFromDiscard());
+		toReturn.add(new RemoveCardFromInfectionDiscard());
+		toReturn.add(new RemoveCardFromPlayerDiscard());
 		toReturn.add(new RemoveResearchStation());
 		toReturn.add(new ResetActions());
 		toReturn.add(new SpecialOrdersActivate());
