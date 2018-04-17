@@ -38,8 +38,10 @@ public class GameManager {
 		playerList.add(t1);
 		game.players.add(t1);
 		t1.game = game;
-		
+
 		String plist = "";
+		for( Player curr : playerList )
+			plist += curr.username + ',';
 		String mes = "UpdateSetting/players/" + plist + "/";
 		for(int i = 0; i< game.players.size(); i++){
 			ServerComm.sendMessage(mes, i);
@@ -227,6 +229,9 @@ public class GameManager {
 				for(Player p: playerList) {
 					game.players.add(p);
 				}
+				for(int i = 0; i< game.players.size(); i++){
+					updateClient(game);
+				}
 			}
 			break;
 		default:
@@ -234,6 +239,11 @@ public class GameManager {
 		}
 	}
 	
+	public static void updateClient(Game game2) {
+		//
+		
+	}
+
 	//when a player is ready to start the game
 	public static void ToggleReady(String indexs) {
 		int index = Integer.parseInt(indexs);
@@ -630,7 +640,7 @@ public class GameManager {
 			for(int i = 0; i < 4 + extra; i++) {
 				PlayerCard card = t1.hand.remove(t1.getCard(args[i+3]));
 				game.playerDiscardPile.add(card);
-				String mes = "RemoveCardFromHand/" + t1.username + "/" + card + "/true/";
+				String mes = "RemoveCardFromHand/" + t1.username + "/" + card.city.name + "/true/";
 				for(int j = 0; j < game.players.size(); j++) {
 					ServerComm.sendMessage(mes, j);
 				}
@@ -698,8 +708,12 @@ public class GameManager {
 				String s = ServerComm.getResponse("AskForDiscard/",game.turn);
 				PlayerCard t3 = t1.hand.remove(t1.getCard(s));
 				game.playerDiscardPile.add(t3);
-				
-				String mes3 = "RemoveCardFromHand/" + t1.username + "/" + t3.city.name + "/true/";
+				String mes3;
+				if(t3.type!=Type.City){
+					mes3 = "RemoveCardFromHand/" + t1.username + "/" + t3.name + "/true/";
+				}else{
+					mes3 = "RemoveCardFromHand/" + t1.username + "/" + t3.city.name + "/true/";
+				}
 				for(int j = 0; j < game.players.size(); j++) {
 					ServerComm.sendMessage(mes3, j);
 				}
@@ -1034,10 +1048,17 @@ public class GameManager {
 				
 				PlayerCard t2 = t1.hand.remove(t1.getCard(s));
 				game.playerDiscardPile.add(t2);
-				
-				String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t2.city.name + "/true/";
-				for(int i = 0; i < game.players.size(); i++) {
-					ServerComm.sendMessage(mes2, i);
+				if(t2.type==Type.City){
+					String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t2.city.name + "/true/";
+					for(int i = 0; i < game.players.size(); i++) {
+						ServerComm.sendMessage(mes2, i);
+					}	
+				}
+				else{
+					String mes2 = "RemoveCardFromHand/" + t1.username + "/" + t2.name + "/true/";
+					for(int i = 0; i < game.players.size(); i++) {
+						ServerComm.sendMessage(mes2, i);
+					}
 				}
 			}
 			game.stage = Stage.Infection;
@@ -1490,24 +1511,40 @@ public class GameManager {
 			else if(args[3].equals("DirectFlight")){
 				targetPawn.move(destination, true);
 				for (PlayerCard c: currentPlayer.hand){
-					if(c.city==destination){
+					if(c.type!=Type.City){
 						currentPlayer.hand.remove(c);
 						game.playerDiscardPile.add(c);
 						for(int j = 0; j< game.players.size(); j++){
-					ServerComm.sendMessage("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/", j);
-				}
+							ServerComm.sendMessage("RemoveCardFromHand"+currentPlayer.username+"/"+c.name+"/true/", j);
+						}
+						break;
+					}
+					else if(c.city==destination){
+						currentPlayer.hand.remove(c);
+						game.playerDiscardPile.add(c);
+						for(int j = 0; j< game.players.size(); j++){
+							ServerComm.sendMessage("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/", j);
+						}
 						break;
 					}
 				}
 			}
 			else if(args[3].equals("CharterFlight")){
 				for (PlayerCard c: currentPlayer.hand){
-					if(c.city==targetPawn.city){
+					if(c.type!=Type.City){
 						currentPlayer.hand.remove(c);
 						game.playerDiscardPile.add(c);
 						for(int j = 0; j< game.players.size(); j++){
-					ServerComm.sendMessage("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/", j);
-				}
+							ServerComm.sendMessage("RemoveCardFromHand"+currentPlayer.username+"/"+c.name+"/true/", j);
+						}
+						break;
+					}
+					else if(c.city==targetPawn.city){
+						currentPlayer.hand.remove(c);
+						game.playerDiscardPile.add(c);
+						for(int j = 0; j< game.players.size(); j++){
+							ServerComm.sendMessage("RemoveCardFromHand"+currentPlayer.username+"/"+c.city.name+"/true/", j);
+						}
 						break;
 					}
 				}

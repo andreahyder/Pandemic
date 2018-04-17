@@ -133,9 +133,9 @@ public class Game implements Serializable{
 				y = false;
 			}
 		}
-		/*if(players.size() == 1) {
+		if(players.size() == 1) {
 			y = false;
-		}*/
+		}
 		return y;
 	}
 	
@@ -164,7 +164,7 @@ public class Game implements Serializable{
 			if(Bio) {
 				pawns.add(new Pawn(Role.Bioterrorist));
 			}
-			//Collections.shuffle(pawns);
+			Collections.shuffle(pawns);
 			
 			//add event cards
 			if(Otb) {
@@ -191,9 +191,6 @@ public class Game implements Serializable{
 				for(int i = 0; i< players.size(); i++){
 					ServerComm.sendMessage(mes, i);
 				}
-				for(int j = 0; j< players.size(); j++){
-					ServerComm.sendMessage(mes, j);
-				}
 			}
 			for(Player p: players) {
 				if(p.pawn == null) {
@@ -202,9 +199,6 @@ public class Game implements Serializable{
 				String mes = "UpdateSetting/UpdateRole/"+ p.username + "/" + p.pawn.role.toString() + "/";
 				for(int i = 0; i< players.size(); i++){
 					ServerComm.sendMessage(mes, i);
-				}
-				for(int j = 0; j< players.size(); j++){
-					ServerComm.sendMessage(mes, j);
 				}
 				}
 			}
@@ -215,18 +209,23 @@ public class Game implements Serializable{
 				tmes += p.username;
 				tmes += ",";
 			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			String mes = "StartGame/" + tmes + "/";
 			for(int i = 0; i < players.size(); i++) {
 				ServerComm.sendMessage(mes, i);
 			}
 			
-			/*//cheat draw
+			//cheat draw
 			for(int i = 0; i < playerDeck.size(); i++){
 				if(playerDeck.get(i).type == Type.Event){
 					PlayerCard lol = playerDeck.remove(i);
 					playerDeck.add(0, lol);
 				}
-			}*/
+			}
 			
 			//deal cards
 			int numcard = 6 - players.size();
@@ -236,7 +235,7 @@ public class Game implements Serializable{
 			if(numcard > 4) {
 				numcard = 4;
 			}
-			numcard = 7;
+			//numcard = 7;
 			for(int i = 0; i < players.size(); i++) {
 				if(i != BT) {
 					drawCard(players.get(i), numcard);
