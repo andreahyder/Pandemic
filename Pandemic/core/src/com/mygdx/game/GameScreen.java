@@ -4580,7 +4580,7 @@ public class GameScreen implements Screen, Serializable {
         
         
 
-        TextButton SaveGame = new TextButton( "Save Game", skin );
+        /*TextButton SaveGame = new TextButton( "Save Game", skin );
         SaveGame.addListener( new ChangeListener() {
             @Override
 			public void changed(ChangeEvent event, Actor actor) {
@@ -4616,6 +4616,8 @@ public class GameScreen implements Screen, Serializable {
         SaveGame.setBounds( 0, nextActionButtonHeight, actionButtonXSize, actionButtonYSize);
         nextActionButtonHeight -= actionButtonYSize*1.125f;
         buttonGroup.addActor( SaveGame );
+		*/
+		
 		
         TextButton endTurn = new TextButton( "End Turn", skin );
         endTurn.addListener( new ChangeListener() {
