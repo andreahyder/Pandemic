@@ -6085,7 +6085,8 @@ public class GameScreen implements Screen, Serializable {
 					playersInOrder.add(1, players[i]);
 				}
 				else
-					playersInOrder.add( players[(currPlayerIdx + i) % players.length ]);
+					if(  players[(currPlayerIdx + i) % players.length ] != null )
+						playersInOrder.add( players[(currPlayerIdx + i) % players.length ]);
 			}
 		}
 		
