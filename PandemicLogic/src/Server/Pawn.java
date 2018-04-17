@@ -1,8 +1,9 @@
 package Server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Pawn {
+public class Pawn implements Serializable{
 	Role role;
 	int actions;
 	int roleactions;

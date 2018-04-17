@@ -9,13 +9,13 @@ import java.io.File;
 
 public class Game implements Serializable{
 	Random rand = new Random();
-	
+	/*
 	static boolean beenSaved;
 	static File saveFile;
 	static FileOutputStream fileOut;
 	static int posInSavedArray;
 	static int numSavedGames = 0;
-	
+	*/
 	ArrayList<Player> players;
 	ArrayList<Pawn> pawns;
 	ArrayList<City> cities;
@@ -141,7 +141,87 @@ public class Game implements Serializable{
 	
 	void start() {
 		if(loaded) {
-			
+			for(int playerToUpdate = 0; playerToUpdate < players.size(); playerToUpdate++) {
+				//send roles
+				for(int j = 0; j<players.size();j++){
+					ServerComm.sendMessage("UpdateSetting/UpdateRole/"+ players.get(j).username + "/" + players.get(j).pawn.role.toString() + "/", playerToUpdate);
+				}
+				//tell clients to start
+				String tmes = "";
+				for(Player p: players){
+					tmes += p.username;
+					tmes += ",";
+				}
+				String start = "StartGame/" + tmes + "/";
+				ServerComm.sendMessage(start, playerToUpdate);
+				//update pawn locations
+				for(int i = 0; i<players.size(); i++){
+					Pawn curPPawn = players.get(i).pawn;
+					ServerComm.sendMessage("UpdatePlayerLocation/" + curPPawn.player.username + "/" + curPPawn.city.name + "/", playerToUpdate);
+				}
+				//update things in city
+				for (City c: cities){
+					//updateQuarantine
+					if(c.quarantine==2){
+						ServerComm.sendMessage("AddQuarantine/" + c.name + "/", playerToUpdate);
+					}
+					//update disease cubes
+					for (DiseaseCube cube:c.cubes){
+						ServerComm.sendMessage("AddDiseaseCubeToCity/" + c.name + "/" + cube.disease.color.name() + "/", playerToUpdate);
+					}
+					//update research stations
+					if(c.research!=null){
+						ServerComm.sendMessage("AddResearchStation/" + c.name + "/", playerToUpdate);
+					}
+				}
+				//update player hands
+				for(Player p: players){
+					for(PlayerCard card:p.hand){
+						if(card.type==Type.Event){
+							ServerComm.sendMessage("AddCardToHand/" + p.username + "/" + card.name + "/false/", playerToUpdate);
+						}
+						else
+						ServerComm.sendMessage("AddCardToHand/" + p.username + "/" + card.city + "/false/", playerToUpdate);
+					}
+				}
+				//update discard piles
+				for (PlayerCard card:playerDiscardPile){
+					if(card.type==Type.Event){
+						ServerComm.sendMessage("AddCardToHand/" + players.get(0).username + "/" + card.name + "/false/", playerToUpdate);
+						ServerComm.sendMessage("RemoveCardFromHand/" + players.get(0).username + "/" + card.name + "/true/", playerToUpdate);
+					}
+					else{
+
+						ServerComm.sendMessage("AddCardToHand/" + players.get(0).username + "/" + card.city.name + "/false/", playerToUpdate);
+						ServerComm.sendMessage("RemoveCardFromHand/" + players.get(0).username + "/" + card.city.name + "/true/", playerToUpdate);
+					}
+				}
+				for(InfectionCard infCard: infectionDiscardPile){
+					if(infCard.type==Type.Mutation){
+						ServerComm.sendMessage("AddInfectionCardToDiscard/" + "Mutation" + "/", playerToUpdate);
+					}
+					else{
+						ServerComm.sendMessage("AddInfectionCardToDiscard/" + infCard.city.name + "/", playerToUpdate);
+					}
+				}
+				//update disease status
+				for (Disease d:diseases){
+					if(d.cured){
+						ServerComm.sendMessage("CureDisease/" + d.color.name() + "/", playerToUpdate);
+					}
+				}
+				//update infection and outbreak counters
+				for(int i= 0; i<infectionCount; i++){
+					ServerComm.sendMessage("IncInfectionRate/", playerToUpdate);
+				}
+				for (int i=0;i<outbreakCount; i++){
+					ServerComm.sendMessage("IncOutbreakCounter/", playerToUpdate);
+				}
+				//TODO
+				//update actions remaining
+				//for(int i=getCurrentPlayer().actions; i)
+				//ServerComm.sendMessage(mes, i);
+			}
 		}
 		else {
 			//add relevant pawns

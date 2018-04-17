@@ -1,6 +1,8 @@
 package Server;
 
-public class InfectionCard {
+import java.io.Serializable;
+
+public class InfectionCard implements Serializable{
 	Type type;
 	City city;
 	

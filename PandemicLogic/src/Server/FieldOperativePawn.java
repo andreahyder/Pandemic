@@ -1,8 +1,9 @@
 package Server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class FieldOperativePawn extends Pawn {
+public class FieldOperativePawn extends Pawn implements Serializable{
 	ArrayList<DiseaseCube> FOStash;
 	FieldOperativePawn(Role r) {
 		super(r);

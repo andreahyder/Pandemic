@@ -1,7 +1,9 @@
 package Server;
 import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.*;
 
-public class City {
+public class City implements Serializable{
 	Game game;
 	String name;
 	int quarantine;

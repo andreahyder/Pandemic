@@ -1,6 +1,8 @@
 package Server;
 
-public class ResearchStation {
+import java.io.Serializable;
+
+public class ResearchStation implements Serializable {
 	City location;
 	
 	ResearchStation(){

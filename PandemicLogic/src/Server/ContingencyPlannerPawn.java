@@ -1,8 +1,9 @@
 package Server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ContingencyPlannerPawn extends Pawn {
+public class ContingencyPlannerPawn extends Pawn implements Serializable{
 	PlayerCard heldEvent = null;
 	ArrayList<String> playedEvents;
 	ContingencyPlannerPawn(Role r) {

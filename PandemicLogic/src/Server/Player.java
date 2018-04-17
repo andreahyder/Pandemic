@@ -1,7 +1,8 @@
 package Server;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Player {
+public class Player implements Serializable{
 	static int IDcount = 0;
 	int ID;
 	String username;

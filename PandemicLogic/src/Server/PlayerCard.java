@@ -1,6 +1,8 @@
 package Server;
 
-public class PlayerCard {
+import java.io.Serializable;
+
+public class PlayerCard implements Serializable{
 	Type type;
 	City city;
 	String name;

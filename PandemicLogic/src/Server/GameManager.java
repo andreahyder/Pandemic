@@ -1,7 +1,9 @@
 package Server;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -51,27 +53,24 @@ public class GameManager {
 	
 	}
 	
-	public static void SaveGame() {
-		String name = "Game" + numSavedGames;
+	public static void SaveGame(String saveName) {
+		try {   
+    		FileOutputStream fileOut = new FileOutputStream(new File(saveName), false);//overwrites file
+    		ObjectOutputStream objectStream = new ObjectOutputStream(fileOut);  
+            objectStream.writeObject(game);
+            objectStream.close();   
+            fileOut.close();   
+        }
+    	catch (Exception e) {  
+        } 
+		/*String name = "Game" + numSavedGames;
 		String mes = "SaveGame/" + name + "/";
 		for(int i = 0; i< game.players.size(); i++){
 			ServerComm.sendMessage(mes, i);
 		}
 		
 		if (game.beenSaved == false) {
-        	try {   
-        		String saveName = "game" + (numSavedGames);
-        		saveFile = new File(saveName);
-        		fileOut = new FileOutputStream(saveFile);
-        		ObjectOutputStream objectStream = new ObjectOutputStream(fileOut);   
-
-                objectStream.writeObject(game); //Game state NOT window (CHANGE)
-                
-                objectStream.close();   
-                fileOut.close();   
-            }
-        	catch (Exception e) {  
-            } 
+        	
         	game.beenSaved = true; 	//Now the Game has been saved once, so change the boolean
         	// Now add the file to the list of savedGameFiles:
     		allSavedGameFiles[numSavedGames] = Game.saveFile;
@@ -99,7 +98,7 @@ public class GameManager {
     		// Now override the file in the list of savedGameFiles:
     		allSavedGameFiles[Game.posInSavedArray] = saveFile;
     		System.out.println("Overidden!");
-    	}
+    	}*/
 	}
 	
 	public static void ChangeName(String indexs, String newname) {
@@ -204,8 +203,36 @@ public class GameManager {
 				ServerComm.sendMessage(mes, i);
 			}
 			break;
-		case "ChoseSavedGame":
-			if(args[3] != "null"){
+		case "ChoseSavedGame"://index/UpdateSettings/ChoseSavedGame/SaveName
+			FileInputStream fi;
+			if(args.length<=3){
+				
+			}
+			else try {
+				fi = new FileInputStream(new File(args[3]));
+				ObjectInputStream oi = new ObjectInputStream(fi);
+				Game loadedGame = (Game)oi.readObject();
+				oi.close();
+				fi.close();
+				game = loadedGame;
+				game.loaded=true;;
+				for (int i = 0; i<game.players.size(); i++){
+					Player curP = game.players.get(i);
+					curP.ready=false;
+					curP.username=playerList.get(i).username;
+				}
+				playerList = new ArrayList<Player>();
+				for(Player p: game.players){
+					playerList.add(p);
+				}
+				//start the game
+				game.start();
+			} catch (Exception e) {
+				System.out.println("Input error. Ignoring.");
+				e.printStackTrace();
+			}
+			
+			/*if(args[3] != "null"){
 				String mes2 = "LoadGame/" + args[3] + "/";
 				for(int i = 0; i< game.players.size(); i++){
 					ServerComm.sendMessage(mes2, i);
@@ -233,7 +260,7 @@ public class GameManager {
 					updateClient(game);
 				}
 			}
-			break;
+			break;*/
 		default:
 			break;
 		}
@@ -554,7 +581,9 @@ public class GameManager {
 		
 		String mes = "RemoveCube/" + t1.pawn.city.name + "/" + color + "/" + count + "/";
 		for(int i = 0; i < game.players.size(); i++) {
-			ServerComm.sendMessage(mes, i);
+			for (int j = 0; j<count; j++){
+				ServerComm.sendMessage(mes, i);
+			}
 		}
 		
 		mes = "DecrementActions/";

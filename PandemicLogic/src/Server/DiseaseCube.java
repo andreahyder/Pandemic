@@ -1,6 +1,8 @@
 package Server;
 
-public class DiseaseCube {
+import java.io.Serializable;
+
+public class DiseaseCube implements Serializable{
 	Disease disease;
 	Pawn held;
 	City location;

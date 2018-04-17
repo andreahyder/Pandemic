@@ -1,7 +1,8 @@
 package Server;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Disease {
+public class Disease implements Serializable{
 	Color color;
 	int max;
 	Boolean virulent;

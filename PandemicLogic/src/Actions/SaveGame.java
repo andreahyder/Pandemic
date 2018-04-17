@@ -3,8 +3,9 @@ package Actions;
 import Server.*;
 
 public class SaveGame implements Action{
+	//index/SaveGame/saveName
 	public void execute(String[] args){
-		GameManager.SaveGame();
+		GameManager.SaveGame(args[2]);
 	}
 
 	@Override
