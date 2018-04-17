@@ -869,7 +869,11 @@ public class GameManager {
 			if(args[3].equals("Build")){
 				if(args.length<=4){
 					//BRS already sends updates
-					BuildResearchStation("");
+					game.getCurrentPlayer().pawn.city.addResearchStation();
+					String mes2 = "AddResearchStation/" + game.getCurrentPlayer().pawn.city.name + "/";
+					for(int i = 0; i < game.players.size(); i++) {
+						ServerComm.sendMessage(mes2, i);
+					}
 				}
 				else{
 					BuildResearchStation(args[4]);
@@ -1400,7 +1404,7 @@ public class GameManager {
 			ServerComm.sendMessage("MobileHospitalActivated/", game.turn);
 		}
 		//params: PlayerIndex/EventAction/NA/targetPlayer
-		else if(args[2].equals("NewAssignmentRequest")) {
+		else if(args[2].equals("NewAssignment")) {
 			Player targetPlayer = game.getPlayer(args[3]);
 			String q = "PromptNewAssignment/";
 			for (Pawn p: game.pawns){
@@ -1421,7 +1425,7 @@ public class GameManager {
 				targetPlayer.givePawn(toGive, c);
 			}
 			//Updates clients: UpdateRole/targetPlayer/targetRole
-			String update = "UpdateRole/"+ targetPlayer.username + "/" + response;
+			String update = "UpdateSetting/UpdateRole/"+ targetPlayer.username + "/" + response;
 			for(int j = 0; j< game.players.size(); j++){
 					ServerComm.sendMessage(update, j);
 				}

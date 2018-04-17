@@ -130,5 +130,5 @@ public class Pawn implements Serializable{
 }
 
 enum Role{
-	Archivist, Bioterrorist, Colonel, ContainmentSpecialist, ContingencyPlanner, Dispatcher, Epidemiologist, FieldOperative, Generalist, Medic, OperationsExpert, QuarantineSpecialist, Scientist, Troubleshooter
+	Researcher, Archivist, Bioterrorist, Colonel, ContainmentSpecialist, ContingencyPlanner, Dispatcher, Epidemiologist, FieldOperative, Generalist, Medic, OperationsExpert, QuarantineSpecialist, Scientist, Troubleshooter
 }

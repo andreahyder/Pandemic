@@ -46,6 +46,9 @@ public class Game implements Serializable{
 	static int[] infectionRate = new int[] {2,2,2,3,3,4,4};
 	int infectionCount;
 	int outbreakCount;
+	boolean cheatEvent = true;
+	boolean cheatWinning = false;
+	boolean cheatRole = false;
 	
 	//event flags
 	boolean EvMobile = false;
@@ -219,7 +222,10 @@ public class Game implements Serializable{
 				}
 				//TODO
 				//update actions remaining
-				//for(int i=getCurrentPlayer().actions; i)
+				for(int i=getCurrentPlayer().pawn.actions; i<4; i++){
+					ServerComm.sendMessage("DecrementActions/", playerToUpdate);
+				}
+				ServerComm.sendMessage("NotifyTurn/" + players.get(turn).username + "/", playerToUpdate);
 				//ServerComm.sendMessage(mes, i);
 			}
 		}
@@ -232,7 +238,7 @@ public class Game implements Serializable{
 			pawns.add(new Pawn(Role.OperationsExpert));
 			pawns.add(new Pawn(Role.QuarantineSpecialist));
 			pawns.add(new Pawn(Role.Scientist));
-			
+			pawns.add(new Pawn(Role.Researcher));
 			if(Otb) {
 				pawns.add(new Pawn(Role.Archivist));
 				pawns.add(new Pawn(Role.ContainmentSpecialist));
@@ -248,9 +254,15 @@ public class Game implements Serializable{
 			
 			//add event cards
 			if(Otb) {
+				int eventsToAdd;
+				if(cheatEvent){
+					eventsToAdd = 14;
+				}else{
+					eventsToAdd = players.size()*2;
+				}
 				ArrayList<String> names = new ArrayList<String>(Arrays.asList(Vars.eventnames));
 				Collections.shuffle(names);
-				for(int i = 0; i < (players.size()*2); i++) {
+				for(int i = 0; i < eventsToAdd; i++) {
 					PlayerCard p = new PlayerCard(null, Type.Event, names.get(i));
 					playerDeck.add(p);
 				}
@@ -299,13 +311,9 @@ public class Game implements Serializable{
 				ServerComm.sendMessage(mes, i);
 			}
 			
-			//cheat draw
-			for(int i = 0; i < playerDeck.size(); i++){
-				if(playerDeck.get(i).type == Type.Event){
-					PlayerCard lol = playerDeck.remove(i);
-					playerDeck.add(0, lol);
-				}
-			}
+			
+			
+			
 			
 			//deal cards
 			int numcard = 6 - players.size();
@@ -315,7 +323,35 @@ public class Game implements Serializable{
 			if(numcard > 4) {
 				numcard = 4;
 			}
-			//numcard = 7;
+			//cheat draw: Events all on top
+			if(cheatEvent){
+				for(int i = 0; i < playerDeck.size(); i++){
+					if(playerDeck.get(i).type == Type.Event){
+						PlayerCard lol = playerDeck.remove(i);
+						playerDeck.add(0, lol);
+					}
+				}
+				numcard=7;
+			}
+			//cheat winning: 3 cured with 5 on top
+			if(cheatWinning){
+				for (Disease d:diseases){
+					if(d.color!=Color.blue){
+						d.cured=true;
+						for(int i = 0; i < players.size(); i++) {
+							ServerComm.sendMessage("CureDisease/" + d.color.name() + "/", i);
+						}
+					}
+				}
+				getDisease(Color.blue).cured=false;
+				for(int i = 0; i < playerDeck.size(); i++){
+					if(playerDeck.get(i).city.disease.color==Color.blue){
+						PlayerCard lol = playerDeck.remove(i);
+						playerDeck.add(0, lol);
+					}
+				}
+				numcard = 7;
+			}
 			for(int i = 0; i < players.size(); i++) {
 				if(i != BT) {
 					drawCard(players.get(i), numcard);
