@@ -1170,7 +1170,6 @@ public class GameScreen implements Screen, Serializable {
 		if ( handShownPlayer == null )
 			return;
 
-		updateOnRoleCardStage();
 		
 		ArrayList<PlayerCardInfo> playerHand = handShownPlayer.getHand();
 		int handIdx = 0;
@@ -1699,6 +1698,8 @@ public class GameScreen implements Screen, Serializable {
 			}
 		}
 		buttonStage.addActor( handPanelGroup );
+		
+		updateOnRoleCardStage();
 
 	}
 
@@ -1824,7 +1825,7 @@ public class GameScreen implements Screen, Serializable {
 							protected void result(Object object) {
 								if( (Boolean)object )
 								{
-									ClientComm.send("EventAction/NewAssingmentRequest/" + currentPlayer.getName() );
+									ClientComm.send("EventAction/NewAssignment/" + currentPlayer.getName() );
 								}
 								Gdx.input.setInputProcessor( buttonStage );
 							};
