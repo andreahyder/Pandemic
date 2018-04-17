@@ -752,9 +752,6 @@ public class GameScreen implements Screen, Serializable {
 						remQuarantines = 6;
 						break;
 					}
-				if( playerss != null )
-					if( playerss.role == null )
-						playerss.role = "Colonel";
 			}
 		}
 		
